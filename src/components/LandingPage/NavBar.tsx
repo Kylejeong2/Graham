@@ -39,10 +39,10 @@ export function Navbar() {
         {isSignedIn ? (
           <>
             <Link href="/dashboard" className="text-[#8B4513] hover:underline underline-offset-4">
-              <AnimatedLink title="Dashboard" />
+                <Button variant="outline" className="bg-[#8B4513] text-white hover:bg-[#A0522D]">Dashboard</Button>
             </Link>
             <Link href={`/dashboard/profile/${user?.id}`} className="text-[#8B4513] hover:underline underline-offset-4">
-              <AnimatedLink title="Profile" />
+              <Button className="bg-[#8B4513] text-white hover:bg-[#A0522D]">Profile</Button>
             </Link>
             <UserButton />
           </>

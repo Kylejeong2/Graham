@@ -1,6 +1,6 @@
 "use client"
 import React from 'react'
-import { Button } from '@/components/Common/Button'
+import { Button } from '@/components/ui/button'
 import { Trash } from 'lucide-react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'

@@ -1,23 +1,26 @@
+import React from 'react';
+import Link from 'next/link';
+import { UserButton } from '@clerk/nextjs';
+import { ArrowLeft, Plus, Coffee } from 'lucide-react';
+import { auth } from '@clerk/nextjs/server';
+import { cookies } from 'next/headers';
+import { eq } from 'drizzle-orm';
+
 import CreateCompadre from '@/components/Common/CreateCompadre';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { db } from '@/lib/db';
 import { $compadres } from '@/lib/db/schema';
-import { auth } from '@clerk/nextjs/server';
-import { UserButton } from '@clerk/nextjs';
-import { eq } from 'drizzle-orm';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-import React from 'react';
-import { cookies } from 'next/headers';
 
 type Props = {}
 
 const DashboardPage = async (props: Props) => {
-    const {userId} = auth()
+    const { userId } = auth();
     const compadres = await db.select().from($compadres).where(
         eq($compadres.userId, userId!)
-    )
+    );
     
     let subbed = false;
     try {
@@ -34,80 +37,89 @@ const DashboardPage = async (props: Props) => {
         subbed = false;
     }
 
-  return (
-    <>
-        <div className='grainy min-h-screen'>
-            <div className='max-w-7xl mx-auto p-10'>
-                <div className='h-14'>
-                    <div className='flex justify-between items-center md:flex-row flex-col'>
-                        <div className='flex items-center'>
+    return (
+        <div className='min-h-screen bg-[#F5E6D3] text-[#5D4037]'>
+            <div className='max-w-7xl mx-auto p-6 md:p-10'>
+                <header className='mb-8'>
+                    <div className='flex justify-between items-center'>
+                        <div className='flex items-center space-x-4'>
                             <Link href="/">
-                                <Button className='bg-green-600 rounded-xl' size="sm"><ArrowLeft className='mr-1 w-4 h-4'/>Back</Button>
+                                <Button variant="outline" className='border-[#8B4513] text-white hover:bg-[#E6CCB2]'>
+                                    <ArrowLeft className='mr-2 w-4 h-4'/>Back
+                                </Button>
                             </Link>
-
-                            <div className='w-4'></div>
-                            <h1 className='text-3xl font-bold text-white'>My Compadres</h1>
-                            <div className='w-4'></div>
-                            <UserButton />
+                            <h1 className='text-3xl font-bold text-[#8B4513]'>My Compadres</h1>
                         </div>
+                        <UserButton />
                     </div>
+                </header>
 
-                    <div className="h-8"></div>
-
-                    <Separator />
-                    
-                    <div className="h-8"></div>
-                    {/* <!-- conditional rendering --> */}
-                    {compadres.length === 0 && (
-                        <div className='text-center'>
-                            <h2 className='text-xl text-gray-500'>You don&apos;t have any Compadres yet!</h2>
+                <Separator className='bg-[#8B4513] opacity-20 my-6' />
+                
+                {compadres.length === 0 ? (
+                    <Card className='bg-white shadow-lg'>
+                        <CardContent className='p-6 text-center'>
+                            <Coffee className='w-16 h-16 text-[#8B4513] mx-auto mb-4' />
+                            <h2 className='text-xl text-[#5D4037] mb-2'>You don&apos;t have any Compadres yet!</h2>
+                            <p className='text-[#795548] mb-4'>Create your first Compadre to get started.</p>
+                            <CreateCompadre />
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className='space-y-6'>
+                        <div className='grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
+                            {(compadres.length < 1 || subbed) && (
+                                <Card className='bg-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center h-[200px]'>
+                                    <CardContent>
+                                        <CreateCompadre>
+                                            <Button variant="ghost" className='w-full h-full flex flex-col items-center justify-center text-[#8B4513] hover:bg-[#E6CCB2]'>
+                                                <Plus className='w-12 h-12 mb-2' />
+                                                <span>Create New Compadre</span>
+                                            </Button>
+                                        </CreateCompadre>
+                                    </CardContent>
+                                </Card>
+                            )}
+                            {compadres.map(compadre => (
+                                <Link href={`/compadre/${compadre.id}`} key={compadre.id}>
+                                    <Card className='bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1'>
+                                        <CardHeader className='pb-2'>
+                                            <Avatar className='w-16 h-16 mx-auto'>
+                                                <AvatarImage src={compadre.imageUrl || ""} alt={compadre.name} />
+                                                <AvatarFallback className='bg-[#E6CCB2] text-[#8B4513]'>
+                                                    {compadre.name.charAt(0).toUpperCase()}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                        </CardHeader>
+                                        <CardContent className='text-center'>
+                                            <CardTitle className='text-xl font-semibold text-[#8B4513] mb-1'>{compadre.name}</CardTitle>
+                                            <p className='text-sm text-[#795548]'>
+                                                Created on {new Date(compadre.createdAt).toLocaleDateString()}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            ))}
                         </div>
-                    )}
-                    
-
-                    <div className='grid sm:grid-cols-3 md:grid-cols-5 grid-cols-1 gap-3'>
-                      {(compadres.length < 1 || subbed) && (
-                          <CreateCompadre />
-                      )}
-                      {compadres.map(compadre => {
-                          return (
-                              <a href={`/compadre/${compadre.id}`} key={compadre.id}>
-                                  <div className='border border-stone-200 rounded-lg overflow-hidden flex flex-col hover:shadow-xl transition hover:-translate-y-1'>
-                                      {/* <img 
-                                          width={400}
-                                          height={200}
-                                          alt={compadre.name}
-                                          src={compadre.imageUrl || ""}
-                                      /> */}
-                                  <div className='p-4'>
-                                      <h3 className='text-xl font-semibold text-white'>{compadre.name}</h3>
-                                      <div className='h-1'></div>
-                                      <p className='text-sm text-gray-500'>
-                                          {new Date(compadre.createdAt).toLocaleDateString()}
-                                      </p>
-                                  </div>
-                                  </div>
-                                  
-                              </a>
-                          )
-                      })}
+                        
+                        {compadres.length >= 1 && !subbed && (
+                            <Card className='bg-[#E6CCB2] border-[#8B4513] shadow-lg max-w-2xl mx-auto'>
+                                <CardContent className='p-6'>
+                                    <h3 className='text-2xl font-semibold text-[#8B4513] mb-2'>Unlock More Compadres!</h3>
+                                    <p className="text-[#5D4037] mb-4">You&apos;ve created your first Compadre. Subscribe now to create unlimited Compadres and access premium features.</p>
+                                    <Link href="/subscription">
+                                        <Button className="w-full bg-[#8B4513] hover:bg-[#A0522D] text-white font-semibold py-3 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
+                                            Upgrade to Premium
+                                        </Button>
+                                    </Link>
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
-                    {compadres.length >= 1 && !subbed && (
-                      <div className='mt-8 p-6 bg-gray-800 rounded-lg border border-gray-700 shadow-lg max-w-lg mx-auto'>
-                        <h3 className='text-xl font-semibold text-white mb-2'>Unlock More Compadres!</h3>
-                        <p className="text-gray-300 mb-4">You&apos;ve created your first Compadre. Subscribe now to create unlimited Compadres and access premium features.</p>                        <Link href="/subscription">
-                          <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
-                            Upgrade to Premium
-                          </Button>
-                        </Link>
-                      </div>
-                    )}
-                </div>
+                )}
             </div>
         </div>
-    </>
-    
-  )
+    );
 }
 
 export default DashboardPage;

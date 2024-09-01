@@ -1,116 +1,25 @@
 "use client"
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { CheckCircle2, Loader2 } from "lucide-react"
+import * as React from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import React, { useState } from "react"
+import { Card, CardContent } from "@/components/ui/card"
+import { Check, Loader2 } from "lucide-react"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { useRouter } from 'next/navigation'
-import { useUser } from "@clerk/nextjs";
-import { loadStripe } from '@stripe/stripe-js';
-import useSubscriptions from "@/hooks/getSubscriptionData";
-import { toast } from 'react-hot-toast';
+import { useUser } from "@clerk/nextjs"
+import { loadStripe } from '@stripe/stripe-js'
+import useSubscriptions from "@/hooks/getSubscriptionData"
+import { toast } from 'react-hot-toast'
 
-type PricingSwitchProps = {
-  onSwitch: (value: string) => void
-}
-
-type PricingCardProps = {
-  isYearly?: boolean
-  title: string
-  monthlyPrice?: number
-  yearlyPrice?: number
-  description: string
-  features: string[]
-  actionLabel: string
-  popular?: boolean
-  exclusive?: boolean
-  onSubscribe: () => void
-  isCurrentPlan?: boolean
-  disabled?: boolean
-}
-
-const PricingHeader = ({ title, subtitle }: { title: string; subtitle: string }) => (
-  <section className="text-center">
-    <h2 className="text-3xl font-bold">{title}</h2>
-    <p className="text-xl pt-1">{subtitle}</p>
-    <br />
-  </section>
-)
-
-const PricingSwitch = ({ onSwitch }: PricingSwitchProps) => (
+const PricingSwitch = ({ onSwitch }: { onSwitch: (value: string) => void }) => (
   <Tabs defaultValue="0" className="w-40 mx-auto" onValueChange={onSwitch}>
     <TabsList className="py-6 px-2">
-      <TabsTrigger value="0" className="text-base">
-        Monthly
-      </TabsTrigger>
-      <TabsTrigger value="1" className="text-base">
-        Yearly
-      </TabsTrigger>
+      <TabsTrigger value="0" className="text-base">Monthly</TabsTrigger>
+      <TabsTrigger value="1" className="text-base">Yearly</TabsTrigger>
     </TabsList>
   </Tabs>
-)
-
-const PricingCard = ({ isYearly, title, monthlyPrice, yearlyPrice, description, features, actionLabel, popular, exclusive, onSubscribe, isCurrentPlan, disabled }: PricingCardProps) => (
-  <Card
-    className={cn(`w-72 flex flex-col justify-between py-1 ${popular ? "border-rose-400" : "border-zinc-700"} mx-auto sm:mx-0`, {
-      "animate-background-shine bg-white dark:bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] transition-colors":
-        exclusive,
-    })}>
-    <div>
-      <CardHeader className="pb-8 pt-4">
-        {isYearly && yearlyPrice && monthlyPrice ? (
-          <div className="flex justify-between">
-            <CardTitle className="text-zinc-700 dark:text-zinc-300 text-lg">{title}</CardTitle>
-            <div
-              className={cn("px-2.5 rounded-xl h-fit text-sm py-1 bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white", {
-                "bg-gradient-to-r from-orange-400 to-rose-400 dark:text-black ": popular,
-              })}>
-              Save ${monthlyPrice * 12 - yearlyPrice}
-            </div>
-          </div>
-        ) : (
-          <CardTitle className="text-zinc-700 dark:text-zinc-300 text-lg">{title}</CardTitle>
-        )}
-        <div className="flex gap-0.5">
-          <h3 className="text-3xl font-bold">
-            {yearlyPrice && isYearly ? "$" + yearlyPrice : monthlyPrice !== undefined ? "$" + monthlyPrice : "Custom"}
-          </h3>
-          <span className="flex flex-col justify-end text-sm mb-1">
-            {yearlyPrice && isYearly ? "/year" : monthlyPrice !== undefined ? "/month" : null}
-          </span>
-        </div>
-        <CardDescription className="pt-1.5 h-12">{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-2">
-        {features.map((feature: string) => (
-          <CheckItem key={feature} text={feature} />
-        ))}
-      </CardContent>
-    </div>
-    <CardFooter className="mt-2">
-      <Button
-        className={cn(
-          "relative inline-flex w-full items-center justify-center rounded-md px-6 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50",
-          isCurrentPlan
-            ? "bg-gray-400 text-white cursor-not-allowed"
-            : "bg-black text-white dark:bg-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200"
-        )}
-        onClick={onSubscribe}
-        disabled={disabled}
-      >
-        {isCurrentPlan ? "Current Plan" : actionLabel}
-      </Button>
-    </CardFooter>
-  </Card>
-)
-
-const CheckItem = ({ text }: { text: string }) => (
-  <div className="flex gap-2">
-    <CheckCircle2 size={18} className="my-auto text-green-400" />
-    <p className="pt-0.5 text-zinc-700 dark:text-zinc-300 text-sm">{text}</p>
-  </div>
 )
 
 export default function SubscriptionPage() {
@@ -143,9 +52,7 @@ export default function SubscriptionPage() {
     try {
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           plan,
           price,
@@ -156,15 +63,11 @@ export default function SubscriptionPage() {
         }),
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to create checkout session')
-      }
+      if (!response.ok) throw new Error('Failed to create checkout session')
 
       const { sessionId } = await response.json()
       const stripe = await loadStripe(stripePk)
-      if (!stripe) {
-        throw new Error('Failed to load Stripe')
-      }
+      if (!stripe) throw new Error('Failed to load Stripe')
       await stripe.redirectToCheckout({ sessionId })
     } catch (error) {
       console.error('Error creating checkout session:', error)
@@ -173,34 +76,28 @@ export default function SubscriptionPage() {
   }
 
   const handleManageSubscription = () => {
-    router.push(`/dashboard/profile/${user?.id}`);
-  };
+    router.push(`/dashboard/profile/${user?.id}`)
+  }
 
   const plans = [
     {
-      title: "Free",
-      monthlyPrice: 0,
-      yearlyPrice: 0,
-      description: "Everything you need to get started",
-      features: ["Example Feature Number 1", "Example Feature Number 2", "Example Feature Number 3"],
-      actionLabel: "Get Started",
+      title: "Starter",
+      monthlyPrice: 49,
+      yearlyPrice: 490,
+      description: "Perfect for small businesses",
+      features: ["Up to 100 calls/month", "Basic call routing", "Email support"],
     },
     {
-      title: "Basic",
-      monthlyPrice: 10,
-      yearlyPrice: 100,
-      description: "Want a few more Compadres?",
-      features: ["Example Feature Number 1", "Example Feature Number 2", "Example Feature Number 3"],
-      actionLabel: "Subscribe",
+      title: "Professional",
+      monthlyPrice: 99,
+      yearlyPrice: 990,
+      description: "Ideal for growing companies",
+      features: ["Up to 500 calls/month", "Advanced call routing", "Priority support"],
     },
     {
-      title: "Pro",
-      monthlyPrice: 25,
-      yearlyPrice: 250,
-      description: "Full group of Compadres.",
-      features: ["Example Feature Number 1", "Example Feature Number 2", "Example Feature Number 3"],
-      actionLabel: "Subscribe",
-      popular: true,
+      title: "Enterprise",
+      description: "Custom solutions for large organizations",
+      features: ["Unlimited calls", "Custom integrations", "Dedicated account manager"],
     },
   ]
 
@@ -216,43 +113,59 @@ export default function SubscriptionPage() {
     return <div>Error: {error}</div>
   }
 
-  const isSubscribed = subscription && subscription.subscriptionName !== "Free Plan";
+  const isSubscribed = subscription && subscription.subscriptionName !== "Free Plan"
 
   return (
-    <div className="flex flex-col py-8 min-h-screen">
-      <div className="flex flex-col items-center mb-8">
-        <PricingHeader title="Pricing Plans" subtitle="Choose the plan that's right for you" />
+    <div className="min-h-screen bg-[#E6CCB2]">
+      <main className="container mx-auto px-4 py-12">
+        <h1 className="text-4xl font-bold text-center text-[#5D4037] mb-12">
+          Choose Your Subscription Plan
+        </h1>
         <PricingSwitch onSwitch={togglePricingPeriod} />
-      </div>
-      <section className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-8">
-        {plans.map((plan) => {
-          const isPlanSubscribed = subscription?.subscriptionName?.startsWith(plan.title) ?? false;
-          const isCurrentPlan = isPlanSubscribed && subscription?.isYearly === isYearly;
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 mt-12">
+          {plans.map((plan) => {
+            const isPlanSubscribed = subscription?.subscriptionName?.startsWith(plan.title) ?? false
+            const isCurrentPlan = isPlanSubscribed && subscription?.isYearly === isYearly
 
-          return (
-            <PricingCard
-              key={plan.title}
-              {...plan}
-              isYearly={isYearly}
-              onSubscribe={subscription.subscriptionStatus === 'active' 
-                ? handleManageSubscription 
-                : () => handleSubscribe(plan.title, isYearly ? plan.yearlyPrice : plan.monthlyPrice)}
-              isCurrentPlan={isCurrentPlan}
-              disabled={isCurrentPlan}
-              actionLabel={
-                subscription.subscriptionStatus !== 'active'
-                  ? "Subscribe"
-                  : 
-                isCurrentPlan
-                  ? "Current Plan"
-                  : isSubscribed
-                    ? "Manage Subscription"
-                    : plan.actionLabel
-              }
-            />
-          );
-        })}
-      </section>
+            return (
+              <Card key={plan.title} className="bg-[#F5E6D3]">
+                <CardContent className="p-6">
+                  <h3 className="text-2xl font-bold text-[#5D4037] mb-2">{plan.title}</h3>
+                  <p className="text-4xl font-bold text-[#8B4513] mb-4">
+                    ${isYearly ? plan.yearlyPrice : plan.monthlyPrice}/{isYearly ? 'yr' : 'mo'}
+                  </p>
+                  <p className="text-[#795548] mb-4">{plan.description}</p>
+                  <ul className="space-y-2 mb-6">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-center text-[#795548]">
+                        <Check className="mr-2 h-4 w-4 text-[#8B4513]" /> {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button 
+                    className={cn(
+                      "w-full bg-[#8B4513] text-white hover:bg-[#A0522D]",
+                      isCurrentPlan && "bg-gray-400 hover:bg-gray-400 cursor-not-allowed"
+                    )}
+                    onClick={subscription.subscriptionStatus === 'active' 
+                      ? handleManageSubscription 
+                      : () => handleSubscribe(plan.title, isYearly ? plan.yearlyPrice ?? 0 : plan.monthlyPrice ?? 0)}
+                    disabled={isCurrentPlan}
+                  >
+                    {subscription.subscriptionStatus !== 'active'
+                      ? "Subscribe"
+                      : isCurrentPlan
+                        ? "Current Plan"
+                        : isSubscribed
+                          ? "Manage Subscription"
+                          : "Get Started"}
+                  </Button>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      </main>
     </div>
   )
 }
