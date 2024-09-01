@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/Common/Button';
+import { Button } from '@/components/ui/button';
 
 type Message = {
   role: 'user' | 'assistant';

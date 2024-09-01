@@ -2,16 +2,13 @@ import { ClerkProvider } from '@clerk/nextjs'
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import Provider from "@/components/Layout/Provider";
-import Layout from "@/components/Layout";
-import { PreloaderProvider } from "@/components/Layout/PreloaderContext";
-import { ThemeProvider } from "@/components/Layout/Theme-Provider";
+import { Navbar } from "@/components/LandingPage/NavBar";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Compadre",
-  description: "Your AI compadre through and through",
+  title: "Graham",
+  description: "AI phone agents",
 };
 
 export default function RootLayout({
@@ -22,17 +19,11 @@ export default function RootLayout({
   return (
     <ClerkProvider afterSignOutUrl="/">
       <html lang="en" className="dark">
-        <Provider>
-          <body className={inter.className}>
-            <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} forcedTheme="dark">
-              <PreloaderProvider>
-                <Layout>
-                  {children}
-                </Layout>
-              </PreloaderProvider>
-            </ThemeProvider>
-          </body>
-        </Provider>
+        <body className={inter.className}>
+        <Navbar />
+        {children}
+        </body>
+
       </html>
     </ClerkProvider>
   );

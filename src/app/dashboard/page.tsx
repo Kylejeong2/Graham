@@ -1,6 +1,6 @@
 import CreateCompadre from '@/components/Common/CreateCompadre';
-import { Button } from '@/components/Common/Button';
-import { Separator } from '@/components/Common/Separator';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { db } from '@/lib/db';
 import { $compadres } from '@/lib/db/schema';
 import { auth } from '@clerk/nextjs/server';

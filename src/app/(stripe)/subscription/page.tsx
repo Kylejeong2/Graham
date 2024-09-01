@@ -1,9 +1,9 @@
 "use client"
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/Common/Tabs";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/Common/Card"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle2, Loader2 } from "lucide-react"
-import { Button } from "@/components/Common/Button"
+import { Button } from "@/components/ui/button"
 import React, { useState } from "react"
 import { cn } from "@/lib/utils"
 import { useRouter } from 'next/navigation'
