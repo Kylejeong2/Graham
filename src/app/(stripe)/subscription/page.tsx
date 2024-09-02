@@ -26,11 +26,11 @@ export default function SubscriptionPage() {
   const [isYearly, setIsYearly] = useState(false)
   const togglePricingPeriod = (value: string) => setIsYearly(parseInt(value) === 1)
   const router = useRouter()
-  const { user } = useUser()
+  const { user, isSignedIn } = useUser()
   const { subscription, loading, error } = useSubscriptions()
 
   const handleSubscribe = async (plan: string, price: number) => {
-    if (!user) {
+    if (!isSignedIn) {
       router.push('/sign-in')
       return
     }
@@ -57,8 +57,8 @@ export default function SubscriptionPage() {
           plan,
           price,
           isYearly,
-          userId: user.id,
-          successUrl: `${baseUrl}/dashboard/profile/${user.id}`,
+          userId: user?.id,
+          successUrl: `${baseUrl}/dashboard/profile/${user?.id}`,
           cancelUrl: `${baseUrl}/subscription`,
         }),
       })
@@ -76,7 +76,11 @@ export default function SubscriptionPage() {
   }
 
   const handleManageSubscription = () => {
-    router.push(`/dashboard/profile/${user?.id}`)
+    if (isSignedIn) {
+      router.push(`/dashboard/profile/${user?.id}`)
+    } else {
+      router.push('/sign-in')
+    }
   }
 
   const plans = [
@@ -100,20 +104,24 @@ export default function SubscriptionPage() {
       features: ["Unlimited calls", "Custom integrations", "Dedicated account manager"],
     },
   ]
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="flex items-center justify-center min-h-screen bg-[#E6CCB2]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#8B4513]" />
       </div>
     )
   }
 
   if (error) {
-    return <div>Error: {error}</div>
+    if (error === 'User not found') {
+      return <div>Error: {error}. Please sign in to your account.</div>
+    }
+    else if (error === 'Subscription not found') {
+      return <div>Error: {error}. Please create a subscription to get started.</div>
+    }
   }
 
-  const isSubscribed = subscription && subscription.subscriptionName !== "Free Plan"
+  const isSubscribed = isSignedIn && subscription && subscription.subscriptionName !== "Free Plan"
 
   return (
     <div className="min-h-screen bg-[#E6CCB2]">
@@ -124,7 +132,7 @@ export default function SubscriptionPage() {
         <PricingSwitch onSwitch={togglePricingPeriod} />
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 mt-12">
           {plans.map((plan) => {
-            const isPlanSubscribed = subscription?.subscriptionName?.startsWith(plan.title) ?? false
+            const isPlanSubscribed = isSignedIn && (subscription?.subscriptionName?.startsWith(plan.title) ?? false)
             const isCurrentPlan = isPlanSubscribed && subscription?.isYearly === isYearly
 
             return (
@@ -147,18 +155,22 @@ export default function SubscriptionPage() {
                       "w-full bg-[#8B4513] text-white hover:bg-[#A0522D]",
                       isCurrentPlan && "bg-gray-400 hover:bg-gray-400 cursor-not-allowed"
                     )}
-                    onClick={subscription.subscriptionStatus === 'active' 
-                      ? handleManageSubscription 
-                      : () => handleSubscribe(plan.title, isYearly ? plan.yearlyPrice ?? 0 : plan.monthlyPrice ?? 0)}
+                    onClick={isSignedIn 
+                      ? (subscription?.subscriptionStatus === 'active' 
+                        ? handleManageSubscription 
+                        : () => handleSubscribe(plan.title, isYearly ? plan.yearlyPrice ?? 0 : plan.monthlyPrice ?? 0))
+                      : () => router.push('/sign-in')}
                     disabled={isCurrentPlan}
                   >
-                    {subscription.subscriptionStatus !== 'active'
-                      ? "Subscribe"
-                      : isCurrentPlan
-                        ? "Current Plan"
-                        : isSubscribed
-                          ? "Manage Subscription"
-                          : "Get Started"}
+                    {!isSignedIn
+                      ? "Sign In to Subscribe"
+                      : subscription.subscriptionStatus !== 'active'
+                        ? "Subscribe"
+                        : isCurrentPlan
+                          ? "Current Plan"
+                          : isSubscribed
+                            ? "Manage Subscription"
+                            : "Get Started"}
                   </Button>
                 </CardContent>
               </Card>

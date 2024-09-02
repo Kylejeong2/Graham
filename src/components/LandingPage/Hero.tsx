@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import Link from "next/link"
 
 export function HeroSection() {
   return (
@@ -17,7 +18,9 @@ export function HeroSection() {
               </p>
             </div>
             <div className="flex flex-col gap-2 min-[400px]:flex-row">
-              <Button className="bg-[#8B4513] text-white hover:bg-[#A0522D]">Start Free Trial</Button>
+              <Link href="/dashboard">
+                <Button className="bg-[#8B4513] text-white hover:bg-[#A0522D]">Start Free Trial</Button>
+              </Link>
               <Button variant="outline" className="border-[#8B4513] text-white hover:bg-[#F5E6D3] hover:text-[#8B4513]">Watch Demo</Button>
             </div>
           </div>

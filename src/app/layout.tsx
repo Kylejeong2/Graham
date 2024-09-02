@@ -2,8 +2,8 @@ import { ClerkProvider } from '@clerk/nextjs'
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { Navbar } from "@/components/LandingPage/NavBar";
 import Provider from "@/components/Layout/QueryClientProvider";
+import MainLayout from "@/components/Layout/MainLayout";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,10 +21,11 @@ export default function RootLayout({
     <ClerkProvider afterSignOutUrl="/">
       <html lang="en" className="dark">
         <body className={inter.className}>
-        <Navbar />
-        <Provider>
-        {children}
-        </Provider>
+          <Provider>
+            <MainLayout>
+              {children}
+            </MainLayout>
+          </Provider>
         </body>
       </html>
     </ClerkProvider>

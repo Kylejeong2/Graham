@@ -14,14 +14,14 @@ type Props = {
         firstName: string | null;
         lastName: string | null;
     } | null;  
-    compadreName: string;
-    compadreId: string;
+    agentName: string;
+    agentId: string;
     characteristics: string;
 };
 
 const MAX_CONTEXT_MESSAGES = 10; // Adjust as needed
 
-export const ChatInterface: React.FC<Props> = ({ user, compadreName, compadreId, characteristics }) => {
+export const ChatInterface: React.FC<Props> = ({ user, agentName, agentId, characteristics }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -60,9 +60,9 @@ export const ChatInterface: React.FC<Props> = ({ user, compadreName, compadreId,
           user, 
           message: input,
           messages: contextWindow, 
-          compadreId, 
+          agentId, 
           characteristics, 
-          compadreName 
+          agentName 
         }),
       });
 

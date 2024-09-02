@@ -49,7 +49,7 @@ async function shouldSaveToMemory(message: string): Promise<boolean> {
   }
 }
 
-async function saveToMemory(messages: any, compadreId: string) {
+async function saveToMemory(messages: any, agentId: string) {
   try {
     const response = await fetch('https://api.mem0.ai/v1/memories/', {
       method: 'POST',
@@ -59,7 +59,7 @@ async function saveToMemory(messages: any, compadreId: string) {
       },
       body: JSON.stringify({
         messages: messages,
-        user_id: compadreId,
+        user_id: agentId,
       }),
     });
 
@@ -76,7 +76,7 @@ async function saveToMemory(messages: any, compadreId: string) {
 
 const MAX_MEMORY_TOKENS = 1000; // Adjust as needed
 
-async function getRelevantMemories(query: string, compadreId: string): Promise<string> {
+async function getRelevantMemories(query: string, agentId: string): Promise<string> {
   try {
     const response = await fetch('https://api.mem0.ai/v1/memories/search/', {
       method: 'POST',
@@ -86,7 +86,7 @@ async function getRelevantMemories(query: string, compadreId: string): Promise<s
       },
       body: JSON.stringify({
         query,
-        user_id: compadreId,
+        user_id: agentId,
         max_tokens: MAX_MEMORY_TOKENS,
       }),
     });
@@ -104,15 +104,15 @@ async function getRelevantMemories(query: string, compadreId: string): Promise<s
 }
 
 export async function POST(req: NextRequest) {
-  const { user, message, messages, compadreName, compadreId, characteristics } = await req.json();
+  const { user, message, messages, agentName, agentId, characteristics } = await req.json();
 
   const lastMessage = messages[messages.length - 1].content;
   let memString = '';
   if(await shouldRetrieveMemories(message)){
-    memString = await getRelevantMemories(message, compadreId);
+    memString = await getRelevantMemories(message, agentId);
   }
 
-  const systemPrompt = `You're name is ${compadreName}, and you're a helpful AI friend with the following characteristics: ${characteristics}. Your task is to engage in a conversation, keeping these traits in mind. ${memString ? `Here's some relevant information/context: ${memString}` : ''}`;
+  const systemPrompt = `You're name is ${agentName}, and you're a helpful AI friend with the following characteristics: ${characteristics}. Your task is to engage in a conversation, keeping these traits in mind. ${memString ? `Here's some relevant information/context: ${memString}` : ''}`;
 
   try {
     const completion = await openai.chat.completions.create({
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
 
     // Simplified memory saving
     if (await shouldSaveToMemory(message)) {
-        await saveToMemory([...messages, { role: 'assistant', content: reply }], compadreId);
+        await saveToMemory([...messages, { role: 'assistant', content: reply }], agentId);
     }
 
     return NextResponse.json({ message: reply }, { status: 200 });

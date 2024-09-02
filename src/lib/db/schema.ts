@@ -1,15 +1,20 @@
 // used to create tables in the postgres schema
 // to make changes run this: npx drizzle-kit generate || npx drizzle-kit migrate || npx drizzle-kit push
 import { sql } from 'drizzle-orm';
-import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, uuid, boolean, jsonb } from 'drizzle-orm/pg-core'
 
-export const $compadres = pgTable('compadres', {
+export const $agents = pgTable('agents', {
     id: uuid('id').primaryKey().defaultRandom(),
     name: text('name').notNull(),
-    characteristics: text('characteristics').array().notNull().default(sql`ARRAY[]::text[]`),
     createdAt: timestamp('created_at').notNull().defaultNow(),
-    imageUrl: text('imageUrl'),
-    userId: text('user_id').notNull(), // TODO: add daily room
+    userId: text('user_id').notNull(), 
+    phoneNumber: text('phone_number'),
+    systemPrompt: text('system_prompt'),
+    isActive: boolean('is_active').default(false),
+    businessHours: jsonb('business_hours'),
+    voiceType: text('voice_type'),
+    callHistory: jsonb('call_history'),
+    customResponses: jsonb('custom_responses'),
 });
 
-export type CompadreType = typeof $compadres.$inferInsert;
+export type AgentType = typeof $agents.$inferInsert;

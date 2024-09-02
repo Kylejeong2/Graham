@@ -7,24 +7,24 @@ import { useRouter } from 'next/navigation'
 import { useMutation } from '@tanstack/react-query'
 
 type Props = {
-    compadreId: string
+    agentId: string
 }
 
-const DeleteButton = ({compadreId}: Props) => {
+const DeleteButton = ({agentId}: Props) => {
     const router = useRouter()
-    const deleteCompadre = useMutation({
+    const deleteAgent = useMutation({
       mutationFn: async () => {
-        const response = await axios.post('/api/deleteCompadre', {
-            compadreId
+        const response = await axios.post('/api/deleteAgent', {
+            agentId
         })
         return response.data
       }  
     })
   return (
-    <Button variant={'destructive'} size="sm" disabled={deleteCompadre.isPending} onClick={() => {
-        const confirm = window.confirm("Are you sure you want to delete this compadre?");
+    <Button variant={'destructive'} size="sm" disabled={deleteAgent.isPending} onClick={() => {
+        const confirm = window.confirm("Are you sure you want to delete this agent?");
         if (!confirm) return
-        deleteCompadre.mutate(undefined, {
+        deleteAgent.mutate(undefined, {
             onSuccess: () => {
                 router.push('/dashboard')
             },

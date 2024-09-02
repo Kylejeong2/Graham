@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { db } from '@/lib/db'
 import { eq } from 'drizzle-orm'
-import { $compadres } from '@/lib/db/schema'
+import { $agents } from '@/lib/db/schema'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
@@ -10,9 +10,9 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const compadres = await db.select().from($compadres).where(
-    eq($compadres.userId, userId)
+  const agents = await db.select().from($agents).where(
+    eq($agents.userId, userId)
   )
 
-  return NextResponse.json({ count: compadres.length })
+  return NextResponse.json({ count: agents.length })
 }

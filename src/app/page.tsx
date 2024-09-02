@@ -1,12 +1,29 @@
-import * as React from "react"
-import { HeroSection } from "@/components/LandingPage/Hero"
-import { FeaturesSection } from "@/components/LandingPage/FeaturesSection"
-import { HowItWorksSection } from "@/components/LandingPage/HowItWorksSection"
-import { PricingSection } from "@/components/LandingPage/PricingSection"
-import { TestimonialsSection } from "@/components/LandingPage/TestimonialsSection"
-import { CTASection } from "@/components/LandingPage/CTASection"
+'use client';
+
+import { useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { HeroSection } from "@/components/LandingPage/Hero";
+import { FeaturesSection } from "@/components/LandingPage/FeaturesSection";
+import { HowItWorksSection } from "@/components/LandingPage/HowItWorksSection";
+import { PricingSection } from "@/components/LandingPage/PricingSection";
+import { TestimonialsSection } from "@/components/LandingPage/TestimonialsSection";
+import { CTASection } from "@/components/LandingPage/CTASection";
 
 export default function Home() {
+  // const { isSignedIn, isLoaded } = useUser();
+  // const router = useRouter();
+
+  // useEffect(() => {
+  //   if (isLoaded && isSignedIn) {
+  //     router.push('/dashboard');
+  //   }
+  // }, [isLoaded, isSignedIn, router]);
+
+  // if (!isLoaded || isSignedIn) {
+  //   return null; // or a loading spinner
+  // }
+
   return (
     <div className="flex flex-col min-h-screen bg-[#F5E6D3]">
       <main className="flex-1">
@@ -31,5 +48,5 @@ export default function Home() {
         </nav>
       </footer>
     </div>
-  )
+  );
 }

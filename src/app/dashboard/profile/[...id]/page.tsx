@@ -1,6 +1,6 @@
 'use client'
 
-import React from "react"
+import React, { useState, useEffect } from "react"
 import { useUser, useClerk } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -10,13 +10,34 @@ import { Progress } from "@/components/ui/progress"
 import useSubscriptions from "@/hooks/getSubscriptionData"
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-toastify'
-import { Loader2, User, Mail, CreditCard, Calendar, AlertTriangle, LogOut, Package, Phone, Bell, Shield, ChevronRight } from "lucide-react"
+import { Loader2, User, Mail, CreditCard, Calendar, AlertTriangle, LogOut, Package, Phone, Bell, Shield, ChevronRight, Eye, EyeOff } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
-  const { user } = useUser()
+  const { user, isLoaded, isSignedIn } = useUser()
   const { signOut } = useClerk()
   const { subscription, loading, error } = useSubscriptions()
   const router = useRouter()
+
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
+  const [newFirstName, setNewFirstName] = useState(user?.firstName || '')
+  const [newLastName, setNewLastName] = useState(user?.lastName || '')
+  const [newPhoneNumber, setNewPhoneNumber] = useState(user?.phoneNumbers[0]?.phoneNumber || '')
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false)
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push('/sign-in')
+    }
+  }, [isLoaded, isSignedIn, router])
 
   const handleManageSubscription = async () => {
     try {
@@ -45,7 +66,67 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
     signOut()
   }
 
-  if (loading) {
+  const handleEditProfile = async () => {
+    try {
+      await user?.update({
+        firstName: newFirstName,
+        lastName: newLastName,
+      })
+      toast.success('Profile updated successfully')
+      setIsEditProfileOpen(false)
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      toast.error('Failed to update profile')
+    }
+  }
+
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmNewPassword) {
+      toast.error('New passwords do not match')
+      return
+    }
+    try {
+      await user?.updatePassword({
+        currentPassword,
+        newPassword
+      })
+      toast.success('Password changed successfully')
+      setIsChangePasswordOpen(false)
+    } catch (error) {
+      console.error('Error changing password:', error)
+      toast.error('Failed to change password')
+    }
+  }
+
+  const handleManageNotifications = (type: 'email' | 'sms') => {
+    // Implement notification management logic
+    console.log(`Managing ${type} notifications`)
+    toast.info(`${type.toUpperCase()} notification settings opened`)
+  }
+
+  const handleEnableTwoFactor = async () => {
+    try {
+      // await user?.createTwoFactorEnrollment({ strategy: 'email_code' })
+      toast.success('Two-factor authentication setup initiated')
+    } catch (error) {
+      console.error('Error enabling two-factor authentication:', error)
+      toast.error('Failed to initiate two-factor authentication setup')
+    }
+  }
+
+  const handleViewLoginHistory = () => {
+    // Implement login history view logic
+    console.log('Viewing login history')
+    toast.info('Login history view opened')
+  }
+
+  const handleManageDataPrivacy = () => {
+    // Implement data privacy management logic
+    console.log('Managing data privacy settings')
+    toast.info('Data privacy settings opened')
+  }
+
+  if (loading || !isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#F5E6D3]">
         <Loader2 className="w-12 h-12 animate-spin text-[#8B4513]" />
@@ -75,7 +156,7 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
                   <Mail className="mr-2 w-5 h-5" /> {user?.primaryEmailAddress?.emailAddress}
                 </p>
                 <p className="text-white flex items-center justify-center md:justify-start mt-2 text-lg">
-                  <Phone className="mr-2 w-5 h-5" /> +1 (555) 123-4567
+                  <Phone className="mr-2 w-5 h-5" /> {user?.phoneNumbers[0]?.phoneNumber || 'No phone number'}
                 </p>
               </div>
             </div>
@@ -98,13 +179,14 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
                       <Separator className="bg-[#8B4513] opacity-20" />
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-medium text-[#5D4037]">Billing Cycle</span>
-                        <span className="text-lg text-[#5D4037]">{subscription.isYearly ? 'Yearly' : 'Monthly'}</span>
+                        <span className="text-lg text-[#5D4037]">{subscription?.isYearly ? 'Yearly' : 'Monthly'}</span>
                       </div>
                       <Separator className="bg-[#8B4513] opacity-20" />
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-medium text-[#5D4037]">Next Billing Date</span>
                         <span className="text-lg text-[#5D4037]">{new Date(subscription.stripeCurrentPeriodEnd).toLocaleDateString()}</span>
                       </div>
+                      <Separator className="bg-[#8B4513] opacity-20" />
                       {subscription.subscriptionCancelAt && (
                         <>
                           <Separator className="bg-[#8B4513] opacity-20" />
@@ -143,10 +225,10 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <Button variant="outline" className="w-full border-[#8B4513] text-white hover:bg-[#E6CCB2] text-lg py-6">
+                    <Button variant="outline" className="w-full border-[#8B4513] text-white hover:bg-[#E6CCB2] text-lg py-6" onClick={() => setIsEditProfileOpen(true)}>
                       Edit Profile
                     </Button>
-                    <Button variant="outline" className="w-full border-[#8B4513] text-white hover:bg-[#E6CCB2] text-lg py-6">
+                    <Button variant="outline" className="w-full border-[#8B4513] text-white hover:bg-[#E6CCB2] text-lg py-6" onClick={() => setIsChangePasswordOpen(true)}>
                       Change Password
                     </Button>
                     <Separator className="bg-[#8B4513] opacity-20" />
@@ -165,13 +247,13 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
                         <span className="text-[#5D4037]">Email Notifications</span>
-                        <Button variant="outline" size="sm" className="border-[#8B4513] text-white">
+                        <Button variant="outline" size="sm" className="border-[#8B4513] text-white" onClick={() => handleManageNotifications('email')}>
                           Manage
                         </Button>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-[#5D4037]">SMS Alerts</span>
-                        <Button variant="outline" size="sm" className="border-[#8B4513] text-white">
+                        <Button variant="outline" size="sm" className="border-[#8B4513] text-white" onClick={() => handleManageNotifications('sms')}>
                           Manage
                         </Button>
                       </div>
@@ -195,7 +277,7 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
                   <h3 className="text-lg font-medium text-[#5D4037]">Two-Factor Authentication</h3>
                   <p className="text-sm text-[#795548]">Add an extra layer of security to your account</p>
                 </div>
-                <Button variant="outline" className="border-[#8B4513] text-white hover:bg-[#E6CCB2]">
+                <Button variant="outline" className="border-[#8B4513] text-white hover:bg-[#E6CCB2]" onClick={handleEnableTwoFactor}>
                   Enable
                 </Button>
               </div>
@@ -205,7 +287,7 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
                   <h3 className="text-lg font-medium text-[#5D4037]">Login History</h3>
                   <p className="text-sm text-[#795548]">View your recent login activity</p>
                 </div>
-                <Button variant="ghost" className="text-[#8B4513] hover:bg-[#E6CCB2]">
+                <Button variant="ghost" className="text-[#8B4513] hover:bg-[#E6CCB2]" onClick={handleViewLoginHistory}>
                   View History <ChevronRight className="ml-2 w-4 h-4" />
                 </Button>
               </div>
@@ -215,7 +297,7 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
                   <h3 className="text-lg font-medium text-[#5D4037]">Data Privacy</h3>
                   <p className="text-sm text-[#795548]">Manage your data and privacy settings</p>
                 </div>
-                <Button variant="ghost" className="text-[#8B4513] hover:bg-[#E6CCB2]">
+                <Button variant="ghost" className="text-[#8B4513] hover:bg-[#E6CCB2]" onClick={handleManageDataPrivacy}>
                   Manage Settings <ChevronRight className="ml-2 w-4 h-4" />
                 </Button>
               </div>
@@ -223,6 +305,105 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Edit Profile Dialog */}
+      <Dialog open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen}>
+        <DialogContent className="bg-[#F5E6D3]">
+          <DialogHeader>
+            <DialogTitle className="text-[#8B4513]">Edit Profile</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="firstName" className="text-[#5D4037]">First Name</Label>
+              <Input id="firstName" value={newFirstName} onChange={(e) => setNewFirstName(e.target.value)} className="bg-white text-black border-[#8B4513]" />
+            </div>
+            <div>
+              <Label htmlFor="lastName" className="text-[#5D4037]">Last Name</Label>
+              <Input id="lastName" value={newLastName} onChange={(e) => setNewLastName(e.target.value)} className="bg-white text-black border-[#8B4513]" />
+            </div>
+            <div>
+              <Label htmlFor="phoneNumber" className="text-[#5D4037]">Phone Number</Label>
+              <Input id="phoneNumber" value={newPhoneNumber} onChange={(e) => setNewPhoneNumber(e.target.value)} className="bg-white text-black border-[#8B4513]" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" className="border-[#8B4513] text-white" onClick={() => setIsEditProfileOpen(false)}>Cancel</Button>
+            <Button className="bg-[#8B4513] text-white hover:bg-[#A0522D]" onClick={handleEditProfile}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Password Dialog */}
+      <Dialog open={isChangePasswordOpen} onOpenChange={setIsChangePasswordOpen}>
+        <DialogContent className="bg-[#F5E6D3]">
+          <DialogHeader>
+            <DialogTitle className="text-[#8B4513]">Change Password</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="currentPassword" className="text-[#5D4037]">Current Password</Label>
+              <div className="relative">
+                <Input
+                  id="currentPassword"
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="bg-white text-black border-[#8B4513] pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                >
+                  {showCurrentPassword ? <EyeOff className="h-5 w-5 text-gray-500" /> : <Eye className="h-5 w-5 text-gray-500" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="newPassword" className="text-[#5D4037]">New Password</Label>
+              <div className="relative">
+                <Input
+                  id="newPassword"
+                  type={showNewPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="bg-white text-black border-[#8B4513] pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                >
+                  {showNewPassword ? <EyeOff className="h-5 w-5 text-gray-500" /> : <Eye className="h-5 w-5 text-gray-500" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="confirmNewPassword" className="text-[#5D4037]">Confirm New Password</Label>
+              <div className="relative">
+                <Input
+                  id="confirmNewPassword"
+                  type={showConfirmNewPassword ? "text" : "password"}
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  className="bg-white text-black border-[#8B4513] pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                >
+                  {showConfirmNewPassword ? <EyeOff className="h-5 w-5 text-gray-500" /> : <Eye className="h-5 w-5 text-gray-500" />}
+                </button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" className="border-[#8B4513] text-white" onClick={() => setIsChangePasswordOpen(false)}>Cancel</Button>
+            <Button className="bg-[#8B4513] text-white hover:bg-[#A0522D]" onClick={handleChangePassword}>Change Password</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
