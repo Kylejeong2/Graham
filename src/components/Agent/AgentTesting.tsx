@@ -5,16 +5,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PhoneCall, Send, User, Bot } from 'lucide-react';
+import { createRetellPhoneCall } from '@/services/retellAI';
+import { toast } from 'react-toastify';
 
 interface Agent {
     id: string;
     name: string;
     phoneNumber: string | null;
+    retellAgentId: string;
 }
 
 export const AgentTesting: React.FC<{ agent: Agent }> = ({ agent }) => {
     const [customerMessage, setCustomerMessage] = useState('');
     const [conversation, setConversation] = useState<{ sender: 'customer' | 'agent', message: string }[]>([]);
+    const [testPhoneNumber, setTestPhoneNumber] = useState('');
+    const [isCallInProgress, setIsCallInProgress] = useState(false);
 
     const handleSendMessage = () => {
         if (customerMessage.trim()) {
@@ -27,8 +32,27 @@ export const AgentTesting: React.FC<{ agent: Agent }> = ({ agent }) => {
         }
     };
 
+    const handleStartTestCall = async () => {
+        if (!testPhoneNumber) {
+            toast.error("Please enter a phone number to test");
+            return;
+        }
+
+        try {
+            setIsCallInProgress(true);
+            const call = await createRetellPhoneCall(testPhoneNumber, agent.retellAgentId);
+            toast.success(`Test call initiated to ${testPhoneNumber}`);
+            // You might want to update the UI or store the call information
+        } catch (error) {
+            console.error("Error starting test call:", error);
+            toast.error("Failed to start test call");
+        } finally {
+            setIsCallInProgress(false);
+        }
+    };
+
     return (
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="bg-white shadow-lg">
                 <CardHeader className="border-b border-[#E6CCB2]">
                     <CardTitle className="text-[#8B4513] flex items-center">
@@ -38,10 +62,22 @@ export const AgentTesting: React.FC<{ agent: Agent }> = ({ agent }) => {
                 </CardHeader>
                 <CardContent className="pt-6">
                     <div className="space-y-4">
-                        <p className="text-[#5D4037]">Call your agent at: <strong className="text-[#8B4513]">{agent.phoneNumber || 'Not set'}</strong></p>
-                        <Button className="bg-[#8B4513] hover:bg-[#A0522D] text-white">
-                            Start Test Call
-                        </Button>
+                        <p className="text-[#5D4037]">Agent's phone number: <strong className="text-[#8B4513]">{agent.phoneNumber || 'Not set'}</strong></p>
+                        <div className="flex items-center space-x-2">
+                            <Input 
+                                placeholder="Enter test phone number..." 
+                                value={testPhoneNumber}
+                                onChange={(e) => setTestPhoneNumber(e.target.value)}
+                                className="border-[#8B4513] text-[#5D4037]"
+                            />
+                            <Button 
+                                onClick={handleStartTestCall}
+                                className="bg-[#8B4513] hover:bg-[#A0522D] text-white"
+                                disabled={isCallInProgress}
+                            >
+                                {isCallInProgress ? 'Calling...' : 'Start Test Call'}
+                            </Button>
+                        </div>
                     </div>
                 </CardContent>
             </Card>

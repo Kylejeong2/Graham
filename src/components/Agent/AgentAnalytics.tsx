@@ -10,8 +10,9 @@ interface Agent {
 
 export const AgentAnalytics: React.FC<{ agent: Agent }> = ({ agent }) => {
     return (
-        <div className="grid grid-cols-3 gap-6">
-            <Card className="bg-white shadow-lg">
+        // <div className="grid grid-cols-3 gap-6">
+        <div className="flex flex-col items-center justify-center h-64 bg-gradient-to-r from-[#F5E6D3] to-[#E6CCB2] rounded-lg shadow-lg">
+            {/* <Card className="bg-white shadow-lg">
                 <CardHeader className="border-b border-[#E6CCB2]">
                     <CardTitle className="text-[#8B4513] flex items-center">
                         <PhoneCall className="w-5 h-5 mr-2" />
@@ -109,7 +110,12 @@ export const AgentAnalytics: React.FC<{ agent: Agent }> = ({ agent }) => {
                         </div>
                     </div>
                 </CardContent>
-            </Card>
+            </Card> */}
+                <div className="text-center flex flex-col items-center">
+                    <h2 className="text-3xl font-bold text-[#8B4513] mb-4">Analytics Coming Soon</h2>
+                    <p className="text-xl text-[#5D4037]">We're working on bringing you insightful analytics for your agent.</p>
+                    <p className="text-lg text-[#795548] mt-2">Stay tuned for exciting updates!</p>
+                </div>
         </div>
     );
 };

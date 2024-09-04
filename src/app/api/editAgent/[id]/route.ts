@@ -1,46 +1,40 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { $agents } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
-import { auth } from '@clerk/nextjs/server';
+import { db } from "@/lib/db";
+import { $agents } from "@/lib/db/schema";
+import { auth } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-    try {
-        const { userId } = await auth();
-        if (!userId) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+  const { userId } = auth();
 
-        const body = await req.json();
-        const { name, phoneNumber, isActive, systemPrompt, voiceType, businessHours, customResponses } = body;
-        const id = params.id;
+  if (!userId) {
+    return new NextResponse("unauthorized", { status: 401 });
+  }
 
-        if (!id || !name) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-        }
+  const body = await req.json();
+  const { name, phoneNumber, systemPrompt, isActive, voiceType, retellAgentId, retellPhoneNumberId, areaCode } = body;
 
-        // Validate that the agent belongs to the authenticated user
-        const existingAgent = await db.select().from($agents).where(eq($agents.id, id)).limit(1);
-        if (existingAgent.length === 0 || existingAgent[0].userId !== userId) {
-            return NextResponse.json({ error: 'Agent not found or unauthorized' }, { status: 404 });
-        }
+  try {
+    const updatedAgent = await db
+      .update($agents)
+      .set({
+        name,
+        phoneNumber,
+        systemPrompt,
+        isActive,
+        voiceType,
+        retellAgentId,
+        retellPhoneNumberId,
+        areaCode,
+      })
+      .where(eq($agents.id, params.id))
+      .returning();
 
-        // Update the agent in the database
-        await db.update($agents)
-            .set({
-                name,
-                phoneNumber,
-                isActive,
-                systemPrompt,
-                voiceType,
-                businessHours,
-                customResponses
-            })
-            .where(eq($agents.id, id));
-
-        return NextResponse.json({ message: 'Agent updated successfully' }, { status: 200 });
-    } catch (error) {
-        console.error('Error updating agent:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-    }
+    return NextResponse.json(updatedAgent[0]);
+  } catch (error) {
+    console.error("Error updating agent:", error);
+    return new NextResponse("Failed to update agent", {
+      status: 500,
+    });
+  }
 }
