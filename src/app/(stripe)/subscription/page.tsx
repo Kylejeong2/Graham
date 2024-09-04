@@ -22,6 +22,31 @@ const PricingSwitch = ({ onSwitch }: { onSwitch: (value: string) => void }) => (
   </Tabs>
 )
 
+export const plans = [
+  {
+    title: "Starter",
+    monthlyPrice: 49,
+    yearlyPrice: 490,
+    description: "Perfect for small businesses",
+    features: ["Up to 100 minutes/month", "Basic call routing", "Email support"],
+    minutesAllowed: 100,
+  },
+  {
+    title: "Professional",
+    monthlyPrice: 99,
+    yearlyPrice: 990,
+    description: "Ideal for growing companies",
+    features: ["Up to 500 minutes/month", "Advanced call routing", "Priority support"],
+    minutesAllowed: 500,
+  },
+  {
+    title: "Enterprise",
+    description: "Custom solutions for large organizations",
+    features: ["Unlimited minutes", "Custom integrations", "Dedicated account manager"],
+    minutesAllowed: 999999, // Effectively unlimited
+  },
+]
+
 export default function SubscriptionPage() {
   const [isYearly, setIsYearly] = useState(false)
   const togglePricingPeriod = (value: string) => setIsYearly(parseInt(value) === 1)
@@ -83,27 +108,6 @@ export default function SubscriptionPage() {
     }
   }
 
-  const plans = [
-    {
-      title: "Starter",
-      monthlyPrice: 49,
-      yearlyPrice: 490,
-      description: "Perfect for small businesses",
-      features: ["Up to 100 calls/month", "Basic call routing", "Email support"],
-    },
-    {
-      title: "Professional",
-      monthlyPrice: 99,
-      yearlyPrice: 990,
-      description: "Ideal for growing companies",
-      features: ["Up to 500 calls/month", "Advanced call routing", "Priority support"],
-    },
-    {
-      title: "Enterprise",
-      description: "Custom solutions for large organizations",
-      features: ["Unlimited calls", "Custom integrations", "Dedicated account manager"],
-    },
-  ]
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#E6CCB2]">

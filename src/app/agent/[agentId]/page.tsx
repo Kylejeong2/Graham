@@ -20,15 +20,16 @@ type Props = {
 type Agent = {
     id: string;
     name: string;
-    phoneNumber: string | null;
-    isActive: boolean | null;
-    systemPrompt: string | null;
-    voiceType: string | null;
-    userId: string;
     createdAt: Date;
-    businessHours: unknown;
-    callHistory: unknown;
-    customResponses: unknown;
+    userId: string;
+    phoneNumber: string;
+    systemPrompt: string;
+    isActive: boolean;
+    businessHours: Record<string, boolean>;
+    voiceType: string;
+    callHistory: any;
+    customResponses: any;
+    minutesUsed: number;
 }
 
 const AgentPage = async ({params: { agentId }}: Props) => {
@@ -56,7 +57,7 @@ const AgentPage = async ({params: { agentId }}: Props) => {
         return redirect('/dashboard');
     }
 
-    const agent = agents[0];
+    const agent: Agent = agents[0];
 
     return (
         <div className='min-h-screen bg-[#F5E6D3] p-8'>
@@ -99,7 +100,7 @@ const AgentPage = async ({params: { agentId }}: Props) => {
                 </Tabs>
             </div>
         </div>
-    )
+    ) 
 }
 
 export default AgentPage;

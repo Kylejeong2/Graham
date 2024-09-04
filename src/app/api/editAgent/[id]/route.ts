@@ -12,10 +12,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         }
 
         const body = await req.json();
-        const { name, characteristics } = body;
+        const { name, phoneNumber, isActive, systemPrompt, voiceType, businessHours, customResponses } = body;
         const id = params.id;
 
-        if (!id || !name || !characteristics) {
+        if (!id || !name) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
@@ -28,8 +28,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         // Update the agent in the database
         await db.update($agents)
             .set({
-                name: name,
-                characteristics: characteristics,
+                name,
+                phoneNumber,
+                isActive,
+                systemPrompt,
+                voiceType,
+                businessHours,
+                customResponses
             })
             .where(eq($agents.id, id));
 

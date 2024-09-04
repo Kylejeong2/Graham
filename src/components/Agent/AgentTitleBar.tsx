@@ -49,7 +49,6 @@ export const AgentTitleBar: React.FC<Props> = ({ agent, user }) => {
         setAgentState(prevState => ({
           ...prevState,
           name: updatedAgent.name,
-          characteristics: updatedAgent.characteristics,
         }));
         window.location.reload();
         window.addEventListener('load', () => {
