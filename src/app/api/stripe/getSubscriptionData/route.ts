@@ -1,7 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { clerk } from "@/configs/clerk-server";
-import { storeSubscriptionPlans, stripe } from "@/configs/stripe";
+import { stripe } from "@/configs/stripe";
 import { NextResponse } from "next/server";
+import { plans } from "@/constants/plans";
 
 export async function GET() {
   const { userId } = auth();
@@ -27,8 +28,8 @@ export async function GET() {
   const subscriptionStatus = user.privateMetadata.subscriptionStatus as string | undefined;
 
   const plan = isSubscribed
-    ? storeSubscriptionPlans.find(
-        (plan) => plan.stripePriceId === stripePriceId
+    ? plans.find(
+        (plan) => plan.id.toLowerCase() === subscriptionName?.toLowerCase()
       )
     : null;
 

@@ -12,6 +12,7 @@ import { useUser } from "@clerk/nextjs"
 import { loadStripe } from '@stripe/stripe-js'
 import useSubscriptions from "@/hooks/getSubscriptionData"
 import { toast } from 'react-hot-toast'
+import { plans } from "@/constants/plans"
 
 const PricingSwitch = ({ onSwitch }: { onSwitch: (value: string) => void }) => (
   <Tabs defaultValue="0" className="w-40 mx-auto" onValueChange={onSwitch}>
@@ -78,28 +79,6 @@ export function PricingSection() {
   const handleManageSubscription = () => {
     router.push(`/dashboard/profile/${user?.id}`)
   }
-
-  const plans = [
-    {
-      title: "Starter",
-      monthlyPrice: 49,
-      yearlyPrice: 490,
-      description: "Perfect for small businesses",
-      features: ["Up to 100 calls/month", "Basic call routing", "Email support"],
-    },
-    {
-      title: "Professional",
-      monthlyPrice: 99,
-      yearlyPrice: 990,
-      description: "Ideal for growing companies",
-      features: ["Up to 500 calls/month", "Advanced call routing", "Priority support"],
-    },
-    {
-      title: "Enterprise",
-      description: "Custom solutions for large organizations",
-      features: ["Unlimited calls", "Custom integrations", "Dedicated account manager"],
-    },
-  ]
 
   if (loading) {
     return (
