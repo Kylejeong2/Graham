@@ -1,6 +1,6 @@
 import { clerk } from '@/configs/clerk-server';
 import { db } from '@/lib/db';
-import { $agents, $users } from '@/lib/db/schema';
+import { $agents, $users, AgentType, UserType } from '@/lib/db/schema';
 import { auth } from '@clerk/nextjs/server';
 import { and, eq } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
@@ -17,21 +17,6 @@ type Props = {
     }
 };
 
-type Agent = {
-    id: string;
-    name: string;
-    createdAt: Date;
-    userId: string;
-    phoneNumber: string;
-    systemPrompt: string;
-    isActive: boolean;
-    businessHours: Record<string, boolean>;
-    voiceType: string;
-    callHistory: any;
-    customResponses: any;
-    minutesUsed: number;
-}
-
 const AgentPage = async ({params: { agentId }}: Props) => {
     const {userId} = auth()
     
@@ -41,10 +26,16 @@ const AgentPage = async ({params: { agentId }}: Props) => {
 
     const user = await db.select().from($users).where(eq($users.id, userId))
 
-    const serializedUser = user ? {
+    const serializedUser: UserType | null = user.length > 0 ? {
         id: user[0].id, 
-        name: user[0].name,
-        phoneNumbers: user[0].phoneNumbers as string[]
+        name: user[0].name ?? '',
+        email: user[0].email,
+        phoneNumbers: user[0].phoneNumbers as string[] ?? [],
+        createdAt: user[0].createdAt,
+        updatedAt: user[0].updatedAt,
+        emailVerified: user[0].emailVerified,
+        image: user[0].image,
+        stripeCustomerId: user[0].stripeCustomerId,
     } : null; 
 
     const agents = await db.select().from($agents).where(
@@ -57,7 +48,7 @@ const AgentPage = async ({params: { agentId }}: Props) => {
         return redirect('/dashboard');
     }
 
-    const agent: Agent = agents[0];
+    const agent: AgentType = agents[0];
 
     // Ensure the logged-in user owns the agent
     if (agent.userId !== userId) {

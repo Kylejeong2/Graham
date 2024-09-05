@@ -65,4 +65,22 @@ export const $users = pgTable('users', {
     phoneNumbers: jsonb('phone_numbers').default('[]'),
 });
 
+export const $waitlist = pgTable('waitlist', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    email: text('email').notNull().unique(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const $leads = pgTable('leads', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull(),
+    email: text('email').notNull().unique(),
+    phoneNumber: text('phone_number').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
 export type AgentType = typeof $agents.$inferInsert;
+export type UsageRecordType = typeof $usageRecords.$inferInsert;
+export type UserType = typeof $users.$inferInsert;
+export type WaitlistType = typeof $waitlist.$inferInsert;
+export type LeadType = typeof $leads.$inferInsert;

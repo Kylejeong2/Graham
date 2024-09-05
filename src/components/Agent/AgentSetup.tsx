@@ -36,6 +36,7 @@ type Agent = {
     retellPhoneNumberId: string | null;
     areaCode: string;
     llmId: string;
+    llmWebsocketUrl: string;
 }
 
 type Voice = {
@@ -166,7 +167,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                 return;
             }
 
-            const updatedAgent = {
+            const updatedAgent: Agent = {
                 ...agentState,
                 llmId: LLM.llm_id,
                 llmWebsocketUrl: LLM.llm_websocket_url,
@@ -176,6 +177,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
             };
 
             try {
+                setAgentState(updatedAgent);
                 await saveData(updatedAgent);
             } catch (saveError: any) {
                 console.error("Error saving updated agent:", saveError);

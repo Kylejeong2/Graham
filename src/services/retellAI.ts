@@ -237,9 +237,12 @@ export const getRetellConcurrency = async (): Promise<number> => {
   }
 };
 
-export const createRetellPhoneCall = async (phoneNumber: string, agentId: string): Promise<any> => {
+export const createRetellPhoneCall = async (fromNumber: string, toNumber: string): Promise<any> => {
   try {
-    const response = await retellAxios.post('/create-phone-call', { phone_number: phoneNumber, agent_id: agentId });
+    const response = await retellAxios.post('/v2/create-phone-call', { 
+      from_number: fromNumber, 
+      to_number: toNumber,
+    });
     return response.data;
   } catch (error) {
     console.error('Error creating Retell phone call:', error);

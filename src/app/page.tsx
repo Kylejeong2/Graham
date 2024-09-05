@@ -9,6 +9,7 @@ import { HowItWorksSection } from "@/components/LandingPage/HowItWorksSection";
 import { PricingSection } from "@/components/LandingPage/PricingSection";
 import { TestimonialsSection } from "@/components/LandingPage/TestimonialsSection";
 import { CTASection } from "@/components/LandingPage/CTASection";
+import { WaitlistSection } from "@/components/LandingPage/WaitListSection";
 
 export default function Home() {
   // const { isSignedIn, isLoaded } = useUser();
@@ -29,10 +30,11 @@ export default function Home() {
       <main className="flex-1">
         <HeroSection />
         <FeaturesSection />
-        <HowItWorksSection />
-        <PricingSection />
-        <TestimonialsSection />
-        <CTASection />
+        {/* <HowItWorksSection /> */}
+        {/* <PricingSection /> */}
+        {/* <TestimonialsSection /> */}
+        {/* <CTASection /> */}
+        <WaitlistSection />
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t border-[#8B4513]">
         <p className="text-xs text-[#795548]">
