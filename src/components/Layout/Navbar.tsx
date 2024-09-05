@@ -4,7 +4,7 @@ import { UserButton } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { Phone } from "lucide-react"
 import { auth } from "@clerk/nextjs/server"
-import { MobileMenuToggle } from './MobileMenuToggle'
+import { MobileMenuToggle } from '../LandingPage/MobileMenuToggle'
 
 export async function Navbar() {
   const { userId } = await auth()
