@@ -12,7 +12,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 
   const body = await req.json();
-  const { name, phoneNumber, systemPrompt, isActive, voiceType, retellAgentId, retellPhoneNumberId, areaCode } = body;
+  const { name, phoneNumber, systemPrompt, llmId, llmWebsocketUrl, voiceType, retellAgentId, areaCode } = body;
 
   try {
     const updatedAgent = await db
@@ -21,11 +21,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         name,
         phoneNumber,
         systemPrompt,
-        isActive,
         voiceType,
         retellAgentId,
-        retellPhoneNumberId,
         areaCode,
+        llmId,
+        llmWebsocketUrl,
       })
       .where(eq($agents.id, params.id))
       .returning();

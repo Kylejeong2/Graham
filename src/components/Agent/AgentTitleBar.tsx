@@ -6,18 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import DeleteButton from '@/components/Common/DeleteButton';
 import { ArrowLeft, Edit2, Save, X } from 'lucide-react';
+import { UserType, AgentType } from '@/lib/db/schema';
 
 type Props = {
-  agent: {
-    userId: string;
-    id: string;
-    name: string;
-    createdAt: Date;
-  };
-  user: {
-    id: string;
-    name: string;
-  } | null;
+  agent: AgentType;
+  user: UserType;
 };
 
 export const AgentTitleBar: React.FC<Props> = ({ agent, user }) => {
@@ -45,7 +38,7 @@ export const AgentTitleBar: React.FC<Props> = ({ agent, user }) => {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <DeleteButton agentId={agentState.id}/>
+            <DeleteButton agentId={agentState.id as string}/>
           </div>
         </div>
         {error && <div className="text-red-500 mt-2">{error}</div>}

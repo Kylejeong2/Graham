@@ -18,9 +18,9 @@ export async function Navbar() {
           <h1 className="text-2xl font-bold text-[#8B4513]">Graham</h1>
         </Link>
       </div>
-      <NavLinks isSignedIn={isSignedIn} />
-      <UserActions isSignedIn={isSignedIn} userId={userId} />
-      <MobileMenuToggle />
+      {/* <NavLinks isSignedIn={isSignedIn} />
+      <UserActions isSignedIn={isSignedIn} userId={userId} /> */}
+      {/* <MobileMenuToggle /> */}
     </header>
   )
 }

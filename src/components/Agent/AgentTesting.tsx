@@ -7,15 +7,9 @@ import { Input } from "@/components/ui/input"
 import { PhoneCall, Send, User, Bot } from 'lucide-react';
 import { createRetellPhoneCall } from '@/services/retellAI';
 import { toast } from 'react-toastify';
+import { AgentType } from '@/lib/db/schema';
 
-interface Agent {
-    id: string;
-    name: string;
-    phoneNumber: string | null;
-    retellAgentId: string;
-}
-
-export const AgentTesting: React.FC<{ agent: Agent }> = ({ agent }) => {
+export const AgentTesting: React.FC<{ agent: AgentType }> = ({ agent }) => {
     const [customerMessage, setCustomerMessage] = useState('');
     const [conversation, setConversation] = useState<{ sender: 'customer' | 'agent', message: string }[]>([]);
     const [testPhoneNumber, setTestPhoneNumber] = useState('');
@@ -40,7 +34,7 @@ export const AgentTesting: React.FC<{ agent: Agent }> = ({ agent }) => {
 
         try {
             setIsCallInProgress(true);
-            const call = await createRetellPhoneCall(testPhoneNumber, agent.retellAgentId);
+            const call = await createRetellPhoneCall(testPhoneNumber, agent.retellAgentId as string);
             toast.success(`Test call initiated to ${testPhoneNumber}`);
             // You might want to update the UI or store the call information
         } catch (error) {

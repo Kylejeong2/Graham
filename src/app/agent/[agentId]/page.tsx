@@ -24,19 +24,12 @@ const AgentPage = async ({params: { agentId }}: Props) => {
         return redirect('/dashboard');
     }
 
-    const user = await db.select().from($users).where(eq($users.id, userId))
-
-    const serializedUser: UserType | null = user.length > 0 ? {
-        id: user[0].id, 
-        name: user[0].name ?? '',
-        email: user[0].email,
-        phoneNumbers: user[0].phoneNumbers as string[] ?? [],
-        createdAt: user[0].createdAt,
-        updatedAt: user[0].updatedAt,
-        emailVerified: user[0].emailVerified,
-        image: user[0].image,
-        stripeCustomerId: user[0].stripeCustomerId,
-    } : null; 
+    const userResult = await db.select().from($users).where(eq($users.id, userId));
+    const user: UserType | undefined = userResult[0];
+    
+    if(!user){
+        return redirect('/dashboard');
+    }
 
     const agents = await db.select().from($agents).where(
         and(
@@ -59,7 +52,7 @@ const AgentPage = async ({params: { agentId }}: Props) => {
         <div className='min-h-screen bg-[#F5E6D3] py-4 px-10'>
             <div className='max-w-8xl mx-auto space-y-4'>
                 <AgentTitleBar 
-                    user={serializedUser}
+                    user={user}
                     agent={agent}
                 />
 
@@ -85,7 +78,7 @@ const AgentPage = async ({params: { agentId }}: Props) => {
                         </TabsTrigger> */}
                     </TabsList>
                     <TabsContent value="setup" className="mt-6">
-                        <AgentSetup agent={agent} user={serializedUser} />
+                        <AgentSetup agent={agent} user={user} />
                     </TabsContent>
                     <TabsContent value="testing" className="mt-6">
                         <AgentTesting agent={agent} />

@@ -11,33 +11,10 @@ import { toast } from 'react-toastify';
 import { RETELL_VOICES } from '@/constants/voices';
 import { AGENT_TEMPLATES, AgentTemplate } from '@/constants/template';
 import { createRetellAgent, updateRetellPhoneNumber, getRetellLLM, createRetellLLM, updateRetellLLM } from '@/services/retellAI';
-import { $users } from '@/lib/db/schema';
+import { UserType } from '@/lib/db/schema';
 import { loadStripe } from '@stripe/stripe-js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-type User = {
-    id: string;
-    name: string;
-    phoneNumbers: string[];
-}
-
-type Agent = {
-    id: string;
-    name: string;
-    createdAt: Date;
-    userId: string;
-    phoneNumber: string;
-    systemPrompt: string;
-    isActive: boolean | null;
-    voiceType: string | null;
-    callHistory: unknown;
-    minutesUsed: number;
-    retellAgentId: string | null;
-    retellPhoneNumberId: string | null;
-    areaCode: string;
-    llmId: string;
-    llmWebsocketUrl: string;
-}
+import { AgentType } from '@/lib/db/schema';
 
 type Voice = {
     voice_id: string;
@@ -51,8 +28,8 @@ type Voice = {
     age?: string;
 }
 
-export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user }) => {
-    const [agentState, setAgentState] = useState<Agent>({
+export const AgentSetup: React.FC<{ agent: AgentType; user: UserType }> = ({ agent, user }) => {
+    const [agentState, setAgentState] = useState<AgentType>({
         ...agent,
         areaCode: agent.areaCode || '',
         systemPrompt: agent.systemPrompt || '',
@@ -66,13 +43,13 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
     const [creatingRetellAgent, setCreatingRetellAgent] = useState(false);
     const [audioPlayer, setAudioPlayer] = useState<HTMLAudioElement | null>(null);
     const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
-    const [userPhoneNumbers, setUserPhoneNumbers] = useState<string[]>(user.phoneNumbers || []);
+    const [userPhoneNumbers, setUserPhoneNumbers] = useState<string[]>(user.phoneNumbers as string[]);
     const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
     const [purchaseAreaCode, setPurchaseAreaCode] = useState('');
     const [isPurchasing, setIsPurchasing] = useState(false);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
-    const saveData = async (data: Agent) => {
+    const saveData = async (data: AgentType) => {
         try {
             setSaving(true);
             setError(null);
@@ -93,7 +70,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                 if(data.retellAgentId) {
                     if (data.systemPrompt) {
                         // Update the RetellAgent LLM
-                        await updateRetellLLM(agentState.llmId, {
+                        await updateRetellLLM(agentState.llmId as string, {
                             general_prompt: data.systemPrompt
                         });
                     }
@@ -157,7 +134,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
             let retellPhoneNumber;
             try {
                 const number = agentState.phoneNumber;
-                retellPhoneNumber = await updateRetellPhoneNumber(number, {
+                retellPhoneNumber = await updateRetellPhoneNumber(number as string, {
                     inbound_agent_id: retellAgent.agent_id,
                     outbound_agent_id: retellAgent.agent_id,
                 });
@@ -167,7 +144,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                 return;
             }
 
-            const updatedAgent: Agent = {
+            const updatedAgent: AgentType = {
                 ...agentState,
                 llmId: LLM.llm_id,
                 llmWebsocketUrl: LLM.llm_websocket_url,
@@ -366,7 +343,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                             <Label htmlFor="areaCode" className="text-[#5D4037]">Area Code *</Label>
                             <Input 
                                 id="areaCode" 
-                                value={agentState.areaCode} 
+                                value={agentState.areaCode as string} 
                                 onChange={(e) => {
                                     const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                                     setAgentState({ ...agentState, areaCode: String(value) });
@@ -460,7 +437,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                             </div>
                             <Textarea 
                                 id="systemPrompt" 
-                                value={agentState.systemPrompt} 
+                                value={agentState.systemPrompt as string} 
                                 onChange={(e) => setAgentState({ ...agentState, systemPrompt: e.target.value })} 
                                 placeholder="Enter instructions for your AI agent" 
                                 className="border-[#8B4513] text-[#5D4037] h-96" 
