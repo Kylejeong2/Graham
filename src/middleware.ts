@@ -5,11 +5,12 @@ const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)'])
 const isProfileRoute = createRouteMatcher(['/dashboard/profile/(.*)'])
 const isWebhookRoute = createRouteMatcher(['/api/webhook(.*)'])
 const isDemoCallRoute = createRouteMatcher(['/api/demo-call(.*)'])
+const isWaitlistRoute = createRouteMatcher(['/api/waitlist(.*)'])
 
 export default clerkMiddleware((auth, req) => {
   const isApiRoute = req.nextUrl.pathname.startsWith('/api/')
 
-  if (isWebhookRoute(req) || isDemoCallRoute(req)) {
+  if (isWebhookRoute(req) || isDemoCallRoute(req) || isWaitlistRoute(req)) {
     // Allow webhook and demo call requests to pass through without authentication
     return
   }
