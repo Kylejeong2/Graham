@@ -19,7 +19,7 @@ export function TestimonialsSection() {
                   ))}
                 </div>
                 <p className="text-[#795548] mb-4">
-                  "Graham has transformed how we handle customer calls. It's like having a full-time receptionist without the cost!"
+                  &ldquo;Graham has transformed how we handle customer calls. It&apos;s like having a full-time receptionist without the cost!&rdquo;
                 </p>
                 <p className="font-bold text-[#5D4037]">- Sarah J., Small Business Owner</p>
               </CardContent>

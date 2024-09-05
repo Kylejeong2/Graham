@@ -15,6 +15,7 @@ import { UserType } from '@/lib/db/schema';
 import { loadStripe } from '@stripe/stripe-js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AgentType } from '@/lib/db/schema';
+import Image from 'next/image';
 
 type Voice = {
     voice_id: string;
@@ -317,7 +318,7 @@ export const AgentSetup: React.FC<{ agent: AgentType; user: UserType }> = ({ age
         return () => {
             document.removeEventListener('keydown', handleEscape);
         };
-    }, []);
+    }, [closeVoiceModal]);
 
     return (
         <div className="grid grid-cols-2 gap-4">
@@ -524,7 +525,7 @@ export const AgentSetup: React.FC<{ agent: AgentType; user: UserType }> = ({ age
                             {voices.map((voice) => (
                                 <div key={voice.voice_id} className="border p-3 rounded-lg flex flex-col">
                                     <div className="flex items-center mb-2">
-                                        <img src={voice.avatar_url} alt={voice.voice_name} className="w-10 h-10 rounded-full mr-2" />
+                                        <Image src={voice.avatar_url} alt={voice.voice_name} className="w-10 h-10 rounded-full mr-2" />
                                         <h3 className="font-bold text-base text-black">{voice.voice_name}</h3>
                                     </div>
                                     <p className="text-sm text-black"><span className="font-semibold">Provider:</span> {voice.provider}</p>

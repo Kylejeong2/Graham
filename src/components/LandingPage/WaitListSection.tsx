@@ -59,7 +59,7 @@ export const WaitlistSection: React.FC = () => {
             <Alert className="mb-8 bg-[#8B4513] text-white">
               <AlertTitle>Success!</AlertTitle>
               <AlertDescription>
-                You've successfully joined our waitlist. We'll keep you updated on our progress!
+                You&apos;ve successfully joined our waitlist. We&apos;ll keep you updated on our progress!
               </AlertDescription>
             </Alert>
           )}

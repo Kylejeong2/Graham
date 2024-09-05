@@ -56,7 +56,7 @@ export const AgentTesting: React.FC<{ agent: AgentType }> = ({ agent }) => {
                 </CardHeader>
                 <CardContent className="pt-6">
                     <div className="space-y-4">
-                        <p className="text-[#5D4037]">Agent's phone number: <strong className="text-[#8B4513]">{agent.phoneNumber || 'Not set'}</strong></p>
+                        <p className="text-[#5D4037]">Agent&apos;s phone number: <strong className="text-[#8B4513]">{agent.phoneNumber || 'Not set'}</strong></p>
                         <div className="flex items-center space-x-2">
                             <Input 
                                 placeholder="Enter test phone number..." 

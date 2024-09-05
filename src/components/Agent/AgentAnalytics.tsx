@@ -113,7 +113,7 @@ export const AgentAnalytics: React.FC<{ agent: Agent }> = ({ agent }) => {
             </Card> */}
                 <div className="text-center flex flex-col items-center">
                     <h2 className="text-3xl font-bold text-[#8B4513] mb-4">Analytics Coming Soon</h2>
-                    <p className="text-xl text-[#5D4037]">We're working on bringing you insightful analytics for your agent.</p>
+                    <p className="text-xl text-[#5D4037]">We&apos;re working on bringing you insightful analytics for your agent.</p>
                     <p className="text-lg text-[#795548] mt-2">Stay tuned for exciting updates!</p>
                 </div>
         </div>
