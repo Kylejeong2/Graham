@@ -9,15 +9,13 @@ export const $agents = pgTable('agents', {
     userId: text('user_id').notNull().references(() => $users.id), 
     phoneNumber: text('phone_number'),
     systemPrompt: text('system_prompt'),
-    isActive: boolean('is_active').default(false),
-    businessHours: jsonb('business_hours'),
     voiceType: text('voice_type'),
     callHistory: jsonb('call_history'),
     customResponses: jsonb('custom_responses'),
     minutesUsed: numeric('minutes_used').default('0'),
     retellAgentId: text('retell_agent_id'),
-    retellPhoneNumberId: text('retell_phone_number_id'),
     llmWebsocketUrl: text('llm_websocket_url'),
+    llmId: text('llm_id'),
     agentName: text('agent_name'),
     voiceId: text('voice_id'),
     voiceModel: text('voice_model'),
@@ -64,6 +62,7 @@ export const $users = pgTable('users', {
     emailVerified: timestamp('email_verified'),
     image: text('image'),
     stripeCustomerId: text('stripe_customer_id'),
+    phoneNumbers: jsonb('phone_numbers').default('[]'),
 });
 
 export type AgentType = typeof $agents.$inferInsert;

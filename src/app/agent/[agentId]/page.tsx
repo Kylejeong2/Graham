@@ -1,6 +1,6 @@
 import { clerk } from '@/configs/clerk-server';
 import { db } from '@/lib/db';
-import { $agents } from '@/lib/db/schema';
+import { $agents, $users } from '@/lib/db/schema';
 import { auth } from '@clerk/nextjs/server';
 import { and, eq } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
@@ -33,18 +33,18 @@ type Agent = {
 }
 
 const AgentPage = async ({params: { agentId }}: Props) => {
-    const {userId} = await auth()
+    const {userId} = auth()
     
     if (!userId){
         return redirect('/dashboard');
     }
 
-    const user = await clerk.users.getUser(userId);
+    const user = await db.select().from($users).where(eq($users.id, userId))
 
     const serializedUser = user ? {
-        id: user.id, 
-        firstName: user.firstName,
-        lastName: user.lastName,
+        id: user[0].id, 
+        name: user[0].name,
+        phoneNumbers: user[0].phoneNumbers as string[]
     } : null; 
 
     const agents = await db.select().from($agents).where(
@@ -53,22 +53,27 @@ const AgentPage = async ({params: { agentId }}: Props) => {
             eq($agents.userId, userId)
     ))
 
-    if (agents.length != 1) {
+    if (agents.length !== 1) {
         return redirect('/dashboard');
     }
 
     const agent: Agent = agents[0];
 
+    // Ensure the logged-in user owns the agent
+    if (agent.userId !== userId) {
+        return redirect('/dashboard');
+    }
+
     return (
-        <div className='min-h-screen bg-[#F5E6D3] p-8'>
-            <div className='max-w-6xl mx-auto space-y-8'>
+        <div className='min-h-screen bg-[#F5E6D3] py-4 px-10'>
+            <div className='max-w-8xl mx-auto space-y-4'>
                 <AgentTitleBar 
                     user={serializedUser}
                     agent={agent}
                 />
 
                 <Tabs defaultValue="setup" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 bg-[#E6CCB2] p-1 rounded-lg shadow-md">
+                    <TabsList className="grid w-full grid-cols-2 bg-[#E6CCB2] p-1 rounded-lg shadow-md">
                         <TabsTrigger 
                             value="setup"
                             className="data-[state=active]:bg-[#8B4513] data-[state=active]:text-white"
@@ -81,22 +86,22 @@ const AgentPage = async ({params: { agentId }}: Props) => {
                         >
                             Testing
                         </TabsTrigger>
-                        <TabsTrigger 
+                        {/* <TabsTrigger 
                             value="analytics"
                             className="data-[state=active]:bg-[#8B4513] data-[state=active]:text-white"
                         >
                             Analytics
-                        </TabsTrigger>
+                        </TabsTrigger> */}
                     </TabsList>
                     <TabsContent value="setup" className="mt-6">
-                        <AgentSetup agent={agent} />
+                        <AgentSetup agent={agent} user={serializedUser} />
                     </TabsContent>
                     <TabsContent value="testing" className="mt-6">
                         <AgentTesting agent={agent} />
                     </TabsContent>
-                    <TabsContent value="analytics" className="mt-6">
+                    {/* <TabsContent value="analytics" className="mt-6">
                         <AgentAnalytics agent={agent} />
-                    </TabsContent>
+                    </TabsContent> */}
                 </Tabs>
             </div>
         </div>

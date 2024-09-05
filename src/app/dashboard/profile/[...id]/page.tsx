@@ -189,13 +189,19 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
                       <Separator className="bg-[#8B4513] opacity-20" />
                       {subscription.subscriptionCancelAt && (
                         <>
-                          <Separator className="bg-[#8B4513] opacity-20" />
                           <div className="flex justify-between items-center text-[#A0522D]">
                             <span className="text-lg font-medium">Cancellation Date</span>
                             <span className="text-lg">{new Date(subscription.subscriptionCancelAt).toLocaleDateString()}</span>
                           </div>
+                          <Separator className="bg-[#8B4513] opacity-20" />
                         </>
                       )}
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-medium text-[#5D4037]">Phone Numbers</span>
+                        <span className="text-lg text-[#5D4037]">
+                          {JSON.stringify(user?.phoneNumbers, null, 2)}
+                        </span>
+                      </div>
                       <div className="mt-6">
                         <p className="text-lg font-medium text-[#5D4037] mb-2">Usage This Month</p>
                         <Progress value={65} className="h-3 bg-[#E6CCB2]" />
