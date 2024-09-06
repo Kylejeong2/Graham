@@ -13,6 +13,7 @@
     "@auth/mongodb-adapter": "^2.0.0",
     "@clerk/nextjs": "^5.3.1",
     "@motionone/utils": "^10.16.3",
+    "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-avatar": "^1.1.0",
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.1",

@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const user = await clerk.users.getUser(userId);
     
     // Check the user's metadata for subscription status and type
-    const hasSubscription = user.publicMetadata.hasSubscription === true;
+    const hasSubscription = user.privateMetadata.subscriptionStatus === "active";
 
     return NextResponse.json({ hasSubscription });
 
