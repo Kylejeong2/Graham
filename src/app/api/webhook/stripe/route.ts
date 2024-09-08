@@ -101,7 +101,7 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event) {
     const areaCode = session.metadata?.areaCode;
     const buyPhoneNumber = session.metadata?.phoneNumber;
     let phoneNumber;
-    
+
     if(buyPhoneNumber) {
       try {
         const response = await createRetellPhoneNumber({
@@ -131,7 +131,6 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event) {
           isYearly: isYearly,
           subscriptionStatus: subscription.status,
           subscriptionCancelAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000).toISOString() : null,
-          ...(phoneNumber ? { phoneNumbers: { push: phoneNumber } } : {}),
         },
       });
       console.log(`Clerk User ${userId} updated successfully`);
@@ -146,17 +145,10 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event) {
         isYearly: isYearly,
         subscriptionStatus: subscription.status,
         subscriptionCancelAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null,
-        ...(phoneNumber ? { phoneNumbers: { push: phoneNumber } } : {}),
+        ...(buyPhoneNumber ? { phoneNumbers: { push: { phoneNumber } } } : {}),
       }).where(eq($users.id, userId));
       console.log(`Database User ${userId} updated successfully`);
 
-      // Update agent with phone number if provided
-      if (phoneNumber && userId) {
-        await db.update($users)
-          .set({ phoneNumbers: { push: { phoneNumber } } })
-          .where(eq($users.id, userId));
-        console.log(`Added phone number to user ${userId}`);
-      }
     } catch (error) {
       console.error('Error updating user in Clerk or agent in database:', error);
       throw new Error('Failed to update user or agent data');
@@ -223,6 +215,7 @@ async function handleSubscriptionChange(event: Stripe.Event) {
 
 async function handleSubscriptionDeleted(event: Stripe.Event) {
   const subscription = event.data.object as Stripe.Subscription;
+  const isDeleteNumber = subscription.metadata?.isDeleteNumber;
   const phoneNumber = subscription.metadata?.phoneNumber;
 
   const userId = subscription.metadata?.userId;
@@ -239,7 +232,7 @@ async function handleSubscriptionDeleted(event: Stripe.Event) {
     throw new Error('Failed to fetch user data');
   }
 
-  if (user) {
+  if (user && isDeleteNumber) {
     try {
       // Delete the Retell phone number
       const res = await deleteRetellPhoneNumber(phoneNumber);
@@ -277,7 +270,6 @@ async function handleSubscriptionDeleted(event: Stripe.Event) {
           isYearly: null,
           subscriptionStatus: 'canceled',
           subscriptionCancelAt: null,
-          phoneNumbers: (user.privateMetadata.phoneNumbers as string[]).filter(number => number !== phoneNumber),
         },
       });
       console.log(`Clerk User ${userId} updated successfully after subscription cancellation`);
