@@ -221,8 +221,9 @@ export const AgentSetup: React.FC<{ agent: AgentType; user: UserType }> = ({ age
                     isYearly: false,
                     userId: user?.id,
                     successUrl: `${baseUrl}/agent/${agent.id}`,
-                    cancelUrl: `${baseUrl}/agent/${agent.id}`,
+                    cancelUrl: `${baseUrl}/agent/error`,
                     areaCode: purchaseAreaCode,
+                    phoneNumber: true,
                 }),
             });
 

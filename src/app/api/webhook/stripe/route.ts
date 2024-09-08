@@ -99,23 +99,27 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event) {
     const planName = session.metadata?.plan;
     const isYearly = session.metadata?.isYearly === 'true';
     const areaCode = session.metadata?.areaCode;
-    let phoneNumber: string;
-
-    try {
-      const response = await createRetellPhoneNumber({
-        area_code: areaCode,
-        nickname: `Phone Number for ${user.firstName} ${user.lastName}`,
-      });
-      phoneNumber = response.phone_number;
-    } catch (error) {
-      console.error('Error fetching phone number by area code:', error);
-      throw new Error('Failed to fetch phone number by area code');
+    const buyPhoneNumber = session.metadata?.phoneNumber;
+    let phoneNumber;
+    
+    if(buyPhoneNumber) {
+      try {
+        const response = await createRetellPhoneNumber({
+          area_code: areaCode,
+          nickname: `Phone Number for ${user.firstName} ${user.lastName}`,
+        });
+        phoneNumber = response.phone_number;
+      } catch (error) {
+        console.error('Error fetching phone number by area code:', error);
+        throw new Error('Failed to fetch phone number by area code');
+        }
     }
 
     try {
       // Cancel any existing subscriptions
       await cancelExistingSubscriptions(customerId, subscription.id);
 
+      // Update Clerk user data
       await clerk.users.updateUser(userId, {
         privateMetadata: {
           ...user.privateMetadata,
@@ -130,7 +134,21 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event) {
           ...(phoneNumber ? { phoneNumbers: { push: phoneNumber } } : {}),
         },
       });
-      console.log(`User ${userId} updated successfully`);
+      console.log(`Clerk User ${userId} updated successfully`);
+
+      // Update database user data
+      await db.update($users).set({
+        stripeSubscriptionId: subscription.id,
+        stripePriceId: subscription.items.data[0].price.id,
+        stripeCustomerId: customerId,
+        stripeCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        subscriptionName: `${planName} Plan`,
+        isYearly: isYearly,
+        subscriptionStatus: subscription.status,
+        subscriptionCancelAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null,
+        ...(phoneNumber ? { phoneNumbers: { push: phoneNumber } } : {}),
+      }).where(eq($users.id, userId));
+      console.log(`Database User ${userId} updated successfully`);
 
       // Update agent with phone number if provided
       if (phoneNumber && userId) {
@@ -169,6 +187,7 @@ async function handleSubscriptionChange(event: Stripe.Event) {
 
   if (user) {
     try {
+      // Update Clerk user data
       await clerk.users.updateUser(userId, {
         privateMetadata: {
           ...user.privateMetadata,
@@ -180,9 +199,20 @@ async function handleSubscriptionChange(event: Stripe.Event) {
           subscriptionCancelAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000).toISOString() : null,
         },
       });
-      console.log(`User ${userId} updated successfully`);
+      console.log(`Clerk User ${userId} updated successfully`);
+
+      // Update database user data
+      await db.update($users).set({
+        stripeSubscriptionId: subscription.id,
+        stripePriceId: subscription.items.data[0].price.id,
+        stripeCustomerId: customerId,
+        stripeCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        subscriptionStatus: subscription.status,
+        subscriptionCancelAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null,
+      }).where(eq($users.id, userId));
+      console.log(`Database User ${userId} updated successfully`);
     } catch (error) {
-      console.error('Error updating user in Clerk:', error);
+      console.error('Error updating user in Clerk or database:', error);
       throw new Error('Failed to update user data');
     }
   } else {
@@ -235,7 +265,7 @@ async function handleSubscriptionDeleted(event: Stripe.Event) {
   
 
     try {
-      // Update user metadata in Clerk
+      // Update Clerk user data
       await clerk.users.updateUser(userId, {
         privateMetadata: {
           ...user.privateMetadata,
@@ -250,9 +280,23 @@ async function handleSubscriptionDeleted(event: Stripe.Event) {
           phoneNumbers: (user.privateMetadata.phoneNumbers as string[]).filter(number => number !== phoneNumber),
         },
       });
-      console.log(`User ${userId} updated successfully after subscription cancellation`);
+      console.log(`Clerk User ${userId} updated successfully after subscription cancellation`);
+
+      // Update database user data
+      await db.update($users).set({
+        stripeSubscriptionId: null,
+        stripePriceId: null,
+        stripeCustomerId: null,
+        stripeCurrentPeriodEnd: null,
+        subscriptionName: null,
+        isYearly: null,
+        subscriptionStatus: 'canceled',
+        subscriptionCancelAt: null,
+        phoneNumbers: { pull: phoneNumber },
+      }).where(eq($users.id, userId));
+      console.log(`Database User ${userId} updated successfully after subscription cancellation`);
     } catch (error) {
-      console.error('Error updating user in Clerk:', error);
+      console.error('Error updating user in Clerk or database:', error);
       throw new Error('Failed to update user data');
     }
   } else {

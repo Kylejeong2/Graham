@@ -63,6 +63,14 @@ export const $users = pgTable('users', {
     image: text('image'),
     stripeCustomerId: text('stripe_customer_id'),
     phoneNumbers: jsonb('phone_numbers').default('[]'),
+    isYearly: boolean('is_yearly').default(false),
+    stripePriceId: text('stripe_price_id'),
+    subscriptionName: text('subscription_name'),
+    subscriptionStatus: text('subscription_status'),
+    stripeSubscriptionId: text('stripe_subscription_id'),
+    subscriptionCancelAt: timestamp('subscription_cancel_at'),
+    stripeCurrentPeriodEnd: timestamp('stripe_current_period_end'),
+    phoneNumberSubscriptionData: jsonb('phone_number_subscription_data').default('{}').notNull(),
 });
 
 export const $waitlist = pgTable('waitlist', {
