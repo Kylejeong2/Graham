@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
 import { ArrowLeft, Plus, Coffee } from 'lucide-react';
 import { auth } from '@clerk/nextjs/server';
-import { cookies } from 'next/headers';
 import { eq } from 'drizzle-orm';
 
 import { CreateAgent } from '@/components/Common/CreateAgent';
@@ -57,7 +56,7 @@ const DashboardPage = async (props: Props) => {
                 ) : (
                     <div className='space-y-6'>
                         <div className='grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
-                            {(agents.length < 1 || isSubscribed) && (
+                            {(agents.length < 1 && isSubscribed) && (
                                 <Card className='bg-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center h-[200px]'>
                                     <CardContent>
                                         <CreateAgent>
@@ -90,15 +89,14 @@ const DashboardPage = async (props: Props) => {
                                 </Link>
                             ))}
                         </div>
-                        
-                        {agents.length >= 1 && !isSubscribed && (
+                        {(agents.length >= 1 || !isSubscribed) && (
                             <Card className='bg-[#E6CCB2] border-[#8B4513] shadow-lg max-w-2xl mx-auto'>
                                 <CardContent className='p-6'>
                                     <h3 className='text-2xl font-semibold text-[#8B4513] mb-2'>Unlock More Agents!</h3>
-                                    <p className="text-[#5D4037] mb-4">You&apos;ve created your first Agent. Subscribe now to create unlimited Agents and access premium features.</p>
+                                    <p className="text-[#5D4037] mb-4">You&apos;ve created your first Agent. You'll need an enterprise plan for more agents.</p>
                                     <Link href="/subscription">
                                         <Button className="w-full bg-[#8B4513] hover:bg-[#A0522D] text-white font-semibold py-3 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
-                                            Upgrade to Premium
+                                            Upgrade to Enterprise
                                         </Button>
                                     </Link>
                                 </CardContent>

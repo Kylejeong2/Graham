@@ -24,19 +24,22 @@ const PricingSwitch = ({ onSwitch }: { onSwitch: (value: string) => void }) => (
 )
 
 export default function SubscriptionPage() {
-  const [isYearly, setIsYearly] = useState(false)
-  const togglePricingPeriod = (value: string) => setIsYearly(parseInt(value) === 1)
   const router = useRouter()
   const { user, isSignedIn } = useUser()
   const { subscription, loading, error } = useSubscriptions()
 
-  const handleSubscribe = async (plan: string, price: number) => {
+  const handleSubscribe = async (planId: string) => {
     if (!isSignedIn) {
       router.push('/sign-in')
       return
     }
 
-    if (subscription && subscription.subscriptionStatus === 'active') {
+    if (planId === 'enterprise') {
+      router.push('/contact')
+      return
+    }
+
+    if (subscription && subscription.status === 'active') {
       toast.error('You already have an active subscription. Please manage your subscription in your profile.')
       return
     }
@@ -55,24 +58,29 @@ export default function SubscriptionPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          plan,
-          price,
-          isYearly,
+          planId,
           userId: user?.id,
           successUrl: `${baseUrl}/dashboard/profile/${user?.id}`,
           cancelUrl: `${baseUrl}/subscription`,
         }),
       })
 
-      if (!response.ok) throw new Error('Failed to create checkout session')
+      if (!response.ok) throw new Error('Failed to create subscription')
 
-      const { sessionId } = await response.json()
+      const { clientSecret } = await response.json()
       const stripe = await loadStripe(stripePk)
       if (!stripe) throw new Error('Failed to load Stripe')
-      await stripe.redirectToCheckout({ sessionId })
+      
+      const result = await stripe.confirmCardPayment(clientSecret)
+      if (result.error) {
+        toast.error(result.error.message || 'Failed to confirm payment')
+      } else {
+        toast.success('Subscription created successfully')
+        router.push(`/dashboard/profile/${user?.id}`)
+      }
     } catch (error) {
-      console.error('Error creating checkout session:', error)
-      toast.error('Failed to start checkout. Please try again.')
+      console.error('Error creating subscription:', error)
+      toast.error('Failed to create subscription. Please try again.')
     }
   }
 
@@ -101,7 +109,7 @@ export default function SubscriptionPage() {
     }
   }
 
-  const isSubscribed = isSignedIn && subscription && subscription.subscriptionName !== "Free Plan"
+  const isSubscribed = isSignedIn && subscription && subscription.status === "active";
 
   return (
     <div className="min-h-screen bg-[#E6CCB2]">
@@ -109,53 +117,34 @@ export default function SubscriptionPage() {
         <h1 className="text-4xl font-bold text-center text-[#5D4037] mb-12">
           Choose Your Subscription Plan
         </h1>
-        <PricingSwitch onSwitch={togglePricingPeriod} />
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 mt-12">
-          {plans.map((plan) => {
-            const isPlanSubscribed = isSignedIn && (subscription?.subscriptionName?.startsWith(plan.title) ?? false)
-            const isCurrentPlan = isPlanSubscribed && subscription?.isYearly === isYearly
-
-            return (
-              <Card key={plan.title} className="bg-[#F5E6D3]">
-                <CardContent className="p-6">
-                  <h3 className="text-2xl font-bold text-[#5D4037] mb-2">{plan.title}</h3>
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-2 mt-12">
+          {plans.map((plan) => (
+            <Card key={plan.id} className="bg-[#F5E6D3]">
+              <CardContent className="p-6">
+                <h3 className="text-2xl font-bold text-[#5D4037] mb-2">{plan.title}</h3>
+                {plan.basePrice !== undefined && (
                   <p className="text-4xl font-bold text-[#8B4513] mb-4">
-                    ${isYearly ? plan.yearlyPrice : plan.monthlyPrice}/{isYearly ? 'yr' : 'mo'}
+                    ${plan.basePrice}/mo + ${plan.pricePerMinute.toFixed(2)}/min
                   </p>
-                  <p className="text-[#795548] mb-4">{plan.description}</p>
-                  <ul className="space-y-2 mb-6">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-center text-[#795548]">
-                        <Check className="mr-2 h-4 w-4 text-[#8B4513]" /> {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button 
-                    className={cn(
-                      "w-full bg-[#8B4513] text-white hover:bg-[#A0522D]",
-                      isCurrentPlan && "bg-gray-400 hover:bg-gray-400 cursor-not-allowed"
-                    )}
-                    onClick={isSignedIn 
-                      ? (subscription?.subscriptionStatus === 'active' 
-                        ? handleManageSubscription 
-                        : () => handleSubscribe(plan.title, isYearly ? plan.yearlyPrice ?? 0 : plan.monthlyPrice ?? 0))
-                      : () => router.push('/sign-in')}
-                    disabled={isCurrentPlan}
-                  >
-                    {!isSignedIn
-                      ? "Sign In to Subscribe"
-                      : subscription.subscriptionStatus !== 'active'
-                        ? "Subscribe"
-                        : isCurrentPlan
-                          ? "Current Plan"
-                          : isSubscribed
-                            ? "Manage Subscription"
-                            : "Get Started"}
-                  </Button>
-                </CardContent>
-              </Card>
-            )
-          })}
+                )}
+                <p className="text-[#795548] mb-4">{plan.description}</p>
+                <ul className="space-y-2 mb-6">
+                  {plan.features.map((feature, index) => (
+                    <li key={index} className="flex items-center text-[#795548]">
+                      <Check className="mr-2 h-4 w-4 text-[#8B4513]" /> {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Button 
+                  className="w-full bg-[#8B4513] text-white hover:bg-[#A0522D]"
+                  onClick={() => subscription?.status === "active" ? handleManageSubscription() : handleSubscribe(plan.id)}
+                  disabled={plan.id === subscription?.planId} 
+                >
+                  {subscription && subscription.status === "active" ? "Manage Subscription" : (plan.id === 'enterprise' ? "Contact Us" : "Subscribe")}
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </main>
     </div>

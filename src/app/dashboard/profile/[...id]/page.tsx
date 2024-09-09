@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react"
 import { useUser, useClerk } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import useSubscriptions from "@/hooks/getSubscriptionData"
@@ -36,7 +36,7 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
       router.push('/sign-in')
-    }
+    } 
   }, [isLoaded, isSignedIn, router])
 
   const handleManageSubscription = async () => {
@@ -139,28 +139,28 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5E6D3] text-[#5D4037] py-12">
+    <div className="min-h-screen bg-[#F5E6D3] text-[#5D4037] py-6">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="bg-white shadow-xl rounded-lg overflow-hidden mb-8">
-          <CardHeader className="bg-[#8B4513] text-white p-8">
-            <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
-              <Avatar className="w-24 h-24 border-4 border-white">
+          <CardHeader className="bg-[#8B4513] text-white p-4">
+            <div className="flex items-center space-x-4">
+              <Avatar className="w-16 h-16 border-2 border-white">
                 <AvatarImage src={user?.imageUrl} />
-                <AvatarFallback className="bg-[#A0522D] text-white text-3xl">
+                <AvatarFallback className="bg-[#A0522D] text-white text-xl">
                   {user?.firstName?.[0]}{user?.lastName?.[0]}
                 </AvatarFallback>
               </Avatar>
-              <div className="text-center md:text-left">
-                <CardTitle className="text-4xl font-bold mb-2 text-white">{user?.firstName} {user?.lastName}</CardTitle>
-                <p className="text-white flex items-center justify-center md:justify-start text-lg">
-                  <Mail className="mr-2 w-5 h-5" /> {user?.primaryEmailAddress?.emailAddress}
+              <div>
+                <CardTitle className="text-2xl font-bold text-white">{user?.firstName} {user?.lastName}</CardTitle>
+                <p className="text-sm text-white flex items-center">
+                  <Mail className="mr-1 w-4 h-4" /> {user?.primaryEmailAddress?.emailAddress}
                 </p>
-                <p className="text-white flex items-center justify-center md:justify-start mt-2 text-lg">
-                  <Phone className="mr-2 w-5 h-5" /> {user?.phoneNumbers[0]?.phoneNumber || 'No phone number'}
+                <p className="text-sm text-white flex items-center">
+                  <Phone className="mr-1 w-4 h-4" /> {user?.phoneNumbers[0]?.phoneNumber || 'No phone number'}
                 </p>
               </div>
             </div>
-          </CardHeader>
+          </CardHeader> 
           <CardContent className="p-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <Card className="col-span-2 bg-white">

@@ -49,7 +49,8 @@ export const $usageRecords = pgTable('usage_records', {
     id: uuid('id').primaryKey().defaultRandom(),
     userId: text('user_id').notNull().references(() => $users.id),
     agentId: uuid('agent_id').notNull().references(() => $agents.id),
-    minutesUsed: numeric('minutes_used').notNull(),
+    secondsUsed: numeric('seconds_used').notNull(),
+    voiceType: text('voice_type').notNull(),
     timestamp: timestamp('timestamp').notNull().defaultNow(),
 });
 
@@ -85,6 +86,11 @@ export const $leads = pgTable('leads', {
     email: text('email').notNull().unique(),
     phoneNumber: text('phone_number').notNull(),
     createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const $userSettings = pgTable('user_settings', {
+    userId: text('user_id').primaryKey().references(() => $users.id),
+    stopLossAmount: numeric('stop_loss_amount'),
 });
 
 export type AgentType = typeof $agents.$inferInsert;

@@ -19,7 +19,7 @@ export async function POST(req: Request) {
       const customer = await stripe.customers.create({
         email: user.emailAddresses[0].emailAddress,
         name: `${user.firstName} ${user.lastName}`,
-      }).catch(error => {
+      }).catch((error: any) => {
         console.error('Error creating Stripe customer:', error)
         throw new Error('Failed to create Stripe customer')
       })
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
           source: 'web_app',
         },
       },
-    }).catch(error => {
+    }).catch((error: any) => {
       console.error('Error creating Stripe checkout session:', error)
       throw new Error('Failed to create checkout session')
     })

@@ -28,7 +28,7 @@ export const CreateAgent: React.FC<Props> = ({ children }) => {
             setIsSubscribed(data.hasSubscription);
         };
         const checkAgentCount = async () => {
-            const res = await fetch('/api/getAgentCount');
+            const res = await fetch('/api/agent/getAgentCount');
             const data = await res.json();
             setAgentCount(data.count);
         }
@@ -42,7 +42,7 @@ export const CreateAgent: React.FC<Props> = ({ children }) => {
                 router.push('/subscription');
                 return;
             }
-            const response = await axios.post('/api/createAgent', {
+            const response = await axios.post('/api/agent/createAgent', {
                 name: input,
                 characteristics: characteristics
             })

@@ -4,24 +4,22 @@ export const plans = [
       title: "Starter",
       monthlyPrice: 49,
       yearlyPrice: 490,
-      description: "Perfect for small businesses",
-      features: ["Up to 100 minutes/month", "Basic call routing", "Email support"],
+      description: "Perfect for small local businesses",
       minutesAllowed: 100,
-    },
-    {
-      id: "professional",
-      title: "Professional",
-      monthlyPrice: 99,
-      yearlyPrice: 990,
-      description: "Ideal for growing companies",
-      features: ["Up to 500 minutes/month", "Advanced call routing", "Priority support"],
-      minutesAllowed: 500,
+      basePrice: 0,
+      pricePerMinute: 0.15,
+      features: [
+        "Pay only for what you use",
+        "Standard voices",
+        "Basic call routing",
+        "Email support"
+      ],
     },
     {
       id: "enterprise",
       title: "Enterprise",
       description: "Custom solutions for large organizations",
-      features: ["Unlimited minutes", "Custom integrations", "Dedicated account manager"],
+      features: ["Way more minutes", "Custom integrations/features", "The latest tech the fastest"],
       minutesAllowed: 999999, // Effectively unlimited
     },
   ]

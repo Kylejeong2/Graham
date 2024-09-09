@@ -1,4 +1,3 @@
-import { clerk } from '@/configs/clerk-server';
 import { db } from '@/lib/db';
 import { $agents, $users, AgentType, UserType } from '@/lib/db/schema';
 import { auth } from '@clerk/nextjs/server';
@@ -6,7 +5,7 @@ import { and, eq } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 import React from 'react'
 import { AgentTitleBar } from '@/components/Agent/AgentTitleBar';
-import { AgentSetup } from '@/components/Agent/AgentSetup';
+import { AgentEditing } from '@/components/Agent/AgentEditing';
 import { AgentTesting } from '@/components/Agent/AgentTesting';
 import { AgentAnalytics } from '@/components/Agent/AgentAnalytics';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -78,7 +77,7 @@ const AgentPage = async ({params: { agentId }}: Props) => {
                         </TabsTrigger> */}
                     </TabsList>
                     <TabsContent value="setup" className="mt-6">
-                        <AgentSetup agent={agent} user={user} />
+                        <AgentEditing agent={agent} user={user} />
                     </TabsContent>
                     <TabsContent value="testing" className="mt-6">
                         <AgentTesting agent={agent} />

@@ -28,7 +28,7 @@ const DeleteButton = ({agentId}: Props) => {
 
     const deleteAgent = useMutation({
       mutationFn: async () => {
-        const response = await axios.post('/api/deleteAgent', {
+        const response = await axios.post('/api/agent/deleteAgent', {
             agentId,
             deletePhoneNumber
         })
