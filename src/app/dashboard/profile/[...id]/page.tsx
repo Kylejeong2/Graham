@@ -10,10 +10,11 @@ import { Progress } from "@/components/ui/progress"
 import useSubscriptions from "@/hooks/getSubscriptionData"
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-toastify'
-import { Loader2, User, Mail, CreditCard, Calendar, AlertTriangle, LogOut, Package, Phone, Bell, Shield, ChevronRight, Eye, EyeOff } from "lucide-react"
+import { Loader2, User, Mail, CreditCard, AlertTriangle, LogOut, Package, Phone, Bell, Shield, ChevronRight, Eye, EyeOff } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PaymentElementWrapper } from '@/components/PaymentElement'
 
 const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
   const { user, isLoaded, isSignedIn } = useUser()
@@ -165,21 +166,21 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <Card className="col-span-2 bg-white">
                 <CardHeader>
-                  <CardTitle className="text-2xl font-semibold text-[#8B4513] flex items-center">
+                  <CardTitle className="text-xl font-semibold text-[#8B4513] flex items-center">
                     <Package className="mr-3 w-6 h-6" /> Subscription Details
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {subscription ? (
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <span className="text-lg font-medium text-[#5D4037]">Plan</span>
-                        <span className="text-xl font-bold text-[#8B4513]">{subscription.subscriptionName}</span>
+                        <span className="text-md font-medium text-[#5D4037]">Plan</span>
+                        <span className="text-md font-bold text-[#8B4513]">{subscription.subscriptionName}</span>
                       </div>
                       <Separator className="bg-[#8B4513] opacity-20" />
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-medium text-[#5D4037]">Billing Cycle</span>
-                        <span className="text-lg text-[#5D4037]">{subscription?.isYearly ? 'Yearly' : 'Monthly'}</span>
+                        <span className="text-md text-[#5D4037]">{subscription?.isYearly ? 'Yearly' : 'Monthly'}</span>
                       </div>
                       <Separator className="bg-[#8B4513] opacity-20" />
                       <div className="flex justify-between items-center">
@@ -202,12 +203,13 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
                           {JSON.stringify(user?.phoneNumbers, null, 2)}
                         </span>
                       </div>
-                      <div className="mt-6">
+                      <Separator className="bg-[#8B4513] opacity-20" />
+                      {/* <div className="mt-6">
                         <p className="text-lg font-medium text-[#5D4037] mb-2">Usage This Month</p>
                         <Progress value={65} className="h-3 bg-[#E6CCB2]" />
                         <div className="bg-[#8B4513] h-3 rounded-full" style={{ width: '65%' }}></div>
                         <p className="text-right text-sm text-[#5D4037] mt-1">650 / 1000 calls</p>
-                      </div>
+                      </div> */}
                       <Button onClick={handleManageSubscription} className="w-full mt-6 bg-[#8B4513] hover:bg-[#A0522D] text-white text-lg py-6">
                         <CreditCard className="mr-2 w-5 h-5" /> Manage Subscription
                       </Button>
@@ -243,7 +245,7 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
                     </Button>
                   </CardContent>
                 </Card>
-                <Card className="bg-white">
+                {/* <Card className="bg-white">
                   <CardHeader>
                     <CardTitle className="text-xl font-semibold text-[#8B4513] flex items-center">
                       <Bell className="mr-2 w-5 h-5" /> Notifications
@@ -265,12 +267,12 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
+                </Card> */}
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-white shadow-xl rounded-lg overflow-hidden">
+        {/* <Card className="bg-white shadow-xl rounded-lg overflow-hidden">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-[#8B4513] flex items-center">
               <Shield className="mr-3 w-6 h-6" /> Security & Privacy
@@ -309,7 +311,10 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
+        <div className="mt-8 max-w-6xl mx-auto">
+          <PaymentElementWrapper />
+        </div>
       </div>
 
       {/* Edit Profile Dialog */}
@@ -410,6 +415,7 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   )
 }

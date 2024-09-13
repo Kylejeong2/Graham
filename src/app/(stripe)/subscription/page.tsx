@@ -1,12 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Check, Loader2 } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { cn } from "@/lib/utils"
 import { useRouter } from 'next/navigation'
 import { useUser } from "@clerk/nextjs"
 import { loadStripe } from '@stripe/stripe-js'
@@ -58,29 +56,32 @@ export default function SubscriptionPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          planId,
+          planId: process.env.NODE_ENV === 'production' ? 'prod_Qq6JRjPaF15zWq' : 'prod_QoXITUgsloBAwz',
           userId: user?.id,
           successUrl: `${baseUrl}/dashboard/profile/${user?.id}`,
           cancelUrl: `${baseUrl}/subscription`,
         }),
       })
 
-      if (!response.ok) throw new Error('Failed to create subscription')
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to create subscription')
+      }
 
-      const { clientSecret } = await response.json()
+      const { sessionId } = await response.json()
       const stripe = await loadStripe(stripePk)
       if (!stripe) throw new Error('Failed to load Stripe')
       
-      const result = await stripe.confirmCardPayment(clientSecret)
+      const result = await stripe.redirectToCheckout({ sessionId })
       if (result.error) {
-        toast.error(result.error.message || 'Failed to confirm payment')
+        toast.error(result.error.message || 'Failed to redirect to checkout')
       } else {
         toast.success('Subscription created successfully')
         router.push(`/dashboard/profile/${user?.id}`)
       }
     } catch (error) {
       console.error('Error creating subscription:', error)
-      toast.error('Failed to create subscription. Please try again.')
+      toast.error(error instanceof Error ? error.message : 'Failed to create subscription. Please try again.')
     }
   }
 

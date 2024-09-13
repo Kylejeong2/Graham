@@ -16,7 +16,9 @@ export async function POST(req: NextRequest) {
     await db.insert($usageRecords).values({
       userId,
       agentId,
-      minutesUsed: minutes,
+      minutesUsed: minutes.toString(),
+      secondsUsed: (minutes * 60).toString(),
+      voiceType: 'text-to-speech',
     });
 
     return NextResponse.json({ success: true });

@@ -33,7 +33,8 @@ export async function POST(req: NextRequest) {
     await db.insert($usageRecords).values({
       userId,
       agentId,
-      secondsUsed: seconds,
+      secondsUsed: seconds.toString(),
+      minutesUsed: roundedMinutes.toString(),
       voiceType,
     });
 

@@ -174,9 +174,26 @@ async function handleSubscriptionChange(event: Stripe.Event) {
   const subscription = event.data.object as Stripe.Subscription;
   const customerId = subscription.customer as string;
 
-  const userId = subscription.metadata?.userId;
+  if (!customerId) {
+    console.error('No customerId found in subscription');
+    throw new Error('No customerId found');
+  }
+
+  let userId: string | undefined;
+
+  // Try to get userId from subscription metadata
+  userId = subscription.metadata?.userId;
+
+  // If userId is not in metadata, try to find it in the database
   if (!userId) {
-    console.error('No userId found in subscription.metadata.userId');
+    const users = await db.select().from($users).where(eq($users.stripeCustomerId, customerId));
+    if (users.length > 0) {
+      userId = users[0].id;
+    }
+  }
+
+  if (!userId) {
+    console.error('No userId found in subscription metadata or database');
     throw new Error('No userId found');
   }
 
@@ -348,20 +365,26 @@ async function handleInvoicePaid(event: Stripe.Event) {
   const customerId = invoice.customer as string;
   const subscriptionId = invoice.subscription as string;
   
-  // Retrieve the subscription to get the latest status
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-
-  // Find the user associated with this customer ID
-  const user = (await db.select().from($users).where(eq($users.stripeCustomerId, customerId)))[0];
-
-  const clerkUser = await clerk.users.getUser(user.id);
-
-  if (!user) {
-    console.error(`No user found for customer ID: ${customerId}`);
+  if (!customerId || !subscriptionId) {
+    console.error('Missing customer ID or subscription ID in invoice');
     return;
   }
 
   try {
+    // Retrieve the subscription to get the latest status
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+    // Find the user associated with this customer ID
+    const users = await db.select().from($users).where(eq($users.stripeCustomerId, customerId));
+    const user = users[0];
+
+    if (!user) {
+      console.error(`No user found for customer ID: ${customerId}`);
+      return;
+    }
+
+    const clerkUser = await clerk.users.getUser(user.id);
+
     // Update Clerk user data
     await clerk.users.updateUser(user.id, {
       privateMetadata: {
@@ -387,8 +410,8 @@ async function handleInvoicePaid(event: Stripe.Event) {
     });
 
   } catch (error) {
-    console.error('Error updating user after invoice payment:', error);
-    throw new Error('Failed to update user data after invoice payment');
+    console.error('Error processing invoice payment:', error);
+    throw new Error(`Failed to process invoice payment: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
