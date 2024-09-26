@@ -1,0 +1,626 @@
+{
+  "id": "d15eb8c1-8953-4b41-81ad-77c8f9f4f332",
+  "prevId": "ebd43f71-0857-4e84-a605-2f9833343dd5",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.agents": {
+      "name": "agents",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone_number": {
+          "name": "phone_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "system_prompt": {
+          "name": "system_prompt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "voice_type": {
+          "name": "voice_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "call_history": {
+          "name": "call_history",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "custom_responses": {
+          "name": "custom_responses",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "minutes_used": {
+          "name": "minutes_used",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'0'"
+        },
+        "retell_agent_id": {
+          "name": "retell_agent_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "llm_websocket_url": {
+          "name": "llm_websocket_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "llm_id": {
+          "name": "llm_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_name": {
+          "name": "agent_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "voice_id": {
+          "name": "voice_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "voice_model": {
+          "name": "voice_model",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fallback_voice_ids": {
+          "name": "fallback_voice_ids",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "voice_temperature": {
+          "name": "voice_temperature",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "voice_speed": {
+          "name": "voice_speed",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "responsiveness": {
+          "name": "responsiveness",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "interruption_sensitivity": {
+          "name": "interruption_sensitivity",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "enable_backchannel": {
+          "name": "enable_backchannel",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "backchannel_frequency": {
+          "name": "backchannel_frequency",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "backchannel_words": {
+          "name": "backchannel_words",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reminder_trigger_ms": {
+          "name": "reminder_trigger_ms",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reminder_max_count": {
+          "name": "reminder_max_count",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ambient_sound": {
+          "name": "ambient_sound",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ambient_sound_volume": {
+          "name": "ambient_sound_volume",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "language": {
+          "name": "language",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "webhook_url": {
+          "name": "webhook_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "boosted_keywords": {
+          "name": "boosted_keywords",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "opt_out_sensitive_data_storage": {
+          "name": "opt_out_sensitive_data_storage",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pronunciation_dictionary": {
+          "name": "pronunciation_dictionary",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "normalize_for_speech": {
+          "name": "normalize_for_speech",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "end_call_after_silence_ms": {
+          "name": "end_call_after_silence_ms",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "enable_voicemail_detection": {
+          "name": "enable_voicemail_detection",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "voicemail_message": {
+          "name": "voicemail_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "post_call_analysis_data": {
+          "name": "post_call_analysis_data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_modification_timestamp": {
+          "name": "last_modification_timestamp",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "area_code": {
+          "name": "area_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_setup_complete": {
+          "name": "is_setup_complete",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "agents_user_id_users_id_fk": {
+          "name": "agents_user_id_users_id_fk",
+          "tableFrom": "agents",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.leads": {
+      "name": "leads",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone_number": {
+          "name": "phone_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "leads_email_unique": {
+          "name": "leads_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      }
+    },
+    "public.usage_records": {
+      "name": "usage_records",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "agent_id": {
+          "name": "agent_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "minutes_used": {
+          "name": "minutes_used",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "seconds_used": {
+          "name": "seconds_used",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "voice_type": {
+          "name": "voice_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "usage_records_user_id_users_id_fk": {
+          "name": "usage_records_user_id_users_id_fk",
+          "tableFrom": "usage_records",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "usage_records_agent_id_agents_id_fk": {
+          "name": "usage_records_agent_id_agents_id_fk",
+          "tableFrom": "usage_records",
+          "tableTo": "agents",
+          "columnsFrom": [
+            "agent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.user_settings": {
+      "name": "user_settings",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "stop_loss_amount": {
+          "name": "stop_loss_amount",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_settings_user_id_users_id_fk": {
+          "name": "user_settings_user_id_users_id_fk",
+          "tableFrom": "user_settings",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "email_verified": {
+          "name": "email_verified",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image": {
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stripe_customer_id": {
+          "name": "stripe_customer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stripe_plan_id": {
+          "name": "stripe_plan_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phone_numbers": {
+          "name": "phone_numbers",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'[]'"
+        },
+        "is_yearly": {
+          "name": "is_yearly",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "stripe_price_id": {
+          "name": "stripe_price_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subscription_name": {
+          "name": "subscription_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subscription_status": {
+          "name": "subscription_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stripe_subscription_id": {
+          "name": "stripe_subscription_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subscription_cancel_at": {
+          "name": "subscription_cancel_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stripe_current_period_end": {
+          "name": "stripe_current_period_end",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phone_number_subscription_data": {
+          "name": "phone_number_subscription_data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      }
+    },
+    "public.waitlist": {
+      "name": "waitlist",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "waitlist_email_unique": {
+          "name": "waitlist_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      }
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

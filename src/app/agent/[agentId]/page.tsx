@@ -9,6 +9,7 @@ import { AgentEditing } from '@/components/Agent/AgentEditing';
 import { AgentTesting } from '@/components/Agent/AgentTesting';
 import { AgentAnalytics } from '@/components/Agent/AgentAnalytics';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { AgentSetup } from '@/components/Agent/AgentSetup';
 
 type Props = {
     params: {
@@ -55,40 +56,36 @@ const AgentPage = async ({params: { agentId }}: Props) => {
                     agent={agent}
                 />
 
-                <Tabs defaultValue="setup" className="w-full">
+                <Tabs defaultValue={agent.isSetupComplete ? "setup" : "testing"} className="w-full">
                     <TabsList className="grid w-full grid-cols-2 bg-[#E6CCB2] p-1 rounded-lg shadow-md">
                         <TabsTrigger 
                             value="setup"
                             className="data-[state=active]:bg-[#8B4513] data-[state=active]:text-white"
                         >
-                            Setup
+                            {agent.isSetupComplete ? 'Edit' : 'Setup'}
                         </TabsTrigger>
                         <TabsTrigger 
                             value="testing"
                             className="data-[state=active]:bg-[#8B4513] data-[state=active]:text-white"
+                            disabled={!agent.isSetupComplete}
                         >
                             Testing
                         </TabsTrigger>
-                        {/* <TabsTrigger 
-                            value="analytics"
-                            className="data-[state=active]:bg-[#8B4513] data-[state=active]:text-white"
-                        >
-                            Analytics
-                        </TabsTrigger> */}
                     </TabsList>
                     <TabsContent value="setup" className="mt-6">
-                        <AgentEditing agent={agent} user={user} />
+                        {agent.isSetupComplete ? (
+                            <AgentEditing agent={agent} user={user} />
+                        ) : (
+                            <AgentSetup agent={agent} user={user} />
+                        )}
                     </TabsContent>
                     <TabsContent value="testing" className="mt-6">
                         <AgentTesting agent={agent} />
                     </TabsContent>
-                    {/* <TabsContent value="analytics" className="mt-6">
-                        <AgentAnalytics agent={agent} />
-                    </TabsContent> */}
                 </Tabs>
             </div>
         </div>
-    ) 
-}
+    );
+};
 
 export default AgentPage;

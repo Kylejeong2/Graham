@@ -97,80 +97,80 @@ export const AgentEditing: React.FC<{ agent: AgentType; user: UserType }> = ({ a
         }
     };
 
-    const createRetellAIAgent = async () => {
-        try {
-            setCreatingRetellAgent(true);
-            setError(null);
+    // const createRetellAIAgent = async () => {
+    //     try {
+    //         setCreatingRetellAgent(true);
+    //         setError(null);
 
-            if (!agentState.name || !agentState.voiceType || !agentState.systemPrompt || !agentState.areaCode) {
-                setError('Please fill in all required fields (Name, Voice Type, System Prompt, and Area Code)');
-                return;
-            }
+    //         if (!agentState.name || !agentState.voiceType || !agentState.systemPrompt || !agentState.areaCode) {
+    //             setError('Please fill in all required fields (Name, Voice Type, System Prompt, and Area Code)');
+    //             return;
+    //         }
 
-            let LLM;
-            try {
-                LLM = await createRetellLLM({
-                    model: "gpt-4o-mini",
-                    general_prompt: agentState.systemPrompt
-                });
-            } catch (llmError: any) {
-                console.error("Error creating Retell LLM:", llmError);
-                setError(`Failed to create Retell LLM: ${llmError.message || 'Unknown error'}`);
-                return;
-            }
+    //         let LLM;
+    //         try {
+    //             LLM = await createRetellLLM({
+    //                 model: "gpt-4o-mini",
+    //                 general_prompt: agentState.systemPrompt
+    //             });
+    //         } catch (llmError: any) {
+    //             console.error("Error creating Retell LLM:", llmError);
+    //             setError(`Failed to create Retell LLM: ${llmError.message || 'Unknown error'}`);
+    //             return;
+    //         }
 
-            let retellAgent;
-            try {
-                retellAgent = await createRetellAgent({
-                    llm_websocket_url: LLM.llm_websocket_url,
-                    agent_name: agentState.name,
-                    voice_id: agentState.voiceType,
-                });
-            } catch (agentError: any) {
-                console.error("Error creating Retell agent:", agentError);
-                setError(`Failed to create Retell agent: ${agentError.message || 'Unknown error'}`);
-                return;
-            }
+    //         let retellAgent;
+    //         try {
+    //             retellAgent = await createRetellAgent({
+    //                 llm_websocket_url: LLM.llm_websocket_url,
+    //                 agent_name: agentState.name,
+    //                 voice_id: agentState.voiceType,
+    //             });
+    //         } catch (agentError: any) {
+    //             console.error("Error creating Retell agent:", agentError);
+    //             setError(`Failed to create Retell agent: ${agentError.message || 'Unknown error'}`);
+    //             return;
+    //         }
 
-            let retellPhoneNumber;
-            try {
-                const number = agentState.phoneNumber;
-                retellPhoneNumber = await updateRetellPhoneNumber(number as string, {
-                    inbound_agent_id: retellAgent.agent_id,
-                    outbound_agent_id: retellAgent.agent_id,
-                });
-            } catch (phoneError: any) {
-                console.error("Error updating Retell phone number:", phoneError);
-                setError(`Failed to update Retell phone number: ${phoneError.message || 'Unknown error'}`);
-                return;
-            }
+    //         let retellPhoneNumber;
+    //         try {
+    //             const number = agentState.phoneNumber;
+    //             retellPhoneNumber = await updateRetellPhoneNumber(number as string, {
+    //                 inbound_agent_id: retellAgent.agent_id,
+    //                 outbound_agent_id: retellAgent.agent_id,
+    //             });
+    //         } catch (phoneError: any) {
+    //             console.error("Error updating Retell phone number:", phoneError);
+    //             setError(`Failed to update Retell phone number: ${phoneError.message || 'Unknown error'}`);
+    //             return;
+    //         }
 
-            const updatedAgent: AgentType = {
-                ...agentState,
-                llmId: LLM.llm_id,
-                llmWebsocketUrl: LLM.llm_websocket_url,
-                areaCode: agentState.areaCode,
-                retellAgentId: retellAgent.agent_id,
-                phoneNumber: retellPhoneNumber.phone_number,
-            };
+    //         const updatedAgent: AgentType = {
+    //             ...agentState,
+    //             llmId: LLM.llm_id,
+    //             llmWebsocketUrl: LLM.llm_websocket_url,
+    //             areaCode: agentState.areaCode,
+    //             retellAgentId: retellAgent.agent_id,
+    //             phoneNumber: retellPhoneNumber.phone_number,
+    //         };
 
-            try {
-                setAgentState(updatedAgent);
-                await saveData(updatedAgent);
-            } catch (saveError: any) {
-                console.error("Error saving updated agent:", saveError);
-                setError(`Failed to save updated agent: ${saveError.message || 'Unknown error'}`);
-                return;
-            }
+    //         try {
+    //             setAgentState(updatedAgent);
+    //             await saveData(updatedAgent);
+    //         } catch (saveError: any) {
+    //             console.error("Error saving updated agent:", saveError);
+    //             setError(`Failed to save updated agent: ${saveError.message || 'Unknown error'}`);
+    //             return;
+    //         }
 
-            toast.success('AI agent created successfully');
-        } catch (error: any) {
-            console.error("Error creating AI agent:", error);
-            setError(`Failed to create AI agent: ${error.message || 'Unknown error'}`);
-        } finally {
-            setCreatingRetellAgent(false);
-        }
-    };
+    //         toast.success('AI agent created successfully');
+    //     } catch (error: any) {
+    //         console.error("Error creating AI agent:", error);
+    //         setError(`Failed to create AI agent: ${error.message || 'Unknown error'}`);
+    //     } finally {
+    //         setCreatingRetellAgent(false);
+    //     }
+    // };
 
     const playVoicePreview = (previewUrl: string) => {
         if (audioPlayer) {
@@ -466,7 +466,7 @@ export const AgentEditing: React.FC<{ agent: AgentType; user: UserType }> = ({ a
                     {saving ? 'Saving...' : (saved ? 'Saved' : 'Save Changes')}
                 </Button>
 
-                {!agentState.retellAgentId && (
+                {/* {!agentState.retellAgentId && (
                     <Button 
                         onClick={createRetellAIAgent}
                         className="w-full bg-[#4CAF50] hover:bg-[#45a049] text-white"
@@ -474,7 +474,7 @@ export const AgentEditing: React.FC<{ agent: AgentType; user: UserType }> = ({ a
                     >
                         {creatingRetellAgent ? 'Creating AI Agent...' : 'Create AI Agent'}
                     </Button>
-                )}
+                )} */}
             </div>
 
             {error && <div className="text-red-500 mt-2 md:col-span-2">{error}</div>}

@@ -1,6 +1,6 @@
 // used to create tables in the postgres schema
 // to make changes run this: npx drizzle-kit generate || npx drizzle-kit migrate || npx drizzle-kit push
-import { pgTable, text, timestamp, uuid, boolean, jsonb, numeric, foreignKey } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, uuid, boolean, jsonb, numeric } from 'drizzle-orm/pg-core'
 
 export const $agents = pgTable('agents', {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -11,7 +11,7 @@ export const $agents = pgTable('agents', {
     systemPrompt: text('system_prompt'),
     voiceType: text('voice_type'),
     callHistory: jsonb('call_history'),
-    customResponses: jsonb('custom_responses'),
+    customResponses: jsonb('custom_responses').default('{}'),
     minutesUsed: numeric('minutes_used').default('0'),
     retellAgentId: text('retell_agent_id'),
     llmWebsocketUrl: text('llm_websocket_url'),
@@ -43,6 +43,7 @@ export const $agents = pgTable('agents', {
     postCallAnalysisData: jsonb('post_call_analysis_data'),
     lastModificationTimestamp: numeric('last_modification_timestamp'),
     areaCode: text('area_code'),
+    isSetupComplete: boolean('is_setup_complete').default(false).notNull(),
 });
 
 export const $usageRecords = pgTable('usage_records', {
@@ -73,7 +74,7 @@ export const $users = pgTable('users', {
     stripeSubscriptionId: text('stripe_subscription_id'),
     subscriptionCancelAt: timestamp('subscription_cancel_at'),
     stripeCurrentPeriodEnd: timestamp('stripe_current_period_end'),
-    phoneNumberSubscriptionData: jsonb('phone_number_subscription_data').default('{}').notNull(),
+    phoneNumberSubscriptionData: jsonb('phone_number_subscription_data').default('{}'),
 });
 
 export const $waitlist = pgTable('waitlist', {

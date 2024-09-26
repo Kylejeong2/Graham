@@ -1,0 +1,1 @@
+ALTER TABLE "agents" ADD COLUMN "is_setup_complete" boolean DEFAULT false NOT NULL;
