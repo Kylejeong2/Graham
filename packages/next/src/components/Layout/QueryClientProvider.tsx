@@ -10,10 +10,10 @@ const queryClient = new QueryClient()
 
 const Provider = ({children}: Props) => {
   return (
-    <QueryClientProvider client={queryClient} >
+    <QueryClientProvider client={queryClient}>
         {children}
     </QueryClientProvider>
   )
 }
 
-export default Provider;
+export default Provider
