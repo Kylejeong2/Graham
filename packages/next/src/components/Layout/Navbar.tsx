@@ -6,15 +6,15 @@ import { Phone } from "lucide-react"
 import { auth } from "@clerk/nextjs/server"
 
 export async function Navbar() {
-  const { userId } = await auth()
+  const { userId } = auth()
   const isSignedIn = !!userId
 
   return (
-    <header className="px-4 lg:px-6 h-16 flex items-center bg-[#F5E6D3] border-b border-[#8B4513]">
+    <header className="px-4 lg:px-6 h-16 flex items-center bg-white border-b ">
       <div className="flex items-center space-x-2">
         <Phone className="h-6 w-6 text-[#8B4513]" />
         <Link href="/">
-          <h1 className="text-2xl font-bold text-[#8B4513]">Graham</h1>
+          <h1 className="text-4xl font-bold text-[#8B4513]">graham</h1>
         </Link>
       </div>
       <NavLinks />

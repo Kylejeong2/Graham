@@ -48,9 +48,8 @@ export const WaitlistSection: React.FC = () => {
     <section className="py-24 bg-gradient-to-b from-[#F5E6D3] to-[#E6CCB2]">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <Coffee className="w-24 h-24 text-[#8B4513] mx-auto mb-8" />
           <h2 className="text-5xl font-bold text-[#8B4513] mb-6">
-            Be the First to Experience Graham
+            Ready to Transform Your Business?
           </h2>
           <p className="text-xl text-[#5D4037] mb-8 max-w-2xl mx-auto">
             Join our exclusive waitlist and get early access to the future of AI-powered customer service.
