@@ -40,3 +40,5 @@ next-env.d.ts
 .yarn/install-state.gz
 .husky/_
 .github/workflows
+
+packages/next/.yarn
