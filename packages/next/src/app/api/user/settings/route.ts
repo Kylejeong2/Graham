@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { db } from '@/lib/db';
-import { $userSettings } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { prisma } from "@graham/db";
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
@@ -12,17 +11,14 @@ export async function POST(req: NextRequest) {
   
   const { stopLossAmount } = await req.json();
   try {
-    await db
-      .insert($userSettings)
-      .values({
+    await prisma.userSettings.upsert({
+      where: { userId },
+      update: { stopLossAmount },
+      create: {
         userId,
         stopLossAmount,
-      })
-      .onConflictDoUpdate({
-        target: $userSettings.userId,
-        set: { stopLossAmount },
-        where: eq($userSettings.userId, userId),
-      });
+      }
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

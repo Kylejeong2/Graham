@@ -1,19 +1,23 @@
-import { clerk } from "@/configs/clerk-server";
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/db"
-import { $users } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { prisma } from "@graham/db";
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const { userId } = auth()
 
     if (!userId) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
-    const user = (await db.select().from($users).where(eq($users.id, userId)))[0];
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
     
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     // Check the user's metadata for subscription status and type
     const hasSubscription = (user.subscriptionStatus === "active");
 

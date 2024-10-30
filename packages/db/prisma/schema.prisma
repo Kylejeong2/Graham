@@ -11,113 +11,75 @@ datasource db {
 model Agent {
   id                          String        @id @default(uuid())
   name                        String
-  createdAt                  DateTime      @default(now()) @map("created_at")
-  userId                     String        @map("user_id")
-  phoneNumber                String?       @map("phone_number")
-  systemPrompt               String?       @map("system_prompt")
-  voiceType                  String?       @map("voice_type")
-  callHistory                Json?         @map("call_history")
-  customResponses            Json          @default("{}") @map("custom_responses")
-  minutesUsed                Decimal       @default("0") @map("minutes_used")
-  retellAgentId              String?       @map("retell_agent_id")
-  llmWebsocketUrl            String?       @map("llm_websocket_url")
-  llmId                      String?       @map("llm_id")
-  agentName                  String?       @map("agent_name")
-  voiceId                    String?       @map("voice_id")
-  voiceModel                 String?       @map("voice_model")
-  fallbackVoiceIds           Json?         @map("fallback_voice_ids")
-  voiceTemperature          Decimal?      @map("voice_temperature")
-  voiceSpeed                Decimal?      @map("voice_speed")
-  responsiveness            Decimal?      @map("responsiveness")
-  interruptionSensitivity   Decimal?      @map("interruption_sensitivity")
-  enableBackchannel         Boolean?      @map("enable_backchannel")
-  backchannelFrequency      Decimal?      @map("backchannel_frequency")
-  backchannelWords          Json?         @map("backchannel_words")
-  reminderTriggerMs         Decimal?      @map("reminder_trigger_ms")
-  reminderMaxCount          Decimal?      @map("reminder_max_count")
-  ambientSound              String?       @map("ambient_sound")
-  ambientSoundVolume        Decimal?      @map("ambient_sound_volume")
-  language                  String?
-  webhookUrl                String?       @map("webhook_url")
-  boostedKeywords           Json?         @map("boosted_keywords")
-  optOutSensitiveDataStorage Boolean?     @map("opt_out_sensitive_data_storage")
-  pronunciationDictionary    Json?         @map("pronunciation_dictionary")
-  normalizeForSpeech        Boolean?      @map("normalize_for_speech")
-  endCallAfterSilenceMs     Decimal?      @map("end_call_after_silence_ms")
-  enableVoicemailDetection  Boolean?      @map("enable_voicemail_detection")
-  voicemailMessage          String?       @map("voicemail_message")
-  postCallAnalysisData      Json?         @map("post_call_analysis_data")
-  lastModificationTimestamp Decimal?      @map("last_modification_timestamp")
-  areaCode                  String?       @map("area_code")
-  isSetupComplete          Boolean       @default(false) @map("is_setup_complete")
-  user                      User          @relation(fields: [userId], references: [id])
-  usageRecords             UsageRecord[]
-
-  @@map("agents")
+  createdAt                   DateTime      @default(now())
+  userId                      String        
+  phoneNumber                 String?       
+  systemPrompt                String?       
+  voiceType                   String?       
+  callHistory                 Json?         
+  customResponses             Json          @default("{}")
+  minutesUsed                 Decimal       @default("0")
+  lastModificationTimestamp   Decimal?      
+  areaCode                    String?       
+  isSetupComplete            Boolean       @default(false)
+  user                        User          @relation(fields: [userId], references: [id])
+  usageRecords               UsageRecord[]
 }
 
 model UsageRecord {
   id          String   @id @default(uuid())
-  userId      String   @map("user_id")
-  agentId     String   @map("agent_id")
-  minutesUsed Decimal  @map("minutes_used")
-  secondsUsed Decimal  @map("seconds_used")
-  voiceType   String   @map("voice_type")
+  userId      String   
+  agentId     String   
+  minutesUsed Decimal  
+  secondsUsed Decimal  
+  voiceType   String   
   timestamp   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id])
   agent       Agent    @relation(fields: [agentId], references: [id])
-
-  @@map("usage_records")
 }
 
 model User {
   id                          String        @id
   email                       String        @unique
   name                        String?
-  createdAt                   DateTime      @default(now()) @map("created_at")
-  updatedAt                   DateTime      @default(now()) @map("updated_at")
-  emailVerified               DateTime?     @map("email_verified")
+  createdAt                   DateTime      @default(now())
+  updatedAt                   DateTime      @default(now())
+  emailVerified               DateTime?     
   image                       String?
-  stripeCustomerId            String?       @map("stripe_customer_id")
-  stripePlanId                String?       @map("stripe_plan_id")
-  phoneNumbers                Json          @default("[]") @map("phone_numbers")
-  isYearly                    Boolean       @default(false) @map("is_yearly")
-  stripePriceId               String?       @map("stripe_price_id")
-  subscriptionName            String?       @map("subscription_name")
-  subscriptionStatus          String?       @map("subscription_status")
-  stripeSubscriptionId        String?       @map("stripe_subscription_id")
-  subscriptionCancelAt        DateTime?     @map("subscription_cancel_at")
-  stripeCurrentPeriodEnd      DateTime?     @map("stripe_current_period_end")
-  phoneNumberSubscriptionData Json          @default("{}") @map("phone_number_subscription_data")
+  stripeCustomerId            String?       
+  stripePlanId                String?       
+  phoneNumbers                Json          @default("[]")
+  isYearly                    Boolean       @default(false)
+  stripePriceId               String?       
+  subscriptionName            String?       
+  subscriptionStatus          String?       
+  stripeSubscriptionId        String?       
+  subscriptionCancelAt        DateTime?     
+  stripeCurrentPeriodEnd      DateTime?     
+  phoneNumberSubscriptionData Json          @default("{}")
   agents                      Agent[]
   usageRecords               UsageRecord[]
   userSettings               UserSettings?
 
-  @@map("users")
 }
 
 model Waitlist {
   id        String   @id @default(uuid())
   email     String   @unique
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@map("waitlist")
+  createdAt DateTime @default(now())
 }
 
 model Lead {
   id          String   @id @default(uuid())
   name        String
   email       String   @unique
-  phoneNumber String   @map("phone_number")
-  createdAt   DateTime @default(now()) @map("created_at")
+  phoneNumber String   
+  createdAt   DateTime @default(now())
 
-  @@map("leads")
 }
-
 model UserSettings {
   userId         String   @id @map("user_id")
   stopLossAmount Decimal? @map("stop_loss_amount")
   user           User     @relation(fields: [userId], references: [id])
 
-  @@map("user_settings")
 }

@@ -1,5 +1,4 @@
-import { db } from "@/lib/db";
-import { $agents } from "@/lib/db/schema";
+import { prisma } from "@graham/db";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -14,18 +13,18 @@ export async function POST(req: Request) {
   const { name } = body;
 
   try {
-    const agent_ids = await db
-      .insert($agents)
-      .values({
+    const agent = await prisma.agent.create({
+      data: {
         name,
         userId,
-      })
-      .returning({
-        insertedId: $agents.id,
-      });
+      },
+      select: {
+        id: true
+      }
+    });
 
     return NextResponse.json({
-      agent_id: agent_ids[0].insertedId,
+      agent_id: agent.id,
     });
   } catch (error) {
     console.error("Error creating agent:", error);

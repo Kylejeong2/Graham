@@ -1,8 +1,6 @@
-import { db } from "@/lib/db";
-import { $agents } from "@/lib/db/schema";
+import { prisma } from "@graham/db";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const { userId } = auth();
@@ -12,25 +10,21 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 
   const body = await req.json();
-  const { name, phoneNumber, systemPrompt, llmId, llmWebsocketUrl, voiceType, retellAgentId, areaCode } = body;
+  const { name, phoneNumber, systemPrompt, voiceType, areaCode } = body;
 
   try {
-    const updatedAgent = await db
-      .update($agents)
-      .set({
+    const updatedAgent = await prisma.agent.update({
+      where: { id: params.id },
+      data: {
         name,
         phoneNumber,
         systemPrompt,
         voiceType,
-        retellAgentId,
         areaCode,
-        llmId,
-        llmWebsocketUrl,
-      })
-      .where(eq($agents.id, params.id))
-      .returning();
+      }
+    });
 
-    return NextResponse.json(updatedAgent[0]);
+    return NextResponse.json(updatedAgent);
   } catch (error) {
     console.error("Error updating agent:", error);
     return new NextResponse("Failed to update agent", {

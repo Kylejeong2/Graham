@@ -4,7 +4,6 @@ import { UserButton } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { Phone } from "lucide-react"
 import { auth } from "@clerk/nextjs/server"
-import { MobileMenuToggle } from '../LandingPage/MobileMenuToggle'
 
 export async function Navbar() {
   const { userId } = await auth()
@@ -18,29 +17,16 @@ export async function Navbar() {
           <h1 className="text-2xl font-bold text-[#8B4513]">Graham</h1>
         </Link>
       </div>
-      <NavLinks isSignedIn={isSignedIn} />
+      <NavLinks />
       <UserActions isSignedIn={isSignedIn} userId={userId} /> 
       {/* <MobileMenuToggle /> */}
     </header>
   )
 }
 
-function NavLinks({ isSignedIn }: { isSignedIn: boolean }) {
+function NavLinks() {
   return (
     <nav className="ml-auto hidden md:flex gap-4 sm:gap-6">
-      {!isSignedIn && (
-        <>
-          <Link href="#features" className="text-[#8B4513] hover:underline underline-offset-4">
-            Features
-          </Link>
-          <Link href="#how-it-works" className="text-[#8B4513] hover:underline underline-offset-4">
-            How It Works
-          </Link>
-          <Link href="#testimonials" className="text-[#8B4513] hover:underline underline-offset-4">
-            Testimonials
-          </Link>
-        </>
-      )}
       <Link href="/subscription" className="text-[#8B4513] hover:underline underline-offset-4">
         Pricing
       </Link>

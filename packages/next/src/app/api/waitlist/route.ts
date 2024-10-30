@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { $waitlist } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { prisma } from "@graham/db";
 
 export async function POST(request: Request) {
   try {
@@ -12,14 +10,18 @@ export async function POST(request: Request) {
     }
 
     // Check if the email already exists in the waitlist
-    const existingEntry = await db.select().from($waitlist).where(eq($waitlist.email, email)).execute();
+    const existingEntry = await prisma.waitlist.findUnique({
+      where: { email }
+    });
 
-    if (existingEntry.length > 0) {
+    if (existingEntry) {
       return NextResponse.json({ message: 'Email already registered' }, { status: 409 });
     }
 
     // Insert the new email into the waitlist
-    await db.insert($waitlist).values({ email }).execute();
+    await prisma.waitlist.create({
+      data: { email }
+    });
 
     return NextResponse.json({ message: 'Successfully joined the waitlist' }, { status: 201 });
   } catch (error) {

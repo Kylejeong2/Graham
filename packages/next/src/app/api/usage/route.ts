@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { $usageRecords } from '@/lib/db/schema';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+import { prisma } from "@graham/db";
 import { auth } from '@clerk/nextjs/server';
 
 export async function POST(req: NextRequest) {
@@ -13,12 +13,14 @@ export async function POST(req: NextRequest) {
 
   try {
     // Record usage
-    await db.insert($usageRecords).values({
-      userId,
-      agentId,
-      minutesUsed: minutes.toString(),
-      secondsUsed: (minutes * 60).toString(),
-      voiceType: 'text-to-speech',
+    await prisma.usageRecord.create({
+      data: {
+        userId,
+        agentId,
+        minutesUsed: minutes.toString(),
+        secondsUsed: (minutes * 60).toString(),
+        voiceType: 'text-to-speech',
+      }
     });
 
     return NextResponse.json({ success: true });

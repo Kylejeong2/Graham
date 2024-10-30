@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server'
 import { stripe } from '@/configs/stripe'
 import { clerk } from '@/configs/clerk-server'
-import { db } from '@/lib/db'
-import { $users } from '@/lib/db/schema'
-import { eq } from 'drizzle-orm'
 
 export async function POST(req: Request) {
   try {

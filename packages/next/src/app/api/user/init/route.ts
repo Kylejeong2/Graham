@@ -1,11 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { db } from '@/lib/db';
-import { $users } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
 import { clerk } from '@/configs/clerk-server';
+import { prisma } from "@graham/db";
 
-export async function POST(req: NextRequest) {
+export async function POST() {
   const { userId } = auth();
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -13,18 +11,22 @@ export async function POST(req: NextRequest) {
 
   try {
     // Check if user already exists in our database
-    const existingUser = await db.select().from($users).where(eq($users.id, userId)).limit(1);
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId }
+    });
 
-    if (existingUser.length === 0) {
+    if (!existingUser) {
       // User doesn't exist, so let's add them
       const clerkUser = await clerk.users.getUser(userId);
 
-      await db.insert($users).values({
-        id: userId,
-        email: clerkUser.emailAddresses[0].emailAddress,
-        name: `${clerkUser.firstName} ${clerkUser.lastName}`,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      await prisma.user.create({
+        data: {
+          id: userId,
+          email: clerkUser.emailAddresses[0].emailAddress,
+          name: `${clerkUser.firstName} ${clerkUser.lastName}`,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
       });
 
       return NextResponse.json({ message: 'User initialized successfully' }, { status: 201 });

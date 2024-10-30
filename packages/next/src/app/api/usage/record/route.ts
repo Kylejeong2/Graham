@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { db } from '@/lib/db';
-import { $usageRecords } from '@/lib/db/schema';
+import { prisma } from "@graham/db";
 import { createUsageRecord, retrieveSubscriptionItem } from '@/configs/stripe';
 import { clerk } from '@/configs/clerk-server';
 
@@ -24,18 +24,18 @@ export async function POST(req: NextRequest) {
     const subscriptionItem = await retrieveSubscriptionItem(stripeSubscriptionId);
     
     const minutes = seconds / 60;
-    const roundedMinutes = Math.ceil(minutes * 100) / 100; // Round up to 2 decimal places
+    const roundedMinutes = Math.ceil(minutes * 100) / 100;
 
-    // Record usage in Stripe
     await createUsageRecord(subscriptionItem.id, Math.floor(seconds));
 
-    // Record usage in database
-    await db.insert($usageRecords).values({
-      userId,
-      agentId,
-      secondsUsed: seconds.toString(),
-      minutesUsed: roundedMinutes.toString(),
-      voiceType,
+    await prisma.usageRecord.create({
+      data: {
+        userId,
+        agentId,
+        secondsUsed: seconds.toString(),
+        minutesUsed: roundedMinutes.toString(),
+        voiceType,
+      }
     });
 
     return NextResponse.json({ success: true, minutesUsed: roundedMinutes });

@@ -3,27 +3,29 @@ import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
 import { ArrowLeft, Plus, Coffee } from 'lucide-react';
 import { auth } from '@clerk/nextjs/server';
-import { eq } from 'drizzle-orm';
+import { prisma } from "@graham/db";
 
 import { CreateAgent } from '@/components/Common/CreateAgent';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { db } from '@/lib/db';
-import { $agents, $users } from '@/lib/db/schema';
 
-type Props = {}
-
-const DashboardPage = async (props: Props) => {
+const DashboardPage = async () => {
     const { userId } = auth();
-    const agents = await db.select().from($agents).where(
-        eq($agents.userId, userId!)
-    );
+    const agents = await prisma.agent.findMany({
+        where: {
+            userId: userId!
+        }
+    });
 
-    const user = (await db.select().from($users).where(eq($users.id, userId!)))[0];
+    const user = await prisma.user.findUnique({
+        where: {
+            id: userId!
+        }
+    });
 
-    const isSubscribed = user.subscriptionStatus === 'active';
+    const isSubscribed = user?.subscriptionStatus === 'active';
 
     return (
         <div className='min-h-screen bg-[#F5E6D3] text-[#5D4037]'>

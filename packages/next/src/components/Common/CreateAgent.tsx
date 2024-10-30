@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Loader2, Plus, X, Coffee } from 'lucide-react'
+import { Loader2, Coffee } from 'lucide-react'
 import { Input } from '@/components/ui/input'   
 import { Button } from '@/components/ui/button'
 import { useMutation } from '@tanstack/react-query'
@@ -17,7 +17,6 @@ type Props = {
 export const CreateAgent: React.FC<Props> = ({ children }) => {
     const router = useRouter()
     const [input, setInput] = React.useState('');
-    const [characteristics, setCharacteristics] = React.useState<string[]>([]);
     const [isSubscribed, setIsSubscribed] = React.useState(false);
     const [agentCount, setAgentCount] = React.useState(0);
 
@@ -44,7 +43,6 @@ export const CreateAgent: React.FC<Props> = ({ children }) => {
             }
             const response = await axios.post('/api/agent/createAgent', {
                 name: input,
-                characteristics: characteristics
             })
             return response.data
         }
