@@ -41,17 +41,17 @@ const AgentPage = async ({params: { agentId }}: Props) => {
     }
 
     return (
-        <div className='min-h-screen bg-[#F5E6D3] py-4 px-10'>
+        <div className='min-h-screen bg-blue-50 py-4 px-10'>
             <div className='max-w-8xl mx-auto space-y-4'>
                 <AgentTitleBar 
                     user={user}
                     agent={agent}
                 />
-                <Tabs defaultValue={agent.isSetupComplete ? "editing" : "setup"}>
-                    <TabsList>
-                        <TabsTrigger value="setup">Setup</TabsTrigger>
-                        <TabsTrigger value="editing">Edit</TabsTrigger>
-                        <TabsTrigger value="testing">Testing</TabsTrigger>
+                <Tabs defaultValue={agent.isSetupComplete ? "editing" : "setup"} className="bg-white rounded-lg p-4">
+                    <TabsList className="border-b border-blue-100">
+                        <TabsTrigger value="setup" className="text-blue-600">Setup</TabsTrigger>
+                        <TabsTrigger value="editing" className="text-blue-600">Edit</TabsTrigger>
+                        <TabsTrigger value="testing" className="text-blue-600">Testing</TabsTrigger>
                     </TabsList>
                     <TabsContent value="setup">
                         <AgentSetup agent={agent} user={user} />

@@ -3,48 +3,39 @@ import { Clock, BarChart, Globe } from "lucide-react"
 
 export default function Features() {
   return (
-    <section className="w-full py-12 md:py-24 lg:py-32">
+    <section className="w-full py-12 md:py-24 lg:py-32 bg-white">
       <div className="container px-4 md:px-6">
-        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-center mb-12">
+        <h2 className="text-3xl font-bold tracking-tighter text-blue-900 sm:text-5xl text-center mb-12">
           Your business' receptionist who works 24/7.
         </h2>
         <div className="grid gap-6 lg:grid-cols-3">
-          <Card>
+          <Card className="bg-blue-50 border-blue-100 hover:shadow-lg transition-shadow duration-200">
             <CardHeader>
-              <Clock className="h-8 w-8 text-teal-600 mb-2" />
-              <CardTitle>Setup in less than 10 minutes.</CardTitle>
+              <Clock className="h-8 w-8 text-blue-600 mb-2" />
+              <CardTitle className="text-blue-900">Setup in less than 10 minutes.</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="text-blue-700">
               Click a few buttons and get your receptionist up and running in minutes.
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-blue-50 border-blue-100 hover:shadow-lg transition-shadow duration-200">
             <CardHeader>
-              <BarChart className="h-8 w-8 text-teal-600 mb-2" />
-              <CardTitle>Call Logs and Transcripts</CardTitle>
+              <BarChart className="h-8 w-8 text-blue-600 mb-2" />
+              <CardTitle className="text-blue-900">Call Logs and Transcripts</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="text-blue-700">
               Get insights into customer conversations and see your receptionist work overtime.
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-blue-50 border-blue-100 hover:shadow-lg transition-shadow duration-200">
             <CardHeader>
-              <Globe className="h-8 w-8 text-teal-600 mb-2" />
-              <CardTitle>Only pay for what you use</CardTitle>
+              <Globe className="h-8 w-8 text-blue-600 mb-2" />
+              <CardTitle className="text-blue-900">Only pay for what you use</CardTitle>
             </CardHeader>
-            <CardContent>
-                Save time and money, while serving more customers with Graham.
+            <CardContent className="text-blue-700">
+              Save time and money, while serving more customers with Graham.
             </CardContent>
           </Card>
-          {/* <Card> //TODO: update with SOC 2 status asap
-            <CardHeader>
-              <Globe className="h-8 w-8 text-teal-600 mb-2" />
-              <CardTitle>SOC</CardTitle>
-            </CardHeader>
-            <CardContent>
-              Have a remote team? Easily register for payroll taxes in all 50 states. We have everything you need to stay compliant.
-            </CardContent>
-          </Card> */}
         </div>
       </div>
     </section>

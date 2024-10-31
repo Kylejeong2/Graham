@@ -45,17 +45,17 @@ export const WaitlistSection: React.FC = () => {
   };
 
   return (
-    <section className="py-24 bg-gradient-to-b from-[#F5E6D3] to-[#E6CCB2]">
+    <section className="py-24 bg-gradient-to-b from-blue-50 to-blue-100">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-5xl font-bold text-[#8B4513] mb-6">
+          <h2 className="text-5xl font-bold text-blue-900 mb-6">
             Ready to Transform Your Business?
           </h2>
-          <p className="text-xl text-[#5D4037] mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-blue-700 mb-8 max-w-2xl mx-auto">
             Join our exclusive waitlist and get early access to the future of AI-powered customer service.
           </p>
           {showAlert && (
-            <Alert className="mb-8 bg-[#8B4513] text-white">
+            <Alert className="mb-8 bg-blue-600 text-white">
               <AlertTitle>Success!</AlertTitle>
               <AlertDescription>
                 You&apos;ve successfully joined our waitlist. We&apos;ll keep you updated on our progress!
@@ -68,13 +68,13 @@ export const WaitlistSection: React.FC = () => {
               placeholder="Enter your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="flex-grow text-lg py-6 px-4 border-2 border-[#8B4513] text-[#5D4037] placeholder-[#A0522D] bg-white rounded-lg focus:ring-2 focus:ring-[#8B4513] focus:border-transparent"
+              className="flex-grow text-lg py-6 px-4 border-2 border-blue-600 text-blue-900 placeholder-blue-400 bg-white rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               required
             />
             <Button 
               type="submit" 
               disabled={isSubmitting}
-              className="bg-[#8B4513] hover:bg-[#A0522D] text-white text-lg py-6 px-8 rounded-lg transition-colors duration-300 shadow-lg hover:shadow-xl"
+              className="bg-blue-600 hover:bg-blue-700 text-white text-lg py-6 px-8 rounded-lg transition-colors duration-300 shadow-lg hover:shadow-xl"
             >
               {isSubmitting ? (
                 <>
@@ -91,16 +91,16 @@ export const WaitlistSection: React.FC = () => {
           </form>
           <div className="mt-12 flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8">
             <div className="flex items-center">
-              <CheckCircle className="w-6 h-6 text-[#8B4513] mr-2" />
-              <span className="text-[#5D4037]">Early Access</span>
+              <CheckCircle className="w-6 h-6 text-blue-600 mr-2" />
+              <span className="text-blue-700">Early Access</span>
             </div>
             <div className="flex items-center">
-              <CheckCircle className="w-6 h-6 text-[#8B4513] mr-2" />
-              <span className="text-[#5D4037]">Exclusive Updates</span>
+              <CheckCircle className="w-6 h-6 text-blue-600 mr-2" />
+              <span className="text-blue-700">Exclusive Updates</span>
             </div>
             <div className="flex items-center">
-              <CheckCircle className="w-6 h-6 text-[#8B4513] mr-2" />
-              <span className="text-[#5D4037]">Priority Support</span>
+              <CheckCircle className="w-6 h-6 text-blue-600 mr-2" />
+              <span className="text-blue-700">Priority Support</span>
             </div>
           </div>
         </div>

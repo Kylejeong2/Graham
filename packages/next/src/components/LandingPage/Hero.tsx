@@ -1,77 +1,28 @@
 import { Button } from "@/components/ui/button"
-import Image from "next/image"
+// import Image from "next/image"
+import { Demo } from "./demo"
 
 export default function Hero() {
   return (
-    <section className="pt-24 md:pt-32">
+    <section className="pt-12 md:pt-16 bg-white">
       <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center space-y-8 text-center">
-          <div className="space-y-4">
-            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
-              Never Miss A Phone Call Again.
-              <br />
-              Ever.
-            </h1>
-            <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl">
-              Make more money and keep customers happy with Graham.
-            </p>
-          </div>
-          <div className="flex flex-col gap-4 min-[400px]:flex-row">
-            <Button className="bg-teal-600 hover:bg-teal-700">How Graham works</Button>
-            <Button variant="outline">Get Started</Button>
-          </div>
-          <div className="mx-auto w-full max-w-4xl">
-            <Image
-              alt="Dashboard Preview"
-              className="rounded-lg border bg-white p-4 shadow-xl"
-              height={600}
-              src="/placeholder.svg"
-              style={{
-                aspectRatio: "1200/600",
-                objectFit: "cover",
-              }}
-              width={1200}
-            />
-          </div>
-          <div className="flex flex-col items-center justify-center gap-4 md:flex-row">
-            <div className="flex items-center gap-2">
-              {/* <div className="rounded-full bg-green-100 p-2">
-                <svg
-                  className=" h-4 w-4 text-green-600"
-                  fill="none"
-                  height="24"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  width="24"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </div> */}
-              {/* <p className="text-sm">99 out of 100 in payroll satisfaction</p> */}
+        <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-center">
+          <div className="flex flex-col items-center text-center md:w-1/2">
+            <div className="space-y-4">
+              <h1 className="text-4xl font-bold tracking-tighter text-blue-900 sm:text-5xl md:text-6xl lg:text-7xl">
+                Never Miss A Phone Call Again.
+              </h1>
+              <p className="mx-auto max-w-[700px] text-blue-700 md:text-xl">
+                Make more money and keep customers happy with Graham.
+              </p>
             </div>
-            <div className="flex items-center gap-2">
-              {/* <div className="rounded-full bg-green-100 p-2">
-                <svg
-                  className=" h-4 w-4 text-green-600"
-                  fill="none"
-                  height="24"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  width="24"
-                >
-                  <path d="M12 2L2 7l10 5 10-5-10-5Z" />
-                  <path d="M2 17l10 5 10-5" />
-                  <path d="M2 12l10 5 10-5" />
-                </svg>
-              </div> */}
-              {/* <p className="text-sm">#1 in small business benefits administration</p> */}
+            <div className="flex flex-col gap-4 min-[400px]:flex-row mt-8">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white">How Graham works</Button>
+              <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">Get Started</Button>
             </div>
+          </div>
+          <div className="w-1/2 flex justify-center items-center">
+            <Demo />
           </div>
         </div>
       </div>

@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,100 +35,92 @@ export function Demo() {
   }
 
   return (
-    <section className="w-full py-4 md:py-4 lg:py-16 xl:py-24 bg-[#F5E6D3]">
-      <div className="container px-4 md:px-6">
-        <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
-          <div className="flex items-center justify-center">
-            <Card className="max-w-2xl mx-auto bg-white shadow-2xl">
-              <CardHeader className="text-center border-b border-[#E6CCB2] pb-6">
-                <div className="flex justify-center mb-4">
-                  <PhoneCall className="w-16 h-16 text-[#8B4513]" />
-                </div>
-                <CardTitle className="text-3xl font-bold text-[#8B4513]">
-                  Experience Graham in Action
-                </CardTitle>
-                <p className="mt-2 text-[#5D4037]">
-                  Get a personalized demo call and see how Graham can transform your customer service
-                </p>
-              </CardHeader>
-              <CardContent className="pt-8">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="name" className="text-[#5D4037] font-semibold">Your Name</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8B4513]" />
-                      <Input
-                        id="name"
-                        type="text"
-                        placeholder="John Doe"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                        className="pl-10 border-2 border-[#8B4513] text-[#5D4037] placeholder-[#A0522D] focus:ring-2 focus:ring-[#8B4513] focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-[#5D4037] font-semibold">Your Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8B4513]" />
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="john@example.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="pl-10 border-2 border-[#8B4513] text-[#5D4037] placeholder-[#A0522D] focus:ring-2 focus:ring-[#8B4513] focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phoneNumber" className="text-[#5D4037] font-semibold">Your Phone Number</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8B4513]" />
-                      <Input
-                        id="phoneNumber"
-                        type="tel"
-                        placeholder="(123) 456-7890"
-                        value={phoneNumber}
-                        onChange={(e) => {
-                          const input = e.target.value.replace(/\D/g, '');
-                          if (input.length <= 10) {
-                            const formatted = input.replace(/(\d{3})(\d{3})(\d{0,4})/, '($1) $2-$3').trim();
-                            setPhoneNumber(formatted);
-                          }
-                        }}
-                        required
-                        pattern="\(\d{3}\)\s\d{3}-\d{4}"
-                        maxLength={14}
-                        className="pl-10 border-2 border-[#8B4513] text-[#5D4037] placeholder-[#A0522D] focus:ring-2 focus:ring-[#8B4513] focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-[#8B4513] text-white hover:bg-[#A0522D] transition-colors duration-300 py-6 text-lg font-semibold"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <PhoneCall className="animate-pulse mr-2" />
-                        Initiating Call...
-                      </>
-                    ) : (
-                      <>
-                        <PhoneCall className="mr-2" />
-                        Get a Demo Call
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
+    <Card className="max-w-2xl mx-auto bg-white shadow-2xl">
+      <CardHeader className="text-center border-b border-blue-100 pb-6">
+        <div className="flex justify-center mb-4">
+          <PhoneCall className="w-16 h-16 text-blue-600" />
         </div>
-      </div>
-    </section>
+        <CardTitle className="text-3xl font-bold text-blue-900">
+          Try Graham Yourself
+        </CardTitle>
+        <p className="mt-2 text-blue-700">
+          Take a demo call and see how Graham can transform your business.
+        </p>
+      </CardHeader>
+      <CardContent className="pt-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-blue-900 font-semibold">Your Name</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-600" />
+              <Input
+                id="name"
+                type="text"
+                placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="pl-10 border-2 border-blue-200 text-blue-900 placeholder-blue-400 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-blue-900 font-semibold">Your Email</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-600" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="john@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="pl-10 border-2 border-blue-200 text-blue-900 placeholder-blue-400 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phoneNumber" className="text-blue-900 font-semibold">Your Phone Number (to receive the call)</Label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-600" />
+              <Input
+                id="phoneNumber"
+                type="tel"
+                placeholder="(123) 456-7890"
+                value={phoneNumber}
+                onChange={(e) => {
+                  const input = e.target.value.replace(/\D/g, '');
+                  if (input.length <= 10) {
+                    const formatted = input.replace(/(\d{3})(\d{3})(\d{0,4})/, '($1) $2-$3').trim();
+                    setPhoneNumber(formatted);
+                  }
+                }}
+                required
+                pattern="\(\d{3}\)\s\d{3}-\d{4}"
+                maxLength={14}
+                className="pl-10 border-2 border-blue-200 text-blue-900 placeholder-blue-400 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+              />
+            </div>
+          </div>
+          <Button 
+            type="submit" 
+            className="w-full bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-300 py-6 text-lg font-semibold"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <PhoneCall className="animate-pulse mr-2" />
+                Initiating Call...
+              </>
+            ) : (
+              <>
+                <PhoneCall className="mr-2" />
+                Get a Demo Call
+              </>
+            )}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   )
 }
