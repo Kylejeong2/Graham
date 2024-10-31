@@ -9,7 +9,9 @@ export default function LandingPage() {
     <div className="flex min-h-screen flex-col">
       <main className="flex-1">
         <Hero />
+        {/* Add a moving "trusted by" with logos */}
         <Features />
+        {/* lottie animation with HOW IT WORKS */}
         <Pricing />
         {/* <Testimonial /> */}
         <WaitlistSection />

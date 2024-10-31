@@ -9,10 +9,10 @@ export default function Hero() {
         <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-center">
           <div className="flex flex-col items-center text-center md:w-1/2">
             <div className="space-y-4">
-              <h1 className="text-4xl font-bold tracking-tighter text-blue-900 sm:text-5xl md:text-6xl lg:text-7xl">
+              <h1 className="text-4xl font-bold tracking-tighter text-black sm:text-5xl md:text-6xl lg:text-7xl">
                 Never Miss A Phone Call Again.
               </h1>
-              <p className="mx-auto max-w-[700px] text-blue-700 md:text-xl">
+              <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl">
                 Make more money and keep customers happy with Graham.
               </p>
             </div>
