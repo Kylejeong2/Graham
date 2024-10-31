@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Agent {
+  id                          String        @id @default(uuid())
+  name                        String
+  createdAt                   DateTime      @default(now())
+  userId                      String        
+  phoneNumber                 String?       
+  systemPrompt                String?       
+  voiceType                   String?       
+  callHistory                 Json?         
+  customResponses             Json          @default("{}")
+  minutesUsed                 Decimal       @default("0")
+  lastModificationTimestamp   Decimal?      
+  areaCode                    String?       
+  isSetupComplete            Boolean       @default(false)
+  user                        User          @relation(fields: [userId], references: [id])
+  usageRecords               UsageRecord[]
+}
+
+model UsageRecord {
+  id          String   @id @default(uuid())
+  userId      String   
+  agentId     String   
+  minutesUsed Decimal  
+  secondsUsed Decimal  
+  voiceType   String   
+  timestamp   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  agent       Agent    @relation(fields: [agentId], references: [id])
+}
+
+model User {
+  id                          String        @id
+  email                       String        @unique
+  name                        String?
+  createdAt                   DateTime      @default(now())
+  updatedAt                   DateTime      @default(now())
+  emailVerified               DateTime?     
+  image                       String?
+  stripeCustomerId            String?       
+  stripePlanId                String?       
+  phoneNumbers                Json          @default("[]")
+  isYearly                    Boolean       @default(false)
+  stripePriceId               String?       
+  subscriptionName            String?       
+  subscriptionStatus          String?       
+  stripeSubscriptionId        String?       
+  subscriptionCancelAt        DateTime?     
+  stripeCurrentPeriodEnd      DateTime?     
+  phoneNumberSubscriptionData Json          @default("{}")
+  agents                      Agent[]
+  usageRecords               UsageRecord[]
+  userSettings               UserSettings?
+
+}
+
+model Waitlist {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Lead {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  phoneNumber String   
+  createdAt   DateTime @default(now())
+
+}
+model UserSettings {
+  userId         String   @id @map("user_id")
+  stopLossAmount Decimal? @map("stop_loss_amount")
+  user           User     @relation(fields: [userId], references: [id])
+
+}

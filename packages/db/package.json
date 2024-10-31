@@ -1,0 +1,26 @@
+{
+    "name": "@graham/db",
+    "packageManager": "yarn@4.1.1",
+    "scripts": {
+        "postinstall": "yarn generate",
+        "generate": "yarn prisma generate",
+        "generate:push": "yarn generate && yarn prisma db push",
+        "generate:push:development": "yarn generate:development && yarn push:development",
+        "generate:push:production": "yarn generate:production && yarn push:production",
+        "generate:development": "dotenv -e .env.development yarn prisma generate",
+        "generate:production": "dotenv -e .env.production -- yarn prisma generate",
+        "studio": "dotenv -e .env.development yarn prisma studio",
+        "studio:production": "dotenv -e .env.production -- yarn prisma studio",
+        "migrate": "dotenv -e .env.development yarn prisma migrate dev",
+        "push:development": "dotenv -e .env.development yarn prisma db push",
+        "push:production": "dotenv -e .env.production -- yarn prisma db push"
+    },
+    "devDependencies": {
+        "dotenv": "^16.4.5",
+        "dotenv-cli": "^7.4.1",
+        "prisma": "^5.17.0"
+    },
+    "dependencies": {
+        "@prisma/client": "^5.17.0"
+    }
+}
