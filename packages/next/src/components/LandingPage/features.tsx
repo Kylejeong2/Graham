@@ -5,7 +5,7 @@ export default function Features() {
   return (
     <section className="w-full py-12 md:py-24 lg:py-32 bg-white">
       <div className="container px-4 md:px-6">
-        <h2 className="text-3xl font-bold tracking-tighter text-blue-900 sm:text-5xl text-center mb-12">
+        <h2 className="text-3xl font-bold tracking-tighter text-black sm:text-5xl text-center mb-12">
           Your business' receptionist who works 24/7.
         </h2>
         <div className="grid gap-6 lg:grid-cols-3">

@@ -38,19 +38,19 @@ export function Demo() {
     <Card className="max-w-2xl mx-auto bg-white shadow-2xl">
       <CardHeader className="text-center border-b border-blue-100 pb-6">
         <div className="flex justify-center mb-4">
-          <PhoneCall className="w-16 h-16 text-blue-600" />
+          <PhoneCall className="w-16 h-16 text-orange-600" />
         </div>
-        <CardTitle className="text-3xl font-bold text-blue-900">
+        <CardTitle className="text-3xl font-bold text-black">
           Try Graham Yourself
         </CardTitle>
-        <p className="mt-2 text-blue-700">
+        <p className="mt-2 text-black">
           Take a demo call and see how Graham can transform your business.
         </p>
       </CardHeader>
       <CardContent className="pt-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-blue-900 font-semibold">Your Name</Label>
+            <Label htmlFor="name" className="text-black font-semibold">Your Name</Label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-600" />
               <Input
@@ -65,7 +65,7 @@ export function Demo() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-blue-900 font-semibold">Your Email</Label>
+            <Label htmlFor="email" className="text-black font-semibold">Your Email</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-600" />
               <Input
@@ -80,7 +80,7 @@ export function Demo() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="phoneNumber" className="text-blue-900 font-semibold">Your Phone Number (to receive the call)</Label>
+            <Label htmlFor="phoneNumber" className="text-black font-semibold">Your Phone Number (to receive the call)</Label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-600" />
               <Input
