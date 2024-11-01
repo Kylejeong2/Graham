@@ -39,7 +39,7 @@ const PaymentForm = () => {
 
   return (
     <Card className="w-full max-w-6xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-      <CardHeader className="bg-[#8B4513] text-white p-4">
+      <CardHeader className="bg-blue-600 text-white p-4">
         <CardTitle className="text-xl font-semibold">Payment Information</CardTitle>
       </CardHeader>
       <CardContent className="p-6">
@@ -57,7 +57,7 @@ const PaymentForm = () => {
           <Button
             type="submit"
             disabled={!stripe || processing}
-            className="w-full bg-[#8B4513] hover:bg-[#A0522D] text-white font-bold py-2 px-4 rounded transition duration-200 ease-in-out"
+            className="w-full bg-blue-500 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded transition duration-200 ease-in-out"
           >
             {processing ? 'Processing...' : 'Save Payment Method'}
           </Button>

@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Provider from "@/components/Layout/QueryClientProvider";
 import MainLayout from "@/components/Layout/MainLayout";
-import { UserInitializer } from '@/components/Layout/UserInitializer';
 import { Navbar } from "@/components/Layout/Navbar";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -26,7 +25,6 @@ export default function RootLayout({
           <Provider>
             <Navbar />
             <MainLayout>
-              <UserInitializer />
               {children}
             </MainLayout>
           </Provider>

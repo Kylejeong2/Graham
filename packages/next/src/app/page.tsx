@@ -1,4 +1,4 @@
-import Hero from "@/components/LandingPage/Hero";
+import Hero from "@/components/LandingPage/hero";
 import Features from "@/components/LandingPage/features";
 import Pricing from "@/components/LandingPage/pricing";
 import Footer from "@/components/LandingPage/footer";

@@ -6,17 +6,17 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Progress } from "@/components/ui/progress"
+// import { Progress } from "@/components/ui/progress"
 import useSubscriptions from "@/hooks/getSubscriptionData"
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-toastify'
-import { Loader2, User, Mail, CreditCard, AlertTriangle, LogOut, Package, Phone, Bell, Shield, ChevronRight, Eye, EyeOff } from "lucide-react"
+import { Loader2, User, Mail, CreditCard, AlertTriangle, LogOut, Package, Phone, Eye, EyeOff } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PaymentElementWrapper } from '@/components/PaymentElement'
 
-const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
+const ProfilePage = () => {
   const { user, isLoaded, isSignedIn } = useUser()
   const { signOut } = useClerk()
   const { subscription, loading, error } = useSubscriptions()
@@ -99,55 +99,56 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
     }
   }
 
-  const handleManageNotifications = (type: 'email' | 'sms') => {
-    // Implement notification management logic
-    console.log(`Managing ${type} notifications`)
-    toast.info(`${type.toUpperCase()} notification settings opened`)
-  }
+  //TODO: 
+  // const handleManageNotifications = (type: 'email' | 'sms') => {
+  //   // Implement notification management logic
+  //   console.log(`Managing ${type} notifications`)
+  //   toast.info(`${type.toUpperCase()} notification settings opened`)
+  // }
 
-  const handleEnableTwoFactor = async () => {
-    try {
-      // await user?.createTwoFactorEnrollment({ strategy: 'email_code' })
-      toast.success('Two-factor authentication setup initiated')
-    } catch (error) {
-      console.error('Error enabling two-factor authentication:', error)
-      toast.error('Failed to initiate two-factor authentication setup')
-    }
-  }
+  // const handleEnableTwoFactor = async () => {
+  //   try {
+  //     // await user?.createTwoFactorEnrollment({ strategy: 'email_code' })
+  //     toast.success('Two-factor authentication setup initiated')
+  //   } catch (error) {
+  //     console.error('Error enabling two-factor authentication:', error)
+  //     toast.error('Failed to initiate two-factor authentication setup')
+  //   }
+  // }
 
-  const handleViewLoginHistory = () => {
-    // Implement login history view logic
-    console.log('Viewing login history')
-    toast.info('Login history view opened')
-  }
+  // const handleViewLoginHistory = () => {
+  //   // Implement login history view logic
+  //   console.log('Viewing login history')
+  //   toast.info('Login history view opened')
+  // }
 
-  const handleManageDataPrivacy = () => {
-    // Implement data privacy management logic
-    console.log('Managing data privacy settings')
-    toast.info('Data privacy settings opened')
-  }
+  // const handleManageDataPrivacy = () => {
+  //   // Implement data privacy management logic
+  //   console.log('Managing data privacy settings')
+  //   toast.info('Data privacy settings opened')
+  // }
 
   if (loading || !isLoaded) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#F5E6D3]">
-        <Loader2 className="w-12 h-12 animate-spin text-[#8B4513]" />
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
       </div>
     )
   }
 
   if (error) {
-    return <div className="flex items-center justify-center min-h-screen bg-[#F5E6D3] text-[#5D4037]">Error: {error}</div>
+    return <div className="flex items-center justify-center min-h-screen bg-gray-100 text-black">Error: {error}</div>
   }
 
   return (
-    <div className="min-h-screen bg-[#F5E6D3] text-[#5D4037] py-6">
+    <div className="min-h-screen bg-gray-100 text-black py-6">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="bg-white shadow-xl rounded-lg overflow-hidden mb-8">
-          <CardHeader className="bg-[#8B4513] text-white p-4">
+          <CardHeader className="bg-blue-600 text-white p-4">
             <div className="flex items-center space-x-4">
               <Avatar className="w-16 h-16 border-2 border-white">
                 <AvatarImage src={user?.imageUrl} />
-                <AvatarFallback className="bg-[#A0522D] text-white text-xl">
+                <AvatarFallback className="bg-gray-700 text-white text-xl">
                   {user?.firstName?.[0]}{user?.lastName?.[0]}
                 </AvatarFallback>
               </Avatar>
@@ -166,7 +167,7 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <Card className="col-span-2 bg-white">
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold text-[#8B4513] flex items-center">
+                  <CardTitle className="text-xl font-semibold text-black flex items-center">
                     <Package className="mr-3 w-6 h-6" /> Subscription Details
                   </CardTitle>
                 </CardHeader>
@@ -174,51 +175,51 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
                   {subscription ? (
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <span className="text-md font-medium text-[#5D4037]">Plan</span>
-                        <span className="text-md font-bold text-[#8B4513]">{subscription.subscriptionName}</span>
+                        <span className="text-md font-medium text-black">Plan</span>
+                        <span className="text-md font-bold text-black">{subscription.subscriptionName}</span>
                       </div>
-                      <Separator className="bg-[#8B4513] opacity-20" />
+                      <Separator className="bg-black opacity-20" />
                       <div className="flex justify-between items-center">
-                        <span className="text-lg font-medium text-[#5D4037]">Billing Cycle</span>
-                        <span className="text-md text-[#5D4037]">{subscription?.isYearly ? 'Yearly' : 'Monthly'}</span>
+                        <span className="text-lg font-medium text-black">Billing Cycle</span>
+                        <span className="text-md text-black">{subscription?.isYearly ? 'Yearly' : 'Monthly'}</span>
                       </div>
-                      <Separator className="bg-[#8B4513] opacity-20" />
+                      <Separator className="bg-black opacity-20" />
                       <div className="flex justify-between items-center">
-                        <span className="text-lg font-medium text-[#5D4037]">Next Billing Date</span>
-                        <span className="text-lg text-[#5D4037]">{new Date(subscription.stripeCurrentPeriodEnd).toLocaleDateString()}</span>
+                        <span className="text-lg font-medium text-black">Next Billing Date</span>
+                        <span className="text-lg text-black">{new Date(subscription.stripeCurrentPeriodEnd).toLocaleDateString()}</span>
                       </div>
-                      <Separator className="bg-[#8B4513] opacity-20" />
+                      <Separator className="bg-black opacity-20" />
                       {subscription.subscriptionCancelAt && (
                         <>
-                          <div className="flex justify-between items-center text-[#A0522D]">
+                          <div className="flex justify-between items-center text-black">
                             <span className="text-lg font-medium">Cancellation Date</span>
                             <span className="text-lg">{new Date(subscription.subscriptionCancelAt).toLocaleDateString()}</span>
                           </div>
-                          <Separator className="bg-[#8B4513] opacity-20" />
+                          <Separator className="bg-black opacity-20" />
                         </>
                       )}
                       <div className="flex justify-between items-center">
-                        <span className="text-lg font-medium text-[#5D4037]">Phone Numbers</span>
-                        <span className="text-lg text-[#5D4037]">
+                        <span className="text-lg font-medium text-black">Phone Numbers</span>
+                        <span className="text-lg text-black">
                           {JSON.stringify(user?.phoneNumbers, null, 2)}
                         </span>
                       </div>
-                      <Separator className="bg-[#8B4513] opacity-20" />
-                      {/* <div className="mt-6">
+                      <Separator className="bg-black opacity-20" />
+                       {/* <div className="mt-6">
                         <p className="text-lg font-medium text-[#5D4037] mb-2">Usage This Month</p>
                         <Progress value={65} className="h-3 bg-[#E6CCB2]" />
                         <div className="bg-[#8B4513] h-3 rounded-full" style={{ width: '65%' }}></div>
                         <p className="text-right text-sm text-[#5D4037] mt-1">650 / 1000 calls</p>
                       </div> */}
-                      <Button onClick={handleManageSubscription} className="w-full mt-6 bg-[#8B4513] hover:bg-[#A0522D] text-white text-lg py-6">
+                      <Button onClick={handleManageSubscription} className="w-full mt-6 bg-white hover:bg-black text-black hover:text-white text-lg py-6">
                         <CreditCard className="mr-2 w-5 h-5" /> Manage Subscription
                       </Button>
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <AlertTriangle className="mx-auto w-16 h-16 text-[#A0522D] mb-4" />
-                      <p className="text-xl text-[#5D4037] mb-4">You are not currently subscribed to any plan.</p>
-                      <Button className="bg-[#8B4513] hover:bg-[#A0522D] text-white text-lg py-6 px-8">
+                      <AlertTriangle className="mx-auto w-16 h-16 text-black mb-4" />
+                      <p className="text-xl text-black mb-4">You are not currently subscribed to any plan.</p>
+                      <Button className="bg-white hover:bg-black text-black hover:text-white text-lg py-6 px-8">
                         View Available Plans
                       </Button>
                     </div>
@@ -228,19 +229,19 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
               <div className="space-y-8">
                 <Card className="bg-white">
                   <CardHeader>
-                    <CardTitle className="text-xl font-semibold text-[#8B4513] flex items-center">
+                    <CardTitle className="text-xl font-semibold text-black flex items-center">
                       <User className="mr-2 w-5 h-5" /> Account Actions
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <Button variant="outline" className="w-full border-[#8B4513] text-white hover:bg-[#E6CCB2] text-lg py-6" onClick={() => setIsEditProfileOpen(true)}>
+                    <Button variant="outline" className="w-full bg-white hover:bg-blue-500 text-black hover:text-white text-lg py-6" onClick={() => setIsEditProfileOpen(true)}>
                       Edit Profile
                     </Button>
-                    <Button variant="outline" className="w-full border-[#8B4513] text-white hover:bg-[#E6CCB2] text-lg py-6" onClick={() => setIsChangePasswordOpen(true)}>
+                    <Button variant="outline" className="w-full bg-white hover:bg-blue-500 text-black hover:text-white text-lg py-6" onClick={() => setIsChangePasswordOpen(true)}>
                       Change Password
                     </Button>
-                    <Separator className="bg-[#8B4513] opacity-20" />
-                    <Button onClick={handleSignOut} variant="destructive" className="w-full bg-[#A0522D] hover:bg-[#8B4513] text-white text-lg py-6">
+                    <Separator className="bg-black opacity-20" />
+                    <Button onClick={handleSignOut} variant="destructive" className="w-full bg-red-500 hover:bg-red-800 text-white hover:text-white text-lg py-6">
                       <LogOut className="mr-2 w-5 h-5" /> Sign Out
                     </Button>
                   </CardContent>
@@ -319,47 +320,47 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
 
       {/* Edit Profile Dialog */}
       <Dialog open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen}>
-        <DialogContent className="bg-[#F5E6D3]">
+        <DialogContent className="bg-gray-100">
           <DialogHeader>
-            <DialogTitle className="text-[#8B4513]">Edit Profile</DialogTitle>
+            <DialogTitle className="text-black">Edit Profile</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="firstName" className="text-[#5D4037]">First Name</Label>
-              <Input id="firstName" value={newFirstName} onChange={(e) => setNewFirstName(e.target.value)} className="bg-white text-black border-[#8B4513]" />
+              <Label htmlFor="firstName" className="text-black">First Name</Label>
+              <Input id="firstName" value={newFirstName} onChange={(e) => setNewFirstName(e.target.value)} className="bg-white text-black border-black" />
             </div>
             <div>
-              <Label htmlFor="lastName" className="text-[#5D4037]">Last Name</Label>
-              <Input id="lastName" value={newLastName} onChange={(e) => setNewLastName(e.target.value)} className="bg-white text-black border-[#8B4513]" />
+              <Label htmlFor="lastName" className="text-black">Last Name</Label>
+              <Input id="lastName" value={newLastName} onChange={(e) => setNewLastName(e.target.value)} className="bg-white text-black border-black" />
             </div>
             <div>
-              <Label htmlFor="phoneNumber" className="text-[#5D4037]">Phone Number</Label>
-              <Input id="phoneNumber" value={newPhoneNumber} onChange={(e) => setNewPhoneNumber(e.target.value)} className="bg-white text-black border-[#8B4513]" />
+              <Label htmlFor="phoneNumber" className="text-black">Phone Number</Label>
+              <Input id="phoneNumber" value={newPhoneNumber} onChange={(e) => setNewPhoneNumber(e.target.value)} className="bg-white text-black border-black" />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" className="border-[#8B4513] text-white" onClick={() => setIsEditProfileOpen(false)}>Cancel</Button>
-            <Button className="bg-[#8B4513] text-white hover:bg-[#A0522D]" onClick={handleEditProfile}>Save Changes</Button>
+            <Button variant="outline" className="bg-white hover:bg-black text-black hover:text-white" onClick={() => setIsEditProfileOpen(false)}>Cancel</Button>
+            <Button className="bg-white hover:bg-black text-black hover:text-white" onClick={handleEditProfile}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Change Password Dialog */}
       <Dialog open={isChangePasswordOpen} onOpenChange={setIsChangePasswordOpen}>
-        <DialogContent className="bg-[#F5E6D3]">
+        <DialogContent className="bg-gray-100">
           <DialogHeader>
-            <DialogTitle className="text-[#8B4513]">Change Password</DialogTitle>
+            <DialogTitle className="text-black">Change Password</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="currentPassword" className="text-[#5D4037]">Current Password</Label>
+              <Label htmlFor="currentPassword" className="text-black">Current Password</Label>
               <div className="relative">
                 <Input
                   id="currentPassword"
                   type={showCurrentPassword ? "text" : "password"}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="bg-white text-black border-[#8B4513] pr-10"
+                  className="bg-white text-black border-black pr-10"
                 />
                 <button
                   type="button"
@@ -371,14 +372,14 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
               </div>
             </div>
             <div>
-              <Label htmlFor="newPassword" className="text-[#5D4037]">New Password</Label>
+              <Label htmlFor="newPassword" className="text-black">New Password</Label>
               <div className="relative">
                 <Input
                   id="newPassword"
                   type={showNewPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="bg-white text-black border-[#8B4513] pr-10"
+                  className="bg-white text-black border-black pr-10"
                 />
                 <button
                   type="button"
@@ -390,14 +391,14 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
               </div>
             </div>
             <div>
-              <Label htmlFor="confirmNewPassword" className="text-[#5D4037]">Confirm New Password</Label>
+              <Label htmlFor="confirmNewPassword" className="text-black">Confirm New Password</Label>
               <div className="relative">
                 <Input
                   id="confirmNewPassword"
                   type={showConfirmNewPassword ? "text" : "password"}
                   value={confirmNewPassword}
                   onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  className="bg-white text-black border-[#8B4513] pr-10"
+                  className="bg-white text-black border-black pr-10"
                 />
                 <button
                   type="button"
@@ -410,8 +411,8 @@ const ProfilePage = ({ params: { id } }: { params: { id: string } }) => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" className="border-[#8B4513] text-white" onClick={() => setIsChangePasswordOpen(false)}>Cancel</Button>
-            <Button className="bg-[#8B4513] text-white hover:bg-[#A0522D]" onClick={handleChangePassword}>Change Password</Button>
+            <Button variant="outline" className="bg-white hover:bg-black text-black hover:text-white" onClick={() => setIsChangePasswordOpen(false)}>Cancel</Button>
+            <Button className="bg-white hover:bg-black text-black hover:text-white" onClick={handleChangePassword}>Change Password</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -16,9 +16,9 @@ export default function Hero() {
                 Make more money and keep customers happy with Graham.
               </p>
             </div>
-            <div className="flex flex-col gap-4 min-[400px]:flex-row mt-8">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">How Graham works</Button>
-              <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">Get Started</Button>
+            <div className="flex flex-col gap-4 min-[400px]:flex-row mt-8 justify-start">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white text-lg py-6 px-8">How Graham works</Button>
+              <Button variant="outline" className="bg-orange-100 text-black hover:bg-blue-50 text-lg py-6 px-8">Get Started</Button>
             </div>
           </div>
           <div className="w-1/2 flex justify-center items-center">

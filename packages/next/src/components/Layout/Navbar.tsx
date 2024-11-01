@@ -12,9 +12,9 @@ export async function Navbar() {
   return (
     <header className="px-4 lg:px-6 h-16 flex items-center bg-white border-b border-blue-100">
       <div className="flex items-center space-x-2">
-        <Phone className="h-6 w-6 text-blue-600" />
+        <Phone className="h-6 w-6 text-orange-600" />
         <Link href="/">
-          <h1 className="text-4xl font-bold text-blue-900">graham</h1>
+          <h1 className="text-4xl font-bold text-orange-600">graham</h1>
         </Link>
       </div>
       <NavLinks />
