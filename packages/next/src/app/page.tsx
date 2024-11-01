@@ -1,4 +1,5 @@
 import Hero from "@/components/LandingPage/hero";
+import Savings from "@/components/LandingPage/savings";
 import Features from "@/components/LandingPage/features";
 import Pricing from "@/components/LandingPage/pricing";
 import Footer from "@/components/LandingPage/footer";
@@ -13,6 +14,7 @@ export default function LandingPage() {
         <Features />
         {/* lottie animation with HOW IT WORKS */}
         <Pricing />
+        <Savings />
         {/* <Testimonial /> */}
         <WaitlistSection />
       </main>
