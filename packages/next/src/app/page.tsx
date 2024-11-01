@@ -13,6 +13,7 @@ export default function LandingPage() {
         {/* Add a moving "trusted by" with logos */}
         <Features />
         {/* can answer questions about your business ie hours open general questions etc from uploading your documents */}
+        {/* can take multiple calls at once all day every day  */}
         {/* bring your own phone number */}
         {/* lottie animation with HOW IT WORKS */}
         <Pricing />
