@@ -168,7 +168,7 @@ const ProfilePage = () => {
               <Card className="col-span-2 bg-white">
                 <CardHeader>
                   <CardTitle className="text-xl font-semibold text-black flex items-center">
-                    <Package className="mr-3 w-6 h-6" /> Subscription Details
+                    <Package className="mr-3 text-orange-600 w-6 h-6" /> Subscription Details
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -211,7 +211,7 @@ const ProfilePage = () => {
                         <div className="bg-[#8B4513] h-3 rounded-full" style={{ width: '65%' }}></div>
                         <p className="text-right text-sm text-[#5D4037] mt-1">650 / 1000 calls</p>
                       </div> */}
-                      <Button onClick={handleManageSubscription} className="w-full mt-6 bg-white hover:bg-black text-black hover:text-white text-lg py-6">
+                      <Button onClick={handleManageSubscription} className="w-full mt-6 bg-orange-600 hover:bg-orange-700 text-white text-lg py-6">
                         <CreditCard className="mr-2 w-5 h-5" /> Manage Subscription
                       </Button>
                     </div>

@@ -8,9 +8,15 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId
+    }
+  });
+
   const count = await prisma.agent.count({
     where: {
-      userId: userId
+      userId: user?.id
     }
   });
 

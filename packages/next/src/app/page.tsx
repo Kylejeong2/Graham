@@ -12,6 +12,8 @@ export default function LandingPage() {
         <Hero />
         {/* Add a moving "trusted by" with logos */}
         <Features />
+        {/* can answer questions about your business ie hours open general questions etc from uploading your documents */}
+        {/* bring your own phone number */}
         {/* lottie animation with HOW IT WORKS */}
         <Pricing />
         <Savings />

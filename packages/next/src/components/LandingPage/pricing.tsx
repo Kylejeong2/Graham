@@ -1,26 +1,24 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Check } from "lucide-react"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useRouter } from 'next/navigation'
 import { useUser } from "@clerk/nextjs"
 
-const PricingSwitch = ({ onSwitch }: { onSwitch: (value: string) => void }) => (
-    <Tabs defaultValue="0" className="w-40 mx-auto mb-8" onValueChange={onSwitch}>
-      <TabsList className="py-6 px-2 border-2 border-blue-200 bg-white">
-        <TabsTrigger value="0" className="text-base text-blue-600 data-[state=active]:bg-blue-50">Monthly</TabsTrigger>
-        <TabsTrigger value="1" className="text-base text-blue-600 data-[state=active]:bg-blue-50">Yearly</TabsTrigger>
-      </TabsList>
-    </Tabs>
-)
+// const PricingSwitch = ({ onSwitch }: { onSwitch: (value: string) => void }) => (
+//     <Tabs defaultValue="0" className="w-40 mx-auto mb-8" onValueChange={onSwitch}>
+//       <TabsList className="py-6 px-2 border-2 border-blue-200 bg-white">
+//         <TabsTrigger value="0" className="text-base text-blue-600 data-[state=active]:bg-blue-50">Monthly</TabsTrigger>
+//         <TabsTrigger value="1" className="text-base text-blue-600 data-[state=active]:bg-blue-50">Yearly</TabsTrigger>
+//       </TabsList>
+//     </Tabs>
+// )
 
 export default function Pricing() {
-  const [isYearly, setIsYearly] = useState(false)
-  const togglePricingPeriod = (value: string) => setIsYearly(parseInt(value) === 1)
+  // const [isYearly, setIsYearly] = useState(false)
+  // const togglePricingPeriod = (value: string) => setIsYearly(parseInt(value) === 1)
   const router = useRouter()
   const { user } = useUser()
 
@@ -33,28 +31,26 @@ export default function Pricing() {
 
   const plans = [
     {
-      title: "Simple",
-      description: "Best for new businesses and startups",
-      monthlyPrice: 40,
-      yearlyPrice: 432, // 40 * 12 * 0.9 (10% discount)
+      title: "Growth",
+      description: "Perfect for fast-growing businesses",
+      monthlyPrice: "$0.20 per minute",
       features: [
-        "Full-service payroll",
-        "Employee self-service",
-        "Health insurance administration",
-        "Workers' comp administration"
+        "Pay only for what you use",
+        "Basic Call Routing",
+        "Email Support",
+        "Standard Voices"
       ]
     },
     {
-      title: "Plus",
-      description: "Best for growing businesses",
-      monthlyPrice: 80,
-      yearlyPrice: 864, // 80 * 12 * 0.9 (10% discount)
+      title: "Scale",
+      description: "Perfect for businesses looking to scale to the next level.",
+      monthlyPrice: "Custom",
+      yearlyPrice: "Custom",
       features: [
-        "Everything in Simple",
-        "Multi-state payroll",
-        "Time tracking",
-        "PTO policies and approvals",
-        "Employee onboarding tools"
+        "Everything in Growth",
+        "Access to new features first",
+        "Custom Integrations",
+        "24/7 Support",
       ]
     }
   ]
@@ -71,18 +67,19 @@ export default function Pricing() {
           </p>
         </div>
         
-        <PricingSwitch onSwitch={togglePricingPeriod} />
+        {/* <PricingSwitch onSwitch={togglePricingPeriod} /> */}
         <div className="grid gap-6 lg:grid-cols-2">
           {plans.map((plan) => (
             <Card key={plan.title} className="bg-white border-blue-100 hover:shadow-lg transition-all duration-300">
               <CardHeader>
-                <CardTitle className="text-blue-900">{plan.title}</CardTitle>
+                <CardTitle className="text-2xl text-blue-900">{plan.title}</CardTitle>
                 <CardDescription className="text-blue-600">{plan.description}</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-4xl font-bold text-blue-900">
-                  ${isYearly ? plan.yearlyPrice : plan.monthlyPrice}
-                  <span className="text-xl text-blue-600">/{isYearly ? 'yr' : 'mo'}</span>
+                  {/* {isYearly ? plan.yearlyPrice : plan.monthlyPrice} */}
+                  {plan.monthlyPrice}
+                  <span className="text-xl text-blue-600">/{'mo'}</span>
                 </p>
                 <ul className="mt-4 space-y-2">
                   {plan.features.map((feature, index) => (

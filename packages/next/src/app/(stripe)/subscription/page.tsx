@@ -4,7 +4,6 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Check, Loader2 } from "lucide-react"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useRouter } from 'next/navigation'
 import { useUser } from "@clerk/nextjs"
 import { loadStripe } from '@stripe/stripe-js'
@@ -12,14 +11,14 @@ import useSubscriptions from "@/hooks/getSubscriptionData"
 import { toast } from 'react-hot-toast'
 import { plans } from "@/constants/plans"
 
-const PricingSwitch = ({ onSwitch }: { onSwitch: (value: string) => void }) => (
-  <Tabs defaultValue="0" className="w-40 mx-auto" onValueChange={onSwitch}>
-    <TabsList className="py-6 px-2">
-      <TabsTrigger value="0" className="text-base">Monthly</TabsTrigger>
-      <TabsTrigger value="1" className="text-base">Yearly</TabsTrigger>
-    </TabsList>
-  </Tabs>
-)
+// const PricingSwitch = ({ onSwitch }: { onSwitch: (value: string) => void }) => (
+//   <Tabs defaultValue="0" className="w-40 mx-auto" onValueChange={onSwitch}>
+//     <TabsList className="py-6 px-2">
+//       <TabsTrigger value="0" className="text-base">Monthly</TabsTrigger>
+//       <TabsTrigger value="1" className="text-base">Yearly</TabsTrigger>
+//     </TabsList>
+//   </Tabs>
+// )
 
 export default function SubscriptionPage() {
   const router = useRouter()
@@ -110,7 +109,7 @@ export default function SubscriptionPage() {
     }
   }
 
-  const isSubscribed = isSignedIn && subscription && subscription.status === "active";
+  // const isSubscribed = isSignedIn && subscription && subscription.status === "active";
 
   return (
     <div className="min-h-screen bg-[#E6CCB2]">

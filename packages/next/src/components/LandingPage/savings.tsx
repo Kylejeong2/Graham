@@ -81,7 +81,7 @@ export default function SavingsCalculator() {
           <CardHeader className="border-b border-blue-100 pb-4">
             <CardTitle className="flex items-center gap-2 text-blue-900 text-2xl">
               <Calculator className="w-6 h-6 text-orange-600" />
-              Savings Calculator
+              Graham vs Human Receptionist
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6 space-y-6">
