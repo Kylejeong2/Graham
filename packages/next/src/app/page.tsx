@@ -1,4 +1,5 @@
 import Hero from "@/components/LandingPage/hero";
+import Savings from "@/components/LandingPage/savings";
 import Features from "@/components/LandingPage/features";
 import Pricing from "@/components/LandingPage/pricing";
 import Footer from "@/components/LandingPage/footer";
@@ -11,8 +12,11 @@ export default function LandingPage() {
         <Hero />
         {/* Add a moving "trusted by" with logos */}
         <Features />
+        {/* can answer questions about your business ie hours open general questions etc from uploading your documents */}
+        {/* bring your own phone number */}
         {/* lottie animation with HOW IT WORKS */}
         <Pricing />
+        <Savings />
         {/* <Testimonial /> */}
         <WaitlistSection />
       </main>

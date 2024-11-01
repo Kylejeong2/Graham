@@ -26,9 +26,9 @@ export async function Navbar() {
 function NavLinks() {
   return (
     <nav className="ml-auto hidden md:flex gap-4 sm:gap-6">
-      <Link href="/subscription" className="text-blue-700 hover:text-blue-900 hover:underline underline-offset-4">
+      {/* <Link href="/subscription" className="text-blue-700 hover:text-blue-900 hover:underline underline-offset-4">
         Pricing
-      </Link>
+      </Link> */}
     </nav>
   )
 }

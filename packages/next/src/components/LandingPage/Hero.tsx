@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 // import Image from "next/image"
 import { Demo } from "./demo"
+import Link from "next/link"
 
 export default function Hero() {
   return (
@@ -13,12 +14,14 @@ export default function Hero() {
                 Never Miss A Phone Call Again.
               </h1>
               <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl">
-                Make more money and keep customers happy with Graham.
+                Make more revenue and keep customers happier with Graham.
               </p>
             </div>
             <div className="flex flex-col gap-4 min-[400px]:flex-row mt-8 justify-start">
               <Button className="bg-blue-600 hover:bg-blue-700 text-white text-lg py-6 px-8">How Graham works</Button>
-              <Button variant="outline" className="bg-orange-100 text-black hover:bg-blue-50 text-lg py-6 px-8">Get Started</Button>
+              <Button asChild variant="outline" className="bg-orange-100 text-black hover:bg-orange-500 hover:text-white text-lg py-6 px-8">
+                <Link href="/sign-up">Get Started</Link>
+              </Button>
             </div>
           </div>
           <div className="w-1/2 flex justify-center items-center">

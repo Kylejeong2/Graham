@@ -1,27 +1,31 @@
 import React from 'react';
 import Link from 'next/link';
-import { UserButton } from '@clerk/nextjs';
-import { ArrowLeft, Plus, Coffee } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from "@graham/db";
 
-import { CreateAgent } from '@/components/Common/CreateAgent';
+import { CreateAgent } from '@/components/Agent/CreateAgent';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { redirect } from 'next/navigation';
 
 const DashboardPage = async () => {
     const { userId } = auth();
-    const agents = await prisma.agent.findMany({
-        where: {
-            userId: userId!
-        }
-    });
 
+    if(!userId) {
+        redirect('/sign-in');
+    }
     const user = await prisma.user.findUnique({
         where: {
             id: userId!
+        }
+    });
+
+    const agents = await prisma.agent.findMany({
+        where: {
+            userId: user?.id
         }
     });
 
@@ -40,7 +44,7 @@ const DashboardPage = async () => {
                             </Link>
                             <h1 className='text-3xl font-bold text-blue-900'>My Agents</h1>
                         </div>
-                        <UserButton />
+                        {/* <UserButton /> */}
                     </div>
                 </header>
 
@@ -49,7 +53,7 @@ const DashboardPage = async () => {
                 {agents.length === 0 ? (
                     <Card className='bg-white shadow-lg'>
                         <CardContent className='p-6 text-center'>
-                            <Coffee className='w-16 h-16 text-blue-600 mx-auto mb-4' />
+                            {/* <Coffee className='w-16 h-16 text-blue-600 mx-auto mb-4' /> */}
                             <h2 className='text-xl text-blue-900 mb-2'>You don&apos;t have any Agents yet!</h2>
                             <p className='text-blue-700 mb-4'>Create your first Agent to get started.</p>
                             <CreateAgent />
