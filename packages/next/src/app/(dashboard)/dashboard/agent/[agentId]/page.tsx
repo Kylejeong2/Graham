@@ -21,7 +21,7 @@ const AgentPage = async ({params: { agentId }}: Props) => {
         return redirect('/dashboard');
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
         where: { id: userId }
     });
     
@@ -31,8 +31,7 @@ const AgentPage = async ({params: { agentId }}: Props) => {
 
     const agent = await prisma.agent.findFirst({
         where: {
-            id: agentId,
-            userId: userId
+            id: agentId
         }
     });
 
@@ -53,7 +52,7 @@ const AgentPage = async ({params: { agentId }}: Props) => {
                         <TabsTrigger value="testing" className="text-blue-600">Testing</TabsTrigger>
                     </TabsList>
                     <TabsContent value="setup">
-                        <AgentSetup agent={agent} />
+                        <AgentSetup agentId={agentId} />
                     </TabsContent>
                     <TabsContent value="editing">
                         {/* <AgentEditing agent={agent} user={user} /> */}

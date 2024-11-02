@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 // import { AgentEditing } from './AgentEditing';
-import type { Agent } from '@graham/db';
 import { Button } from "@/components/ui/button"
 import { toast } from 'react-toastify';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,7 +18,7 @@ interface Voice {
     language: string;
 }
 
-export const AgentSetup: React.FC<{ agent: Agent; }> = ({ agent }) => {
+export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
     const [isCompleting, setIsCompleting] = useState(false);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
     const [customInstructions, setCustomInstructions] = useState('');
@@ -53,7 +52,7 @@ export const AgentSetup: React.FC<{ agent: Agent; }> = ({ agent }) => {
             // TODO: Process document for RAG
             // TODO: Update agent with voice and instructions
             
-            const response = await fetch(`/api/agent/completeSetup/${agent.id}`, {
+            const response = await fetch(`/api/agent/completeSetup/${agentId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

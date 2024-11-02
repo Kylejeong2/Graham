@@ -1,9 +1,7 @@
 'use client'
 import React from 'react'
 
-type Props = {}
-
-const error = (props: Props) => {
+const error = () => {
   return (
     <div>error</div>
   )

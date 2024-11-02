@@ -1,19 +1,12 @@
 import { NextResponse } from 'next/server';
-
-interface Voice {
-    id: string;
-    name: string;
-    description: string;
-    language: string;
-    is_public: boolean;
-}
+import type { Voice } from "@cartesia/cartesia-js";
 
 export async function GET() {
     try {
         const response = await fetch('https://api.cartesia.ai/voices/', {
             headers: {
                 'Cartesia-Version': '2024-06-10',
-                'X-API-Key': process.env.CARTESIA_API_KEY || '',
+                'X-API-Key': process.env.CARTESIA_API_KEY!,
             },
         });
 
@@ -32,7 +25,7 @@ export async function GET() {
     } catch (error) {
         console.error('Error fetching voices:', error);
         return NextResponse.json(
-            { error: 'Failed to fetch voices' },
+            { error: `Failed to fetch voices: ${error}` },
             { status: 500 }
         );
     }
