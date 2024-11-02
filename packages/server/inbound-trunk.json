@@ -1,6 +1,6 @@
 {
     "trunk": {
-        "name": "Twilio inbound trunk",
-        "numbers": ["+18447945764"]
+      "name": "Twilio inbound trunk",
+      "numbers": ["+18447945764"]
     }
-}
+  }
