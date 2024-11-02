@@ -17,6 +17,7 @@ const DashboardPage = async () => {
     if(!userId) {
         redirect('/sign-in');
     }
+    
     const user = await prisma.user.findUnique({
         where: {
             id: userId!
@@ -32,7 +33,7 @@ const DashboardPage = async () => {
     const isSubscribed = user?.subscriptionStatus === 'active';
 
     return (
-        <div className='min-h-screen bg-blue-50 text-blue-900'>
+        <div className='min-h-screen bg-white text-blue-900'>
             <div className='max-w-7xl mx-auto p-6 md:p-10'>
                 <header className='mb-8'>
                     <div className='flex justify-between items-center'>
@@ -42,13 +43,13 @@ const DashboardPage = async () => {
                                     <ArrowLeft className='mr-2 w-4 h-4'/>Back
                                 </Button>
                             </Link>
-                            <h1 className='text-3xl font-bold text-blue-900'>My Agents</h1>
+                            <h1 className='text-3xl font-bold text-black'>My Workers</h1>
                         </div>
                         {/* <UserButton /> */}
                     </div>
                 </header>
 
-                <Separator className='bg-blue-200 my-6' />
+                <Separator className='bg-orange-500 my-6' />
                 
                 {agents.length === 0 ? (
                     <Card className='bg-white shadow-lg'>

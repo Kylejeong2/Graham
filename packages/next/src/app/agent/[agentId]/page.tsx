@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import React from 'react'
 import { AgentTitleBar } from '@/components/Agent/AgentTitleBar';
 // import { AgentEditing } from '@/components/Agent/AgentEditing';
-import { AgentTesting } from '@/components/Agent/AgentTesting';
+// import { AgentTesting } from '@/components/Agent/AgentTesting';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { AgentSetup } from '@/components/Agent/AgentSetup';
 
@@ -44,7 +44,6 @@ const AgentPage = async ({params: { agentId }}: Props) => {
         <div className='min-h-screen bg-blue-50 py-4 px-10'>
             <div className='max-w-8xl mx-auto space-y-4'>
                 <AgentTitleBar 
-                    user={user}
                     agent={agent}
                 />
                 <Tabs defaultValue={agent.isSetupComplete ? "editing" : "setup"} className="bg-white rounded-lg p-4">
@@ -54,13 +53,13 @@ const AgentPage = async ({params: { agentId }}: Props) => {
                         <TabsTrigger value="testing" className="text-blue-600">Testing</TabsTrigger>
                     </TabsList>
                     <TabsContent value="setup">
-                        <AgentSetup agent={agent} user={user} />
+                        <AgentSetup agent={agent} />
                     </TabsContent>
                     <TabsContent value="editing">
                         {/* <AgentEditing agent={agent} user={user} /> */}
                     </TabsContent>
                     <TabsContent value="testing">
-                        <AgentTesting agent={agent} />
+                        {/* <AgentTesting agent={agent} /> */}
                     </TabsContent>
                 </Tabs>
             </div>

@@ -19,7 +19,7 @@ export default function Hero() {
             </div>
             <div className="flex flex-col gap-4 min-[400px]:flex-row mt-8 justify-start">
               <Button className="bg-blue-600 hover:bg-blue-700 text-white text-lg py-6 px-8">How Graham works</Button>
-              <Button asChild variant="outline" className="bg-orange-100 text-black hover:bg-orange-500 hover:text-white text-lg py-6 px-8">
+              <Button asChild variant="outline" className="hover:bg-orange-100 hover:text-black bg-orange-500 text-white text-lg py-6 px-8">
                 <Link href="/sign-up">Get Started</Link>
               </Button>
             </div>

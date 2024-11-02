@@ -13,7 +13,7 @@ from livekit.agents import (
     metrics,
 )
 from livekit.agents.pipeline import VoicePipelineAgent
-from livekit.plugins import deepgram, openai, silero
+from livekit.plugins import cartesia, deepgram, openai, silero
 
 load_dotenv()
 logger = logging.getLogger("voice-assistant")
@@ -47,8 +47,8 @@ async def entrypoint(ctx: JobContext):
     agent = VoicePipelineAgent(
         vad=ctx.proc.userdata["vad"],
         stt=deepgram.STT(model=dg_model),
-        llm=openai.LLM(),
-        tts=openai.TTS(),
+        llm=openai.LLM().with_groq(model="llama3.1-8b"),
+        tts=cartesia.TTS(),
         chat_ctx=initial_ctx,
     )
 
