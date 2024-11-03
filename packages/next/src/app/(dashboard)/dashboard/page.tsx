@@ -76,7 +76,7 @@ const DashboardPage = async () => {
                                 </Card>
                             )}
                             {agents.map(agent => (
-                                <Link href={`/agent/${agent.id}`} key={agent.id}>
+                                <Link href={`/dashboard/agent/${agent.id}`} key={agent.id}>
                                     <Card className='bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1'>
                                         <CardHeader className='pb-2'>
                                             <Avatar className='w-16 h-16 mx-auto'>

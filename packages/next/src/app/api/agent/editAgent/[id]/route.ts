@@ -10,25 +10,25 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 
   const body = await req.json();
-  const { name, phoneNumber, systemPrompt, voiceType, areaCode } = body;
+  const { phoneNumber, systemPrompt, voiceId, areaCode } = body;
 
   try {
     const updatedAgent = await prisma.agent.update({
       where: { id: params.id },
       data: {
-        name,
         phoneNumber,
         systemPrompt,
-        voiceType,
+        voiceId,
         areaCode,
       }
     });
 
-    return NextResponse.json(updatedAgent);
+    return NextResponse.json(updatedAgent, { status: 200 });
   } catch (error) {
     console.error("Error updating agent:", error);
-    return new NextResponse("Failed to update agent", {
-      status: 500,
-    });
+    return NextResponse.json(
+      { error: 'Failed to update agent' }, 
+      { status: 500 }
+    );
   }
 }

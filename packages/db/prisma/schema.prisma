@@ -15,11 +15,12 @@ model Agent {
   userId                      String        
   phoneNumber                 String?       
   systemPrompt                String?       
-  voiceType                   String?       
+  voiceId                     String?       
+  voiceName                   String?       
   callHistory                 Json?         
   customResponses             Json          @default("{}")
-  minutesUsed                 Decimal       @default("0")
-  lastModificationTimestamp   Decimal?      
+  minutesUsed                 Int           @default(0) // round up to the nearest minute
+  lastModificationTimestamp   String?      
   areaCode                    String?       
   isSetupComplete            Boolean       @default(false)
   user                        User          @relation(fields: [userId], references: [id])

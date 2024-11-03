@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 import Provider from "@/components/Layout/QueryClientProvider";
 import MainLayout from "@/components/Layout/MainLayout";
 import { Navbar } from "@/components/Layout/Navbar";
+import { Analytics } from "@vercel/analytics/react"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,8 +20,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider afterSignOutUrl="/">
-      <html lang="en" className="light">
+    <>
+      <Analytics />
+      <ClerkProvider afterSignOutUrl="/">
+        <html lang="en" className="light">
         <body className={inter.className}>
           <Provider>
             <Navbar />
@@ -30,6 +33,7 @@ export default function RootLayout({
           </Provider>
         </body>
       </html>
-    </ClerkProvider>
+      </ClerkProvider>
+    </>
   );
 }

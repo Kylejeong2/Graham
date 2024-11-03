@@ -8,12 +8,13 @@ export async function PATCH(
 ) {
     try {
         const { agentId } = params;
-        const { isSetupComplete } = await req.json();
+        const { systemPrompt, voiceId } = await req.json();
 
         const updatedAgent = await prisma.agent.update({
             where: { id: agentId },
             data: { 
-                isSetupComplete 
+                systemPrompt,
+                voiceId
             }
         });
 

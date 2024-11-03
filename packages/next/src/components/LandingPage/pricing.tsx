@@ -33,7 +33,7 @@ export default function Pricing() {
     {
       title: "Growth",
       description: "Perfect for fast-growing businesses",
-      monthlyPrice: "$0.20 per minute",
+      monthlyPrice: "$0.20/min",
       features: [
         "Pay only for what you use",
         "Basic Call Routing",
@@ -79,7 +79,6 @@ export default function Pricing() {
                 <p className="text-4xl font-bold text-blue-900">
                   {/* {isYearly ? plan.yearlyPrice : plan.monthlyPrice} */}
                   {plan.monthlyPrice}
-                  <span className="text-xl text-blue-600">/{'mo'}</span>
                 </p>
                 <ul className="mt-4 space-y-2">
                   {plan.features.map((feature, index) => (
