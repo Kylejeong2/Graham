@@ -41,9 +41,8 @@ export async function POST(req: Request) {
             );
         }
 
-        // Enhance instructions using GPT-4
         const completion = await openai.chat.completions.create({
-            model: "gpt-4o",
+            model: "gpt-4o-mini",
             messages: [
                 { role: "system", content: SYSTEM_PROMPT },
                 { role: "user", content: `Please enhance these AI agent instructions: ${instructions}` }

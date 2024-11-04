@@ -3,8 +3,6 @@ import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import React from 'react'
 import { AgentTitleBar } from '@/components/Agent/AgentTitleBar';
-// import { AgentEditing } from '@/components/Agent/AgentEditing';
-// import { AgentTesting } from '@/components/Agent/AgentTesting';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { AgentSetup } from '@/components/Agent/AgentSetup';
 
@@ -48,14 +46,10 @@ const AgentPage = async ({params: { agentId }}: Props) => {
                 <Tabs defaultValue={agent.isSetupComplete ? "editing" : "setup"} className="bg-white rounded-lg p-4">
                     <TabsList className="border-b border-blue-100">
                         <TabsTrigger value="setup" className="text-blue-600">Setup</TabsTrigger>
-                        <TabsTrigger value="editing" className="text-blue-600">Edit</TabsTrigger>
                         <TabsTrigger value="testing" className="text-blue-600">Testing</TabsTrigger>
                     </TabsList>
                     <TabsContent value="setup">
                         <AgentSetup agentId={agentId} />
-                    </TabsContent>
-                    <TabsContent value="editing">
-                        {/* <AgentEditing agent={agent} user={user} /> */}
                     </TabsContent>
                     <TabsContent value="testing">
                         {/* <AgentTesting agent={agent} /> */}

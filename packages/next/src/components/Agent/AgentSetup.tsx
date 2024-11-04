@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { MessageSquare, Upload, Volume2, UploadCloud, Download, Loader2, Play, Square } from 'lucide-react'
+import { MessageSquare, Upload, Volume2, UploadCloud, Download, Loader2, Play, Square, Phone } from 'lucide-react'
 import debounce from 'lodash/debounce';
 import type { Agent } from '@graham/db';
 
@@ -25,6 +25,10 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
     const [isLoadingVoices, setIsLoadingVoices] = useState(false);
     const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [userPhoneNumbers, setUserPhoneNumbers] = useState<string[]>([]);
+    const [selectedPhoneNumber, setSelectedPhoneNumber] = useState<string>('');
+    const [isEnrichingInstructions, setIsEnrichingInstructions] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     
     // Voice selection modal handlers
     const openVoiceModal = () => setIsVoiceModalOpen(true);
@@ -48,21 +52,25 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
         try {
             // TODO: Upload file to storage
             // TODO: Process document for RAG
+            const updateData = {
+                agentId,
+                systemPrompt: customInstructions,
+                voiceId: selectedVoice,
+                voiceName: selectedVoiceName,
+            };
             
-            const response = await fetch(`/api/agent/updateAgent/${agentId}`, {
+            const response = await fetch(`/api/agent/updateAgent`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    systemPrompt: customInstructions,
-                    voiceId: selectedVoice,
-                }),
+                body: JSON.stringify(updateData),
             });
+
+            const result = await response.json();
 
             if (response.ok) {
                 toast.success('Setup completed successfully');
-                window.location.reload();
             } else {
-                throw new Error('Failed to complete setup');
+                throw new Error(result.error || 'Failed to complete setup');
             }
         } catch (error) {
             console.error('Error completing setup:', error);
@@ -94,46 +102,63 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
 
     const handleVoiceSelect = async (voice: any) => {
         try {
-            // Update local state
             setSelectedVoice(voice.voice_id);
             setSelectedVoiceName(voice.name);
-
-            // Update in database
-            handleUpdateAgent();
-
             closeVoiceModal();
-            toast.success('Voice updated successfully');
+
+            const updateData = {
+                agentId,
+                systemPrompt: customInstructions,
+                voiceId: voice.voice_id,  // Use the new value directly
+                voiceName: voice.name,    // Use the new value directly
+            };
+            
+            const response = await fetch(`/api/agent/updateAgent`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updateData),
+            });
+
+            const result = await response.json();
+            
+            if (response.ok) {
+                toast.success('Voice updated successfully');
+            } else {
+                throw new Error(result.error || 'Failed to update voice');
+            }
         } catch (error) {
             console.error('Error updating voice:', error);
             toast.error('Failed to update voice selection');
         }
     };
 
-    // Add debounced instruction update
+    // Create debounced save function
     const debouncedInstructionUpdate = useCallback(
-        debounce(async (instructions: string) => {
+        debounce(async (newInstructions: string) => {
+            setIsSaving(true);
             try {
-                const response = await fetch('/api/agent/enrich-instructions', {
-                    method: 'POST',
+                const response = await fetch(`/api/agent/updateAgent`, {
+                    method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        instructions,
                         agentId,
+                        systemPrompt: newInstructions,
                     }),
                 });
 
                 if (!response.ok) {
                     throw new Error('Failed to update instructions');
                 }
-
-                const data = await response.json();
-                setCustomInstructions(data.enhancedInstructions);
-                toast.success('Instructions enhanced and updated');
+                
+                // Optional: Show success toast
+                // toast.success('Instructions saved');
             } catch (error) {
                 console.error('Error updating instructions:', error);
                 toast.error('Failed to update instructions');
+            } finally {
+                setIsSaving(false);
             }
-        }, 1000),
+        }, 2000),
         [agentId]
     );
 
@@ -221,7 +246,77 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
         fetchAgentData();
     }, [agentId]);
 
-    // Update the return statement to handle loading state
+    // Add phone numbers fetch
+    useEffect(() => {
+        const fetchUserPhoneNumbers = async () => {
+            try {
+                const response = await fetch('/api/user/getPhoneNumbers');
+                if (!response.ok) throw new Error('Failed to fetch phone numbers');
+                const data = await response.json();
+                setUserPhoneNumbers(JSON.parse(data.phoneNumbers || '[]'));
+            } catch (error) {
+                console.error('Error fetching phone numbers:', error);
+                toast.error('Failed to load phone numbers');
+            }
+        };
+
+        fetchUserPhoneNumbers();
+    }, []);
+
+    // Add instruction enhancement handler
+    const handleEnhanceInstructions = async () => {
+        if (!customInstructions.trim()) {
+            toast.warn('Please add some instructions first');
+            return;
+        }
+
+        setIsEnrichingInstructions(true);
+        try {
+            const response = await fetch('/api/agent/enrich-instructions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    instructions: customInstructions,
+                    agentId,
+                }),
+            });
+
+            if (!response.ok) throw new Error('Failed to enhance instructions');
+            
+            const data = await response.json();
+            setCustomInstructions(data.enhancedInstructions as string);
+            toast.success('Instructions enhanced successfully');
+        } catch (error) {
+            console.error('Error enhancing instructions:', error);
+            toast.error('Failed to enhance instructions');
+        } finally {
+            setIsEnrichingInstructions(false);
+        }
+    };
+
+    // Update the phone number selection handler
+    const handlePhoneNumberSelect = async (phoneNumber: string) => {
+        try {
+            setSelectedPhoneNumber(phoneNumber);
+            
+            const response = await fetch(`/api/agent/updateAgent`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    agentId,
+                    phoneNumber,
+                }),
+            });
+
+            if (!response.ok) throw new Error('Failed to update phone number');
+            toast.success('Phone number updated successfully');
+        } catch (error) {
+            console.error('Error updating phone number:', error);
+            toast.error('Failed to update phone number');
+        }
+    };
+
+        // Update the return statement to handle loading state
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
@@ -254,6 +349,46 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
                         </CardContent>
                     </Card>
 
+                    {/* Phone Number Section */}
+                    <Card className="bg-white shadow-lg">
+                        <CardHeader className="border-b border-blue-100">
+                            <CardTitle className="text-blue-900 flex items-center">
+                                <Phone className="w-5 h-5 mr-2 text-orange-500" />
+                                Phone Number
+                            </CardTitle>
+                            <p className="text-sm text-gray-500">Connect a phone number for voice conversations</p>
+                        </CardHeader>
+                        <CardContent className="pt-6 space-y-4">
+                            {userPhoneNumbers.length > 0 ? (
+                                <select
+                                    value={selectedPhoneNumber}
+                                    onChange={(e) => handlePhoneNumberSelect(e.target.value)}
+                                    className="w-full p-2 border border-blue-200 rounded-md"
+                                >
+                                    <option value="">Select a phone number</option>
+                                    {userPhoneNumbers.map((number) => (
+                                        <option key={number} value={number}>
+                                            {number}
+                                        </option>
+                                    ))}
+                                </select>
+                            ) : null}
+                            <Button
+                                onClick={() => toast.info('Coming soon!')}
+                                className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                            >
+                                Buy New Number
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => toast.info('Coming soon!')}
+                                className="w-full border-blue-200 text-blue-900"
+                            >
+                                Connect Existing Number
+                            </Button>
+                        </CardContent>
+                    </Card>
+
                     {/* Custom Instructions Section */}
                     <Card className="bg-white shadow-lg">
                         <CardHeader className="border-b border-blue-100">
@@ -261,7 +396,9 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
                                 <MessageSquare className="w-5 h-5 mr-2 text-orange-500" />
                                 Custom Instructions
                             </CardTitle>
-                            <p className="text-sm text-gray-500">Provide specific instructions to guide your AI agent's behavior and responses</p>
+                            <p className="text-sm text-gray-500">
+                                Provide specific instructions to guide your AI agent's behavior and responses
+                            </p>
                         </CardHeader>
                         <CardContent className="pt-6">
                             <div className="space-y-4">
@@ -271,8 +408,32 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
                                     placeholder="Add any specific instructions for your AI agent..."
                                     className="min-h-[150px] border-blue-200"
                                 />
-                                <div className="text-sm text-blue-600">
-                                    {customInstructions.length}/2000 characters
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                        <div className="text-sm text-blue-600">
+                                            {customInstructions.length}/2000 characters
+                                        </div>
+                                        {isSaving && (
+                                            <div className="flex items-center text-sm text-blue-600">
+                                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                                Saving...
+                                            </div>
+                                        )}
+                                    </div>
+                                    <Button
+                                        onClick={handleEnhanceInstructions}
+                                        disabled={isEnrichingInstructions || !customInstructions.trim()}
+                                        className="bg-orange-500 hover:bg-orange-600 text-white"
+                                    >
+                                        {isEnrichingInstructions ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                Enhancing...
+                                            </>
+                                        ) : (
+                                            'Enhance Instructions'
+                                        )}
+                                    </Button>
                                 </div>
                             </div>
                         </CardContent>
@@ -329,16 +490,20 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
                                 <Button
                                     onClick={handleDownloadTemplate}
                                     variant="outline"
-                                    className="w-full border-blue-200 text-blue-900"
+                                    className="w-full border-blue-200 text-blue-900 h-auto py-2 whitespace-normal"
                                 >
-                                    Download Business Information Template
+                                    <span className="line-clamp-2">
+                                        Download Business Information Template
+                                    </span>
                                 </Button>    
                                 <Button
                                     onClick={handleDownloadTemplate}
                                     variant="outline"
-                                    className="w-full border-blue-200 text-blue-900"
+                                    className="w-full border-blue-200 text-blue-900 h-auto py-2 whitespace-normal"
                                 >
-                                    Go to Google Docs Template
+                                    <span className="line-clamp-2">
+                                        Go to Google Docs Template
+                                    </span>
                                 </Button>    
                             </div>
                            
