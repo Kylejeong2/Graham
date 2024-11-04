@@ -25,6 +25,7 @@ model Agent {
   isSetupComplete            Boolean       @default(false)
   user                        User          @relation(fields: [userId], references: [id])
   usageRecords               UsageRecord[]
+  documentChunks            DocumentChunk[]
 }
 
 model UsageRecord {
@@ -83,4 +84,18 @@ model UserSettings {
   stopLossAmount Decimal? @map("stop_loss_amount")
   user           User     @relation(fields: [userId], references: [id])
 
+}
+
+model DocumentChunk {
+    id          String   @id @default(uuid())
+    agentId     String
+    content     String   @db.Text
+    embedding   Float[]
+    metadata    Json
+    fileUrl     String
+    createdAt   DateTime @default(now())
+    agent       Agent    @relation(fields: [agentId], references: [id])
+
+    @@index([agentId])
+    @@index([embedding(type: Vector)])
 }

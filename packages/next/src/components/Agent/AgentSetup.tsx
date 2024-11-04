@@ -9,15 +9,19 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { MessageSquare, Upload, Volume2, UploadCloud, Download, Loader2, Play, Square, Phone } from 'lucide-react'
+import { MessageSquare, Upload, Volume2, UploadCloud, Download, Loader2, Play, Square, Phone, Settings, Calendar, CreditCard, BrainCircuit, ExternalLink, Mail } from 'lucide-react'
 import debounce from 'lodash/debounce';
 import type { Agent } from '@graham/db';
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { Switch } from '@radix-ui/react-switch';
+import { Badge } from "@/components/ui/badge"
 
 export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isCompleting, setIsCompleting] = useState(false);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-    const [customInstructions, setCustomInstructions] = useState('');
+    const [customInstructions, setCustomInstructions] = useState<string>('');
     const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
     const [selectedVoice, setSelectedVoice] = useState<string | null>(null);
     const [selectedVoiceName, setSelectedVoiceName] = useState<string>('');
@@ -35,49 +39,59 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
     const closeVoiceModal = () => setIsVoiceModalOpen(false);
     
     // File upload handlers
-    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            setUploadedFile(file);
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Check file type and size
+        if (!file.type.includes('pdf')) {
+            toast.error('Only PDF files are currently supported');
+            return;
         }
-    };
 
-    const handleDownloadTemplate = () => {
-        // TODO: Implement template download
-        toast.info('Template download coming soon!');
-    };
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            toast.error('File size must be less than 5MB');
+            return;
+        }
 
-    const handleUpdateAgent = async () => {
-        setIsCompleting(true);
+        setUploadedFile(file);
+        
         try {
-            // TODO: Upload file to storage
-            // TODO: Process document for RAG
-            const updateData = {
-                agentId,
-                systemPrompt: customInstructions,
-                voiceId: selectedVoice,
-                voiceName: selectedVoiceName,
-            };
-            
-            const response = await fetch(`/api/agent/updateAgent`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updateData),
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('agentId', agentId);
+
+            const response = await fetch('/api/agent/upload-document', {
+                method: 'POST',
+                body: formData,
             });
 
-            const result = await response.json();
+            if (!response.ok) {
+                throw new Error('Failed to upload file');
+            }
 
-            if (response.ok) {
-                toast.success('Setup completed successfully');
+            const data = await response.json();
+            if (data.success) {
+                toast.success('File uploaded and processed successfully');
             } else {
-                throw new Error(result.error || 'Failed to complete setup');
+                throw new Error('Failed to upload file');
             }
         } catch (error) {
-            console.error('Error completing setup:', error);
-            toast.error('Failed to complete setup');
-        } finally {
-            setIsCompleting(false);
+            console.error('Error uploading file:', error);
+            toast.error('Failed to upload file');
+            setUploadedFile(null);
         }
+    };
+
+    // const handleDownloadTemplate = () => {
+    //     // TODO: Implement template download
+    //     toast.info('Template download coming soon!');
+    // };
+
+    const handleCompleteSetup = async () => {
+        // TODO: Complete setup
+        setIsCompleting(true);
+        toast.info('Setup completed successfully!');
     };
 
     useEffect(() => {
@@ -265,7 +279,7 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
 
     // Add instruction enhancement handler
     const handleEnhanceInstructions = async () => {
-        if (!customInstructions.trim()) {
+        if (!customInstructions?.trim()) {
             toast.warn('Please add some instructions first');
             return;
         }
@@ -284,7 +298,7 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
             if (!response.ok) throw new Error('Failed to enhance instructions');
             
             const data = await response.json();
-            setCustomInstructions(data.enhancedInstructions as string);
+            setCustomInstructions(data.enhancedInstructions || '');
             toast.success('Instructions enhanced successfully');
         } catch (error) {
             console.error('Error enhancing instructions:', error);
@@ -316,7 +330,19 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
         }
     };
 
-        // Update the return statement to handle loading state
+    // Add this animation component
+    const EnhancingAnimation = () => (
+        <motion.div 
+            className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-orange-500/10"
+            initial={{ scaleX: 0 }}
+            animate={{ 
+                scaleX: 1,
+                transition: { duration: 1.5, repeat: Infinity, ease: "linear" }
+            }}
+        />
+    );
+
+    // Update the return statement to handle loading state
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
@@ -327,197 +353,244 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
 
     return (
         <div className="flex flex-col min-h-full gap-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left Column - Voice and Instructions */}
-                <div className="space-y-6">
-                    {/* Voice Selection Section */}
-                    <Card className="bg-white shadow-lg">
+            <div className="grid grid-cols-12 gap-6">
+                {/* Left Half - Custom Instructions */}
+                <Card className="col-span-12 lg:col-span-6 bg-white shadow-lg">
+                    <CardHeader className="border-b border-blue-100">
+                        <CardTitle className="text-blue-900 flex items-center">
+                            <MessageSquare className="w-5 h-5 mr-2 text-orange-500" />
+                            Custom Instructions
+                        </CardTitle>
+                        <p className="text-sm text-gray-500">Guide your AI's behavior</p>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                        <div className="space-y-4">
+                            <div className="relative">
+                                <AnimatePresence>
+                                    {isEnrichingInstructions && <EnhancingAnimation />}
+                                </AnimatePresence>
+                                <Textarea
+                                    value={customInstructions}
+                                    onChange={handleInstructionsChange}
+                                    placeholder="Add any specific instructions for your AI agent..."
+                                    className={cn(
+                                        "min-h-[400px] border-blue-200 transition-all duration-200",
+                                        isEnrichingInstructions && "bg-blue-50"
+                                    )}
+                                />
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                    <div className="text-sm text-blue-600">
+                                        {(customInstructions?.length || 0)}/2000 characters
+                                    </div>
+                                    {isSaving && (
+                                        <div className="flex items-center text-sm text-blue-600">
+                                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                            Saving...
+                                        </div>
+                                    )}
+                                </div>
+                                <Button
+                                    onClick={handleEnhanceInstructions}
+                                    disabled={isEnrichingInstructions || !customInstructions.trim()}
+                                    className={cn(
+                                        "relative overflow-hidden",
+                                        isEnrichingInstructions ? "bg-orange-500" : "bg-blue-600",
+                                        "text-white hover:bg-blue-700 transition-colors duration-200"
+                                    )}
+                                >
+                                    {isEnrichingInstructions ? (
+                                        <div className="flex items-center">
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            Enhancing...
+                                        </div>
+                                    ) : (
+                                        "Enhance Instructions"
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Right Half - Split into quarters */}
+                <div className="col-span-12 lg:col-span-6 grid grid-cols-2 gap-6">
+                    {/* Top Row - Two 1/4 cards side by side */}
+                    <Card className="col-span-2 sm:col-span-1 bg-white shadow-lg">
                         <CardHeader className="border-b border-blue-100">
                             <CardTitle className="text-blue-900 flex items-center">
                                 <Volume2 className="w-5 h-5 mr-2 text-orange-500" />
                                 Voice Configuration
                             </CardTitle>
-                            <p className="text-sm text-gray-500">Choose a voice for your AI agent to use during conversations</p>
+                            <p className="text-sm text-gray-500">Select your AI agent's voice</p>
                         </CardHeader>
-                        <CardContent className="pt-6">
+                        <CardContent className="pt-4 space-y-4">
                             <Button
                                 onClick={openVoiceModal}
-                                className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md group"
                             >
-                                {selectedVoiceName ? `Selected: ${selectedVoiceName}` : 'Select Voice'}
+                                <Volume2 className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                                {selectedVoiceName ? `${selectedVoiceName}` : 'Select Voice'}
                             </Button>
+                            {selectedVoiceName && (
+                                <div className="text-sm text-gray-600 flex items-center">
+                                    <Badge variant="secondary" className="mr-2">Active</Badge>
+                                    Click to change voice
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
 
-                    {/* Phone Number Section */}
-                    <Card className="bg-white shadow-lg">
+                    <Card className="col-span-2 sm:col-span-1 bg-white shadow-lg">
                         <CardHeader className="border-b border-blue-100">
                             <CardTitle className="text-blue-900 flex items-center">
                                 <Phone className="w-5 h-5 mr-2 text-orange-500" />
                                 Phone Number
                             </CardTitle>
-                            <p className="text-sm text-gray-500">Connect a phone number for voice conversations</p>
+                            <p className="text-sm text-gray-500">Connect or purchase a number</p>
                         </CardHeader>
-                        <CardContent className="pt-6 space-y-4">
-                            {userPhoneNumbers.length > 0 ? (
-                                <select
-                                    value={selectedPhoneNumber}
-                                    onChange={(e) => handlePhoneNumberSelect(e.target.value)}
-                                    className="w-full p-2 border border-blue-200 rounded-md"
-                                >
-                                    <option value="">Select a phone number</option>
-                                    {userPhoneNumbers.map((number) => (
-                                        <option key={number} value={number}>
-                                            {number}
-                                        </option>
-                                    ))}
-                                </select>
-                            ) : null}
-                            <Button
-                                onClick={() => toast.info('Coming soon!')}
-                                className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                        <CardContent className="pt-4 space-y-4">
+                            <select
+                                value={selectedPhoneNumber}
+                                onChange={(e) => handlePhoneNumberSelect(e.target.value)}
+                                className="w-full p-2 border border-blue-200 rounded-md text-sm"
                             >
-                                Buy New Number
-                            </Button>
-                            <Button
-                                variant="outline"
-                                onClick={() => toast.info('Coming soon!')}
-                                className="w-full border-blue-200 text-blue-900"
-                            >
-                                Connect Existing Number
-                            </Button>
-                        </CardContent>
-                    </Card>
-
-                    {/* Custom Instructions Section */}
-                    <Card className="bg-white shadow-lg">
-                        <CardHeader className="border-b border-blue-100">
-                            <CardTitle className="text-blue-900 flex items-center">
-                                <MessageSquare className="w-5 h-5 mr-2 text-orange-500" />
-                                Custom Instructions
-                            </CardTitle>
-                            <p className="text-sm text-gray-500">
-                                Provide specific instructions to guide your AI agent's behavior and responses
-                            </p>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                            <div className="space-y-4">
-                                <Textarea
-                                    value={customInstructions}
-                                    onChange={handleInstructionsChange}
-                                    placeholder="Add any specific instructions for your AI agent..."
-                                    className="min-h-[150px] border-blue-200"
-                                />
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-2">
-                                        <div className="text-sm text-blue-600">
-                                            {customInstructions.length}/2000 characters
-                                        </div>
-                                        {isSaving && (
-                                            <div className="flex items-center text-sm text-blue-600">
-                                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                                                Saving...
-                                            </div>
-                                        )}
-                                    </div>
-                                    <Button
-                                        onClick={handleEnhanceInstructions}
-                                        disabled={isEnrichingInstructions || !customInstructions.trim()}
-                                        className="bg-orange-500 hover:bg-orange-600 text-white"
-                                    >
-                                        {isEnrichingInstructions ? (
-                                            <>
-                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                Enhancing...
-                                            </>
-                                        ) : (
-                                            'Enhance Instructions'
-                                        )}
-                                    </Button>
-                                </div>
+                                <option value="">Select existing number</option>
+                                {userPhoneNumbers.map((number) => (
+                                    <option key={number} value={number}>{number}</option>
+                                ))}
+                            </select>
+                            <div className="flex flex-col gap-2">
+                                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                                    <Phone className="w-4 h-4 mr-2" />
+                                    Buy New Number
+                                </Button>
+                                <Button variant="outline" className="w-full" onClick={() => window.location.href = "/dashboard/phone-number"}>
+                                    <ExternalLink className="w-4 h-4 mr-2" />
+                                    Connect Existing
+                                </Button>
                             </div>
+                            <p className="text-xs text-gray-500">
+                                Numbers start at $1/month
+                            </p>
                         </CardContent>
                     </Card>
-                </div>
 
-                {/* Right Column - Document Upload and Template */}
-                <div className="space-y-6">
-                    {/* Document Upload Section */}
-                    <Card className="bg-white shadow-lg">
+                    {/* Bottom Row - Two 1/4 cards side by side */}
+                    <Card className="col-span-2 sm:col-span-1 bg-white shadow-lg">
                         <CardHeader className="border-b border-blue-100">
                             <CardTitle className="text-blue-900 flex items-center">
                                 <UploadCloud className="w-5 h-5 mr-2 text-orange-500" />
                                 Business Information
                             </CardTitle>
-                            <p className="text-sm text-gray-500">Upload documents containing your business information for the AI to learn from</p>
+                            <p className="text-sm text-gray-500">Upload documents & templates</p>
                         </CardHeader>
-                        <CardContent className="pt-6">
-                            <div className="border-2 border-dashed border-blue-200 rounded-lg p-6 text-center flex flex-col items-center justify-center">
+                        <CardContent className="pt-4 space-y-4">
+                            <div className="border-2 border-dashed border-blue-200 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
                                 <Input
                                     type="file"
                                     onChange={handleFileUpload}
                                     className="hidden"
                                     id="file-upload"
-                                    accept=".pdf,.doc,.docx,.txt"
+                                    accept=".pdf,.doc,.docx"
                                 />
                                 <Label
                                     htmlFor="file-upload"
                                     className="cursor-pointer flex flex-col items-center"
                                 >
-                                    <Upload className="w-12 h-12 text-blue-500 mb-2" />
-                                    <span className="text-blue-900 font-medium">
-                                        {uploadedFile ? uploadedFile.name : 'Drop your file here or click to upload'}
+                                    <div className="bg-blue-50 p-2 rounded-full mb-2">
+                                        <Upload className="w-6 h-6 text-blue-500" />
+                                    </div>
+                                    <span className="text-sm text-blue-900 font-medium mb-1">
+                                        {uploadedFile ? uploadedFile.name : 'Drop files here'}
                                     </span>
-                                    <span className="text-sm text-blue-600 mt-1">
-                                        Supports PDF, DOC, DOCX, TXT
+                                    <span className="text-xs text-blue-600">
+                                        PDF, DOC up to 5MB
                                     </span>
                                 </Label>
+                            </div>
+                            <div className="flex gap-2">
+                                <Button variant="outline" className="flex-1 text-xs h-auto py-2">
+                                    <Download className="w-3 h-3 mr-1" />
+                                    Template
+                                </Button>
+                                <Button variant="outline" className="flex-1 text-xs h-auto py-2">
+                                    <ExternalLink className="w-3 h-3 mr-1" />
+                                    Google Docs
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>
 
-                    {/* Template Download Section */}
-                    <Card className="bg-white shadow-lg">
+                    <Card className="col-span-2 sm:col-span-1 bg-white shadow-lg">
                         <CardHeader className="border-b border-blue-100">
-                            <CardTitle className="text-blue-900 flex items-center">
-                                <Download className="w-5 h-5 mr-2 text-orange-500" />
-                                Template
-                            </CardTitle>
-                            <p className="text-sm text-gray-500">Download a template to help structure your business information properly</p>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                            <div className="space-y-4">
-                                <Button
-                                    onClick={handleDownloadTemplate}
-                                    variant="outline"
-                                    className="w-full border-blue-200 text-blue-900 h-auto py-2 whitespace-normal"
-                                >
-                                    <span className="line-clamp-2">
-                                        Download Business Information Template
-                                    </span>
-                                </Button>    
-                                <Button
-                                    onClick={handleDownloadTemplate}
-                                    variant="outline"
-                                    className="w-full border-blue-200 text-blue-900 h-auto py-2 whitespace-normal"
-                                >
-                                    <span className="line-clamp-2">
-                                        Go to Google Docs Template
-                                    </span>
-                                </Button>    
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-blue-900 flex items-center">
+                                    <Settings className="w-5 h-5 mr-2 text-orange-500" />
+                                    Functions
+                                </CardTitle>
+                                <Badge variant="outline" className="bg-blue-50">Beta</Badge>
                             </div>
-                           
+                            <p className="text-sm text-gray-500">Enable AI capabilities</p>
+                        </CardHeader>
+                        <CardContent className="pt-4">
+                            <div className="space-y-4">
+                                {/* Core Features */}
+                                <div className="space-y-3">
+                                    <h4 className="text-xs font-medium text-blue-900">Core Features</h4>
+                                    <div className="space-y-2">
+                                        {[
+                                            { icon: Calendar, label: 'Appointment Booking', desc: 'Schedule meetings' },
+                                            { icon: CreditCard, label: 'Payment Processing', desc: 'Handle transactions' },
+                                        ].map((feature, index) => (
+                                            <div key={index} className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50">
+                                                <div className="flex items-center gap-2">
+                                                    <feature.icon className="w-4 h-4 text-blue-600" />
+                                                    <div>
+                                                        <p className="text-sm">{feature.label}</p>
+                                                        <p className="text-xs text-gray-500">{feature.desc}</p>
+                                                    </div>
+                                                </div>
+                                                <Switch className="scale-75" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Integrations */}
+                                <div className="space-y-3">
+                                    <h4 className="text-xs font-medium text-blue-900">Integrations</h4>
+                                    <div className="space-y-2">
+                                        {[
+                                            { icon: BrainCircuit, label: 'CRM Integration', desc: 'Connect your CRM' },
+                                            { icon: Mail, label: 'Email Notifications', desc: 'Auto-send updates' },
+                                        ].map((feature, index) => (
+                                            <div key={index} className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50">
+                                                <div className="flex items-center gap-2">
+                                                    <feature.icon className="w-4 h-4 text-blue-600" />
+                                                    <div>
+                                                        <p className="text-sm">{feature.label}</p>
+                                                        <p className="text-xs text-gray-500">{feature.desc}</p>
+                                                    </div>
+                                                </div>
+                                                <Switch className="scale-75" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
             </div>
 
-            {/* Complete Setup Button - At Bottom */}
+            {/* Complete Setup Button */}
             <div className="mt-auto pt-6">
                 <Button 
-                    onClick={handleUpdateAgent}
+                    onClick={handleCompleteSetup}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                    disabled={isCompleting || !selectedVoice || !uploadedFile}
+                    disabled={isCompleting}
                 >
                     {isCompleting ? 'Completing Setup...' : 'Complete Setup'}
                 </Button>

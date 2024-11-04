@@ -47,12 +47,16 @@ const AgentPage = async ({params: { agentId }}: Props) => {
                     <TabsList className="border-b border-blue-100">
                         <TabsTrigger value="setup" className="text-blue-600">Setup</TabsTrigger>
                         <TabsTrigger value="testing" className="text-blue-600">Testing</TabsTrigger>
+                        <TabsTrigger value="call-logs" className="text-blue-600">Call Logs</TabsTrigger>
                     </TabsList>
                     <TabsContent value="setup">
                         <AgentSetup agentId={agentId} />
                     </TabsContent>
                     <TabsContent value="testing">
                         {/* <AgentTesting agent={agent} /> */}
+                    </TabsContent>
+                    <TabsContent value="call-logs">
+                        {/* <AgentCallLogs agent={agent} /> */}
                     </TabsContent>
                 </Tabs>
             </div>

@@ -54,10 +54,10 @@ const DeleteButton = ({agentId}: Props) => {
           <Trash />
       </Button>
       <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-        <AlertDialogContent className="bg-[#F5E6D3] text-[#5D4037] p-8 max-w-md">
+        <AlertDialogContent className="bg-white text-blue-500 p-8 max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-3xl font-bold text-[#8B4513]">Are you sure you want to delete this agent?</AlertDialogTitle>
-            <AlertDialogDescription className="text-[#795548] mt-2">
+            <AlertDialogTitle className="text-3xl font-bold text-black">Are you sure you want to delete this agent?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-500 mt-2">
               This action cannot be undone. This will permanently delete the agent.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -76,8 +76,8 @@ const DeleteButton = ({agentId}: Props) => {
             </label>
           </div>
           <AlertDialogFooter className="mt-6">
-            <AlertDialogCancel className="bg-[#E6CCB2] text-[#8B4513] hover:bg-[#D7B899]">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-[#8B4513] hover:bg-[#A0522D] text-white">Delete</AlertDialogAction>
+            <AlertDialogCancel className="bg-white text-blue-500 hover:bg-blue-100">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600 text-white">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

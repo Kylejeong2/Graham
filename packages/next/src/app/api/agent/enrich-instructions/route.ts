@@ -15,8 +15,9 @@ const SYSTEM_PROMPT = `You are an expert at improving AI agent instructions. You
 5. Ensure instructions are specific and actionable
 6. Add relevant context about tone and communication style
 7. Include any necessary ethical guidelines or safety considerations
+8. Don't start with anything like: **Enhanced Instructions ...**
 
-Keep the total length reasonable (under 500 characters) while being comprehensive.`;
+Keep the total length reasonable (under 500 characters-ish) while being comprehensive.`;
 
 export async function POST(req: Request) {
     try {
