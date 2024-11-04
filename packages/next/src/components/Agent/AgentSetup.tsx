@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-// import { AgentEditing } from './AgentEditing';
 import { Button } from "@/components/ui/button"
 import { toast } from 'react-toastify';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -163,9 +162,7 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
                 if (!response.ok) {
                     throw new Error('Failed to update instructions');
                 }
-                
-                // Optional: Show success toast
-                // toast.success('Instructions saved');
+    
             } catch (error) {
                 console.error('Error updating instructions:', error);
                 toast.error('Failed to update instructions');

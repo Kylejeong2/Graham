@@ -99,3 +99,12 @@ model DocumentChunk {
     @@index([agentId])
     @@index([embedding(type: Vector)])
 }
+
+model EnterpriseContact {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  phoneNumber String   
+  createdAt   DateTime @default(now())
+  message     String
+}

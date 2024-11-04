@@ -100,7 +100,7 @@ const DashboardPage = async () => {
                                 <CardContent className='p-6'>
                                     <h3 className='text-2xl font-semibold text-blue-900 mb-2'>Unlock More Agents!</h3>
                                     <p className="text-blue-700 mb-4">You&apos;ve created your first Agent. You'll need an enterprise plan for more agents.</p>
-                                    <Link href="/subscription">
+                                    <Link href="/contact">
                                         <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
                                             Upgrade to Enterprise
                                         </Button>
