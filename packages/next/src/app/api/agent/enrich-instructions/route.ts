@@ -52,7 +52,9 @@ export async function POST(req: Request) {
             max_tokens: 1000,
         });
 
-        const enhancedInstructions = completion.choices[0].message.content;
+        const enhancedInstructions = completion.choices[0].message.content; // TODO: concat word validation (one two ) and ASR errors etc ([Handle ASR errors]: If you encounter speech recognition errors, guess the intent and respond accordingly. If necessary, ask for clarification in a natural way, like “I didn’t quite catch that” or “Could you repeat that?” Never mention transcription errors.
+        // [Stick to your role]: Stay within the scope of your task. If asked something outside your capabilities, gently steer the conversation back to your primary role.
+        // [Ensure smooth conversations]: Keep your responses relevant to the flow of the conversation and avoid abrupt transitions. Ensure a natural and smooth interaction.)
 
         // Update agent in database
         const updatedAgent = await prisma.agent.update({

@@ -49,7 +49,7 @@ const DashboardPage = async () => {
                     </div>
                 </header>
 
-                <Separator className='bg-orange-500 my-6' />
+                <Separator className='bg-blue-500 my-6' />
                 
                 {agents.length === 0 ? (
                     <Card className='bg-white shadow-lg'>
@@ -80,7 +80,7 @@ const DashboardPage = async () => {
                                     <Card className='bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1'>
                                         <CardHeader className='pb-2'>
                                             <Avatar className='w-16 h-16 mx-auto'>
-                                                <AvatarFallback className='bg-blue-100 text-blue-600'>
+                                                <AvatarFallback className='bg-blue-100 text-black'>
                                                     {agent.name.charAt(0).toUpperCase()}
                                                 </AvatarFallback>
                                             </Avatar>
