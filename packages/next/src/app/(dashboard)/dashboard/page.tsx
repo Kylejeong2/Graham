@@ -43,7 +43,7 @@ const DashboardPage = async () => {
                                     <ArrowLeft className='mr-2 w-4 h-4'/>Back
                                 </Button>
                             </Link>
-                            <h1 className='text-3xl font-bold text-black'>My Workers</h1>
+                            <h1 className='text-3xl font-bold text-black'>My Agents</h1>
                         </div>
                         {/* <UserButton /> */}
                     </div>
@@ -55,8 +55,8 @@ const DashboardPage = async () => {
                     <Card className='bg-white shadow-lg'>
                         <CardContent className='p-6 text-center'>
                             {/* <Coffee className='w-16 h-16 text-blue-600 mx-auto mb-4' /> */}
-                            <h2 className='text-xl text-blue-900 mb-2'>You don&apos;t have any Workers yet!</h2>
-                            <p className='text-blue-700 mb-4'>Create your first Worker to get started.</p>
+                            <h2 className='text-xl text-blue-900 mb-2'>You don&apos;t have any Agents yet!</h2>
+                            <p className='text-blue-700 mb-4'>Create your first Agent to get started.</p>
                             <CreateAgent />
                         </CardContent>
                     </Card>
@@ -98,8 +98,8 @@ const DashboardPage = async () => {
                         {(agents.length >= 1 || !isSubscribed) && (
                             <Card className='bg-blue-50 border-blue-200 shadow-lg max-w-2xl mx-auto'>
                                 <CardContent className='p-6'>
-                                    <h3 className='text-2xl font-semibold text-blue-900 mb-2'>Unlock More Workers!</h3>
-                                    <p className="text-blue-700 mb-4">You&apos;ve created your first Worker. You'll need an enterprise plan for more workers.</p>
+                                    <h3 className='text-2xl font-semibold text-blue-900 mb-2'>Unlock More Agents!</h3>
+                                    <p className="text-blue-700 mb-4">You&apos;ve created your first Agent. You'll need an enterprise plan for more Agents.</p>
                                     <Link href="/contact">
                                         <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
                                             Upgrade to Enterprise
