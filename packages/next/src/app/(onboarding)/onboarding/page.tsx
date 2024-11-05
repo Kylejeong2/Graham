@@ -30,7 +30,8 @@ export default function OnboardingPage() {
   const [formData, setFormData] = useState({
     fullName: '',
     businessName: '',
-    phoneNumber: ''
+    phoneNumber: '',
+    email: ''
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,10 +49,23 @@ export default function OnboardingPage() {
 
       if (!response.ok) throw new Error('Failed to update user')
       
+      const emailResponse = await fetch('/api/email/welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: formData.email,
+          name: formData.fullName
+        })
+      })
+
+      if (!emailResponse.ok) {
+        console.error('Failed to send welcome email')
+      }
+      
       router.push('/creating-account')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Onboarding failed:', error)
-      toast.error('Onboarding failed')
+      toast.error(error.message)
     }
   }
 
@@ -99,6 +113,16 @@ export default function OnboardingPage() {
               className="mt-1"
             />
           </div>
+          <div>
+            <Label htmlFor="email">Email (For invoices and account management)</Label>
+            <Input
+              id="email"
+              placeholder="example@example.com"
+              value={formData.email}
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              className="mt-1"
+            />
+          </div>
         </div>
       )
     }
@@ -109,7 +133,7 @@ export default function OnboardingPage() {
       case 1:
         return formData.fullName.trim().length > 0
       case 2:
-        return formData.businessName.trim().length > 0 && formData.phoneNumber.trim().length > 0
+        return formData.businessName.trim().length > 0 && formData.phoneNumber.trim().length > 0 && formData.email.trim().length > 0
       default:
         return false
     }
