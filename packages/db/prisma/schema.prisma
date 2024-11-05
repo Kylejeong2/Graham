@@ -43,7 +43,9 @@ model UsageRecord {
 model User {
   id                          String        @id
   email                       String        @unique
-  name                        String?
+  fullName                    String?
+  businessName                String?
+  user_phoneNumber                 String?
   createdAt                   DateTime      @default(now())
   updatedAt                   DateTime      @default(now())
   emailVerified               DateTime?     

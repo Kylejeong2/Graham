@@ -117,9 +117,13 @@ export const EnterpriseContactForm: React.FC = () => {
                 <Input
                   id="phoneNumber"
                   name="phoneNumber"
+                  type="tel"
+                  pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+                  placeholder="123-456-7890"
                   value={formData.phoneNumber}
                   onChange={handleChange}
                   className="mt-1 block w-full border-gray-300 text-gray-900"
+                  required
                 />
               </div>
             </div>
