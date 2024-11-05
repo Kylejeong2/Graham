@@ -14,6 +14,10 @@ import { auth } from '@clerk/nextjs/server';
 export default function OnboardingPage() {
   const router = useRouter()
   const { userId } = auth()
+  if (!userId) {
+    router.push('/sign-in')
+    return
+  }
 
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
@@ -24,7 +28,7 @@ export default function OnboardingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+  
     await prisma.user.update({
       where: { id: userId },
       data: {
