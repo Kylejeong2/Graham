@@ -15,27 +15,14 @@ type Props = {
 const AgentPage = async ({params: { agentId }}: Props) => {
     const {userId} = auth()
     
-    if (!userId){
-        return redirect('/dashboard');
-    }
+    if (!userId) return redirect('/dashboard')
 
-    const user = await prisma.user.findFirst({
-        where: { id: userId }
-    });
-    
-    if(!user){
-        return redirect('/dashboard');
-    }
+    const [user, agent] = await Promise.all([
+        prisma.user.findFirst({ where: { id: userId } }),
+        prisma.agent.findFirst({ where: { id: agentId } })
+    ])
 
-    const agent = await prisma.agent.findFirst({
-        where: {
-            id: agentId
-        }
-    });
-
-    if (!agent) {
-        return redirect('/dashboard');
-    }
+    if (!user || !agent) return redirect('/dashboard')
 
     return (
         <div className='h-full bg-blue-50 py-4 px-10 overflow-y-auto'>
@@ -50,7 +37,7 @@ const AgentPage = async ({params: { agentId }}: Props) => {
                         <TabsTrigger value="call-logs" className="text-blue-600">Call Logs</TabsTrigger>
                     </TabsList>
                     <TabsContent value="setup">
-                        <AgentSetup agentId={agentId} />
+                        <AgentSetup agentId={agentId} user={user} />
                     </TabsContent>
                     <TabsContent value="testing">
                         {/* <AgentTesting agent={agent} /> */}

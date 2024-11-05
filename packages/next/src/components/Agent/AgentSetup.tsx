@@ -15,8 +15,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Switch } from '@radix-ui/react-switch';
 import { Badge } from "@/components/ui/badge"
+import type { User } from '@graham/db';
 
-export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
+export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId, user }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isCompleting, setIsCompleting] = useState(false);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -32,7 +33,14 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
     const [selectedPhoneNumber, setSelectedPhoneNumber] = useState<string>('');
     const [isEnrichingInstructions, setIsEnrichingInstructions] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    
+    const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+    const [availableNumbers, setAvailableNumbers] = useState([]);
+    const [selectedAreaCode, setSelectedAreaCode] = useState('');
+    const [isLoadingNumbers, setIsLoadingNumbers] = useState(false);
+    const [searchStep, setSearchStep] = useState<'input' | 'results'>('input');
+    const [countryCode, setCountryCode] = useState('US');
+    const [searchError, setSearchError] = useState('');
+
     // Voice selection modal handlers
     const openVoiceModal = () => setIsVoiceModalOpen(true);
     const closeVoiceModal = () => setIsVoiceModalOpen(false);
@@ -261,7 +269,11 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
     useEffect(() => {
         const fetchUserPhoneNumbers = async () => {
             try {
-                const response = await fetch('/api/user/getPhoneNumbers');
+                const response = await fetch('/api/user/getPhoneNumbers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: user?.id })
+                });
                 if (!response.ok) throw new Error('Failed to fetch phone numbers');
                 const data = await response.json();
                 setUserPhoneNumbers(JSON.parse(data.phoneNumbers || '[]'));
@@ -347,6 +359,68 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
             </div>
         );
     }
+
+    const handleSearchNumbers = async () => {
+        setIsLoadingNumbers(true);
+        setSearchError('');
+
+        try {
+            if (!selectedAreaCode || selectedAreaCode.length !== 3) {
+                throw new Error('Please enter a valid 3-digit area code');
+            }
+
+            const response = await fetch('/api/twilio/get-phone-numbers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    areaCode: selectedAreaCode,
+                    countryCode
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to fetch numbers');
+            }
+
+            if (data.numbers.length === 0) {
+                throw new Error('No available numbers found for this area code');
+            }
+
+            setAvailableNumbers(data.numbers);
+            setSearchStep('results');
+        } catch (error: any) {
+            setSearchError(error.message);
+            toast.error(error.message);
+        } finally {
+            setIsLoadingNumbers(false);
+        }
+    };
+
+    const handleBuyNumber = async (phoneNumber: string) => {
+        try {
+            const response = await fetch('/api/twilio/buy-phone-number', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user?.id,
+                    phoneNumber,
+                })
+            });
+
+            const data = await response.json();
+            if (data.number) {
+                toast.success('Phone number purchased successfully');
+                setIsPhoneModalOpen(false);
+                // Refresh phone numbers list
+                const updatedNumbers = [...userPhoneNumbers, data.number];
+                setUserPhoneNumbers(updatedNumbers);
+            }
+        } catch (error) {
+            toast.error('Failed to purchase number');
+        }
+    };
 
     return (
         <div className="flex flex-col min-h-full gap-6">
@@ -459,7 +533,10 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
                                 ))}
                             </select>
                             <div className="flex flex-col gap-2">
-                                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                                <Button 
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                                    onClick={() => setIsPhoneModalOpen(true)}
+                                >
                                     <Phone className="w-4 h-4 mr-2" />
                                     Buy New Number
                                 </Button>
@@ -641,6 +718,105 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
                             </div>
                         )}
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isPhoneModalOpen} onOpenChange={setIsPhoneModalOpen}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Purchase Phone Number</DialogTitle>
+                    </DialogHeader>
+                    
+                    {searchStep === 'input' ? (
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Country</Label>
+                                <select 
+                                    value={countryCode}
+                                    onChange={(e) => setCountryCode(e.target.value)}
+                                    className="w-full p-2 border rounded-md"
+                                >
+                                    <option value="US">United States (+1)</option>
+                                    <option value="CA">Canada (+1)</option>
+                                    {/* Add more countries as needed */}
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Area Code</Label>
+                                <div className="flex gap-2">
+                                    <Input
+                                        placeholder="e.g., 415"
+                                        value={selectedAreaCode}
+                                        onChange={(e) => {
+                                            const value = e.target.value.replace(/\D/g, '');
+                                            setSelectedAreaCode(value);
+                                        }}
+                                        maxLength={3}
+                                        className="font-mono"
+                                    />
+                                    <Button 
+                                        onClick={handleSearchNumbers} 
+                                        disabled={isLoadingNumbers || selectedAreaCode.length !== 3}
+                                    >
+                                        {isLoadingNumbers ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            'Search'
+                                        )}
+                                    </Button>
+                                </div>
+                                {searchError && (
+                                    <p className="text-sm text-red-500">{searchError}</p>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <p className="text-sm text-gray-500">
+                                    Found {availableNumbers.length} numbers in {selectedAreaCode}
+                                </p>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setSearchStep('input')}
+                                >
+                                    New Search
+                                </Button>
+                            </div>
+
+                            <div className="max-h-[400px] overflow-y-auto space-y-2">
+                                {availableNumbers.map((number: any) => (
+                                    <div 
+                                        key={number.phoneNumber} 
+                                        className="flex justify-between items-center p-4 border rounded-lg hover:bg-gray-50"
+                                    >
+                                        <div className="space-y-1">
+                                            <p className="font-mono font-medium">{number.friendlyName}</p>
+                                            <div className="flex gap-2">
+                                                <Badge variant="secondary">
+                                                    {number.locality || number.region}
+                                                </Badge>
+                                                {number.capabilities.voice && (
+                                                    <Badge variant="outline">Voice</Badge>
+                                                )}
+                                                {number.capabilities.SMS && (
+                                                    <Badge variant="outline">SMS</Badge>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <Button 
+                                            onClick={() => handleBuyNumber(number.phoneNumber)}
+                                            className="ml-4"
+                                        >
+                                            Purchase
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </DialogContent>
             </Dialog>
         </div>
