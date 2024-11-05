@@ -276,7 +276,7 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
 
     // Add instruction enhancement handler
     const handleEnhanceInstructions = async () => {
-        if (!customInstructions?.trim()) {
+        if (!customInstructions) {
             toast.warn('Please add some instructions first');
             return;
         }
@@ -295,7 +295,7 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
             if (!response.ok) throw new Error('Failed to enhance instructions');
             
             const data = await response.json();
-            setCustomInstructions(data.enhancedInstructions || '');
+            setCustomInstructions(data.enhancedInstructions as string);
             toast.success('Instructions enhanced successfully');
         } catch (error) {
             console.error('Error enhancing instructions:', error);
@@ -469,7 +469,7 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
                                 </Button>
                             </div>
                             <p className="text-xs text-gray-500">
-                                Numbers start at $1/month
+                                Numbers start at $2/month
                             </p>
                         </CardContent>
                     </Card>

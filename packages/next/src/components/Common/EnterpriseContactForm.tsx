@@ -34,8 +34,17 @@ export const EnterpriseContactForm: React.FC = () => {
     setIsSubmitting(true)
 
     try {
-      // Simulating API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      const response = await fetch('/api/enterprise-contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Something went wrong')
+      }
+
       toast.success('Your inquiry has been submitted successfully!')
       setFormData({
         name: '',
@@ -46,7 +55,7 @@ export const EnterpriseContactForm: React.FC = () => {
         message: ''
       })
     } catch (error) {
-      toast.error('An error occurred. Please try again later.')
+      toast.error(error instanceof Error ? error.message : 'An error occurred. Please try again later.')
     } finally {
       setIsSubmitting(false)
     }

@@ -103,8 +103,10 @@ model DocumentChunk {
 model EnterpriseContact {
   id          String   @id @default(uuid())
   name        String
-  email       String   @unique
-  phoneNumber String   
+  email       String   
+  company     String
+  phoneNumber String?  
+  inquiryType String
+  message     String   
   createdAt   DateTime @default(now())
-  message     String
 }
