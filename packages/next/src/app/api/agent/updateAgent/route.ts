@@ -35,7 +35,7 @@ export async function PATCH(req: Request) {
             data: updateData
         });
 
-        console.log('Agent updated successfully:', updatedAgent);
+        // console.log('Agent updated successfully:', updatedAgent);
         return NextResponse.json(updatedAgent);
 
     } catch (error) {

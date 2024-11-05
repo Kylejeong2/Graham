@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'react-toastify'
+import { PaymentElementWrapper } from '@/components/PaymentElement'
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -31,7 +32,8 @@ export default function OnboardingPage() {
     fullName: '',
     businessName: '',
     phoneNumber: '',
-    email: ''
+    email: '',
+    hasPaymentSetup: false
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,7 +45,8 @@ export default function OnboardingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId,
-          ...formData
+          ...formData,
+          hasPaymentSetup: true
         })
       })
 
@@ -125,15 +128,28 @@ export default function OnboardingPage() {
           </div>
         </div>
       )
+    },
+    {
+      title: "Payment Information",
+      description: "Set up your payment method to get started",
+      fields: (
+        <div className="space-y-4">
+          <PaymentElementWrapper />
+        </div>
+      )
     }
   ]
-
   const isStepValid = (stepNumber: number) => {
     switch (stepNumber) {
       case 1:
         return formData.fullName.trim().length > 0
       case 2:
-        return formData.businessName.trim().length > 0 && formData.phoneNumber.trim().length > 0 && formData.email.trim().length > 0
+        return formData.businessName.trim().length > 0 &&
+               formData.phoneNumber.trim().length > 0 &&
+               formData.email.trim().length > 0 &&
+               formData.email.includes('@') // Basic email validation
+      case 3:
+        return formData.hasPaymentSetup
       default:
         return false
     }

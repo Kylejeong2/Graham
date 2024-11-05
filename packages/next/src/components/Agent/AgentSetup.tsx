@@ -666,7 +666,7 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                     disabled={isCompleting}
                 >
-                    {isCompleting ? 'Completing Setup...' : 'Complete Setup'}
+                    {isCompleting ? 'Deploying Agent...' : 'Deploy Agent'}
                 </Button>
             </div>
 

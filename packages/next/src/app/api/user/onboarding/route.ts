@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
-    const { userId, fullName, businessName, phoneNumber, email } = await request.json()
+    const { userId, fullName, businessName, phoneNumber, email, hasPaymentSetup } = await request.json()
 
     const user = await prisma.user.update({
       where: { id: userId },
@@ -11,7 +11,8 @@ export async function POST(request: Request) {
         fullName,
         businessName,
         user_phoneNumber: phoneNumber,
-        email
+        email,
+        hasPaymentSetup
       }
     })
 

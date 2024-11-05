@@ -46,12 +46,13 @@ model User {
   fullName                    String?
   businessName                String?
   user_phoneNumber            String?
+  hasPaymentSetup             Boolean       @default(false)
   createdAt                   DateTime      @default(now())
   updatedAt                   DateTime      @default(now())
   emailVerified               DateTime?     
   image                       String?
-  stripeCustomerId            String?       
-  stripePlanId                String?       
+  stripeCustomerId            String?       @unique
+  stripePlanId                String?       // default or enterprise
   phoneNumbers                Json          @default("[]") // should be an array of strings
   isYearly                    Boolean       @default(false)
   stripePriceId               String?       
@@ -61,7 +62,7 @@ model User {
   subscriptionCancelAt        DateTime?     
   stripeCurrentPeriodEnd      DateTime?     
   phoneNumberSubscriptionData Json          @default("{}")
-  agents                      Agent[]
+  agents                      Agent[] // most people will only have one agent
   usageRecords               UsageRecord[]
   userSettings               UserSettings?
 
