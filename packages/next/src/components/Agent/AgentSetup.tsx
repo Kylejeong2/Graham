@@ -122,8 +122,8 @@ export const AgentSetup: React.FC<{ agentId: string; }> = ({ agentId }) => {
             const updateData = {
                 agentId,
                 systemPrompt: customInstructions,
-                voiceId: voice.voice_id,  // Use the new value directly
-                voiceName: voice.name,    // Use the new value directly
+                voiceId: voice.voice_id,  
+                voiceName: voice.name,    
             };
             
             const response = await fetch(`/api/agent/updateAgent`, {

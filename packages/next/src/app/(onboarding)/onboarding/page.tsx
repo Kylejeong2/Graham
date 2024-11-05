@@ -2,21 +2,28 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { prisma } from '@graham/db';
 import { ArrowRight } from 'lucide-react'
+import { useAuth } from '@clerk/nextjs'
+import { useEffect } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { auth } from '@clerk/nextjs/server';
+import { toast } from 'react-toastify'
 
 export default function OnboardingPage() {
   const router = useRouter()
-  const { userId } = auth()
-  if (!userId) {
-    router.push('/sign-in')
-    return
+  const { userId, isLoaded } = useAuth()
+
+  useEffect(() => {
+    if (isLoaded && !userId) {
+      router.push('/sign-in')
+    }
+  }, [isLoaded, userId, router])
+
+  if (!isLoaded || !userId) {
+    return null
   }
 
   const [step, setStep] = useState(1)
@@ -28,16 +35,24 @@ export default function OnboardingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-  
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        fullName: formData.fullName,
-        businessName: formData.businessName,
-        user_phoneNumber: formData.phoneNumber
-      }
-    })
-    router.push('/creating-account')
+    
+    try {
+      const response = await fetch('/api/user/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          ...formData
+        })
+      })
+
+      if (!response.ok) throw new Error('Failed to update user')
+      
+      router.push('/creating-account')
+    } catch (error) {
+      console.error('Onboarding failed:', error)
+      toast.error('Onboarding failed')
+    }
   }
 
   const steps = [
@@ -89,8 +104,19 @@ export default function OnboardingPage() {
     }
   ]
 
+  const isStepValid = (stepNumber: number) => {
+    switch (stepNumber) {
+      case 1:
+        return formData.fullName.trim().length > 0
+      case 2:
+        return formData.businessName.trim().length > 0 && formData.phoneNumber.trim().length > 0
+      default:
+        return false
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 justify-center items-center to-white p-6">
       <div className="max-w-2xl mx-auto space-y-8">
         <Card className="shadow-lg">
           <CardHeader>
@@ -114,7 +140,8 @@ export default function OnboardingPage() {
                 <Button 
                   type={step === steps.length ? "submit" : "button"}
                   className="ml-auto"
-                  onClick={() => step < steps.length && setStep(step + 1)}
+                  onClick={() => step < steps.length && isStepValid(step) && setStep(step + 1)}
+                  disabled={!isStepValid(step)}
                 >
                   {step === steps.length ? 'Get Started' : 'Continue'}
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -123,41 +150,6 @@ export default function OnboardingPage() {
             </form>
           </CardContent>
         </Card>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">24/7 Availability</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Your AI agent handles calls around the clock, never missing an opportunity
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Natural Conversations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Advanced AI enables human-like interactions with your customers
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Easy Integration</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Seamlessly connects with your existing business phone system
-              </p>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   )
