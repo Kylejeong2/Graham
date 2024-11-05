@@ -33,7 +33,7 @@ const DashboardPage = async () => {
     const isSubscribed = user?.subscriptionStatus === 'active';
 
     return (
-        <div className='min-h-screen bg-white text-blue-900'>
+        <div className='h-full bg-white text-blue-900'>
             <div className='max-w-7xl mx-auto p-6 md:p-10'>
                 <header className='mb-8'>
                     <div className='flex justify-between items-center'>
@@ -80,7 +80,7 @@ const DashboardPage = async () => {
                                     <Card className='bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1'>
                                         <CardHeader className='pb-2'>
                                             <Avatar className='w-16 h-16 mx-auto'>
-                                                <AvatarFallback className='bg-blue-100 text-black'>
+                                                <AvatarFallback className='bg-blue-100 text-blakc-600'>
                                                     {agent.name.charAt(0).toUpperCase()}
                                                 </AvatarFallback>
                                             </Avatar>

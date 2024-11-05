@@ -68,7 +68,7 @@ export const EnterpriseContactForm: React.FC = () => {
           <div className="flex justify-center mb-4">
             <Building2 className="w-16 h-16 text-orange-500" />
           </div>
-          <CardTitle className="text-3xl font-bold text-blue-500">
+          <CardTitle className="text-3xl font-bold text-blue-600">
             Contact Us for Enterprise Inquiries
           </CardTitle>
           <CardDescription className="text-gray-600 mt-2">
