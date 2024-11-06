@@ -1,12 +1,13 @@
+'use client'
+
 import * as React from "react"
 import Link from "next/link"
-import { UserButton } from "@clerk/nextjs"
+import { UserButton, useAuth } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { Phone } from "lucide-react"
-import { auth } from "@clerk/nextjs/server"
 
-export async function Navbar() {
-  const { userId } = auth()
+export function Navbar() {
+  const { userId } = useAuth()
   const isSignedIn = !!userId
 
   return (
@@ -18,7 +19,7 @@ export async function Navbar() {
         </Link>
       </div>
       <NavLinks />
-      <UserActions isSignedIn={isSignedIn} userId={userId} />
+      <UserActions isSignedIn={isSignedIn} userId={userId || ''} />
     </header>
   )
 }

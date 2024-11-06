@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { Switch } from '@radix-ui/react-switch';
 import { Badge } from "@/components/ui/badge"
 import type { User } from '@graham/db';
+import { createPhoneNumberSubscription } from './setup-functions/createPhoneNumberSubscription';
 
 type ConversationInitType = 'user' | 'ai-default' | 'ai-custom';
 
@@ -44,6 +45,25 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
     const [searchError, setSearchError] = useState('');
     const [initialMessage, setInitialMessage] = useState('');
     const [conversationType, setConversationType] = useState<ConversationInitType>('user');
+
+    // Move this hook up with other hooks
+    const debouncedMessageUpdate = useCallback(
+        debounce(async (newMessage: string) => {
+            try {
+                await fetch(`/api/agent/updateAgent`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agentId,
+                        initialMessage: newMessage,
+                    }),
+                });
+            } catch (error) {
+                toast.error('Failed to update initial message');
+            }
+        }, 3000),
+        [agentId]
+    );
 
     // Voice selection modal handlers
     const openVoiceModal = () => setIsVoiceModalOpen(true);
@@ -418,46 +438,23 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
 
     const handleBuyNumber = async (phoneNumber: string) => {
         try {
-            const response = await fetch('/api/twilio/buy-phone-number', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: user?.id,
-                    phoneNumber,
-                })
-            });
+            const payment = await createPhoneNumberSubscription(phoneNumber, user?.id || '', agentId, user?.stripeCustomerId || '');
 
-            const data = await response.json();
-            if (data.number) {
+            if (!payment?.success) {
+                toast.error('Failed to create subscription');
+                return;
+            }
+
+            if (payment?.number) {
                 toast.success('Phone number purchased successfully');
                 setIsPhoneModalOpen(false);
-                // Refresh phone numbers list
-                const updatedNumbers = [...userPhoneNumbers, data.number];
-                setUserPhoneNumbers(updatedNumbers);
+                setUserPhoneNumbers([...userPhoneNumbers, payment.number]);
             }
         } catch (error) {
-            toast.error('Failed to purchase number');
+            toast.error('Failed to purchase number. Your subscription will be cancelled.');
+            throw error; 
         }
     };
-
-    // Add this near your other debounced functions
-    const debouncedMessageUpdate = useCallback(
-        debounce(async (newMessage: string) => {
-            try {
-                await fetch(`/api/agent/updateAgent`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        agentId,
-                        initialMessage: newMessage,
-                    }),
-                });
-            } catch (error) {
-                toast.error('Failed to update initial message');
-            }
-        }, 3000),
-        [agentId]
-    );
 
     return (
         <div className="flex flex-col min-h-full gap-6">
