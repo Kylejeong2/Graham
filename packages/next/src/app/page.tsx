@@ -20,8 +20,9 @@ export default function LandingPage() {
             {/* bring your own phone number */}
             {/* lottie animation with HOW IT WORKS */}
             <Pricing />
-            <Savings />
+            <Savings /> 
             {/* <Testimonial /> */}
+            {/* VS sameday AI or goodcall or other competitors comparison chart*/} 
             <WaitlistSection />
           </main>
         <Footer />

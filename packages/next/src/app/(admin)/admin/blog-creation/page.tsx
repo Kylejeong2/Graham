@@ -1,0 +1,1 @@
+// page to help admins create blog posts, connect to blog

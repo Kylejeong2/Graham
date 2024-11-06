@@ -12,6 +12,7 @@
     "check-types": "tsc --notEmit"
   },
   "dependencies": {
+    "@graham/db": "workspace:*",
     "@ai-sdk/openai": "^0.0.48",
     "@auth/mongodb-adapter": "^2.0.0",
     "@cartesia/cartesia-js": "^1.2.1",
