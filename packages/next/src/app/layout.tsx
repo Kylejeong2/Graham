@@ -24,7 +24,7 @@ export default function RootLayout({
       <Analytics />
       <ClerkProvider afterSignOutUrl="/">
         <html lang="en" className="light">
-        <body className={`${inter.className} overflow-hidden`}>
+        <body className={`${inter.className}`}>
           <Provider>
             <Navbar />
             <MainLayout>

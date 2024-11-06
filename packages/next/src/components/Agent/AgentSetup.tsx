@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { MessageSquare, Upload, Volume2, UploadCloud, Download, Loader2, Play, Square, Phone, Settings, Calendar, CreditCard, BrainCircuit, ExternalLink, Mail } from 'lucide-react'
+import { MessageSquare, Upload, Volume2, UploadCloud, Download, Loader2, Play, Square, Phone, Settings, Calendar, CreditCard, ExternalLink } from 'lucide-react'
 import debounce from 'lodash/debounce';
 import type { Agent } from '@graham/db';
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { Switch } from '@radix-ui/react-switch';
 import { Badge } from "@/components/ui/badge"
 import type { User } from '@graham/db';
+
+type ConversationInitType = 'user' | 'ai-default' | 'ai-custom';
 
 export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId, user }) => {
     const [isLoading, setIsLoading] = useState(true);
@@ -40,6 +42,8 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
     const [searchStep, setSearchStep] = useState<'input' | 'results'>('input');
     const [countryCode, setCountryCode] = useState('US');
     const [searchError, setSearchError] = useState('');
+    const [initialMessage, setInitialMessage] = useState('');
+    const [conversationType, setConversationType] = useState<ConversationInitType>('user');
 
     // Voice selection modal handlers
     const openVoiceModal = () => setIsVoiceModalOpen(true);
@@ -177,7 +181,7 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
             } finally {
                 setIsSaving(false);
             }
-        }, 2000),
+        }, 3000),
         [agentId]
     );
 
@@ -253,6 +257,20 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                 }
                 if (agent.voiceName) {
                     setSelectedVoiceName(agent.voiceName);
+                }
+                if (agent.initiateConversation !== undefined) {
+                    if (!agent.initiateConversation) {
+                        setConversationType('user');
+                    } else {
+                        setConversationType(
+                            agent.initialMessage === "Hello! How can I assist you today?"
+                                ? 'ai-default'
+                                : 'ai-custom'
+                        );
+                    }
+                }
+                if (agent.initialMessage) {
+                    setInitialMessage(agent.initialMessage);
                 }
             } catch (error) {
                 console.error('Error fetching agent data:', error);
@@ -422,6 +440,25 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
         }
     };
 
+    // Add this near your other debounced functions
+    const debouncedMessageUpdate = useCallback(
+        debounce(async (newMessage: string) => {
+            try {
+                await fetch(`/api/agent/updateAgent`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agentId,
+                        initialMessage: newMessage,
+                    }),
+                });
+            } catch (error) {
+                toast.error('Failed to update initial message');
+            }
+        }, 3000),
+        [agentId]
+    );
+
     return (
         <div className="flex flex-col min-h-full gap-6">
             <div className="grid grid-cols-12 gap-6">
@@ -432,7 +469,7 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                             <MessageSquare className="w-5 h-5 mr-2 text-orange-500" />
                             Custom Instructions
                         </CardTitle>
-                        <p className="text-sm text-gray-500">Guide your AI's behavior</p>
+                        <p className="text-sm text-gray-500">What do you want your AI agent to do? Just simply describe it below.</p>
                     </CardHeader>
                     <CardContent className="pt-6">
                         <div className="space-y-4">
@@ -453,7 +490,7 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                             <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-2">
                                     <div className="text-sm text-blue-600">
-                                        {(customInstructions?.length || 0)}/2000 characters
+                                        {(customInstructions?.length || 0)}/2000 characters (recommended)
                                     </div>
                                     {isSaving && (
                                         <div className="flex items-center text-sm text-blue-600">
@@ -483,6 +520,74 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                             </div>
                         </div>
                     </CardContent>
+                        <Card className="col-span-12 bg-white shadow-lg">
+                        <CardHeader className="border-b border-blue-100">
+                            <CardTitle className="text-blue-900 flex items-center">
+                                <MessageSquare className="w-5 h-5 mr-2 text-orange-500" />
+                                Conversation Flow
+                            </CardTitle>
+                            <p className="text-sm text-gray-500">Configure how calls begin</p>
+                        </CardHeader>
+                        <CardContent className="pt-6">
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <Label className="text-blue-900">Who starts the conversation?</Label>
+                                    <select
+                                        value={conversationType}
+                                        onChange={async (e) => {
+                                            const newType = e.target.value as ConversationInitType;
+                                            setConversationType(newType);
+                                            try {
+                                                await fetch(`/api/agent/updateAgent`, {
+                                                    method: 'PATCH',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({
+                                                        agentId,
+                                                        initiateConversation: newType !== 'user',
+                                                        initialMessage: newType === 'ai-default' 
+                                                            ? "Hello! How can I assist you today?"
+                                                            : newType === 'user' ? "" : initialMessage
+                                                    }),
+                                                });
+                                            } catch (error) {
+                                                toast.error('Failed to update conversation preference');
+                                            }
+                                        }}
+                                        className="w-full p-2 border rounded-md"
+                                    >
+                                        <option value="user">User speaks first</option>
+                                        <option value="ai-default">AI speaks first (default greeting "Hello! How can I assist you today?")</option>
+                                        <option value="ai-custom">AI speaks first (custom message)</option>
+                                    </select>
+                                </div>
+
+                                <AnimatePresence>
+                                    {conversationType === 'ai-custom' && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                        >
+                                            <div className="space-y-4">
+                                                <Label className="text-blue-900">Custom Initial Message</Label>
+                                                <Textarea
+                                                    placeholder="Enter your custom greeting message..."
+                                                    value={initialMessage}
+                                                    onChange={(e) => {
+                                                        const newMessage = e.target.value;
+                                                        setInitialMessage(newMessage);
+                                                        debouncedMessageUpdate(newMessage);
+                                                    }}
+                                                    className="min-h-[100px]"
+                                                />
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </Card>
 
                 {/* Right Half - Split into quarters */}
@@ -540,7 +645,7 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                                     <Phone className="w-4 h-4 mr-2" />
                                     Buy New Number
                                 </Button>
-                                <Button variant="outline" className="w-full" onClick={() => window.location.href = "/dashboard/phone-number"}>
+                                <Button variant="outline" className="w-full" onClick={() => window.open(`${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/phone-number`, "_blank")}>
                                     <ExternalLink className="w-4 h-4 mr-2" />
                                     Connect Existing
                                 </Button>
@@ -633,7 +738,7 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                                 </div>
 
                                 {/* Integrations */}
-                                <div className="space-y-3">
+                                {/* <div className="space-y-3">
                                     <h4 className="text-xs font-medium text-blue-900">Integrations</h4>
                                     <div className="space-y-2">
                                         {[
@@ -652,7 +757,7 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                                             </div>
                                         ))}
                                     </div>
-                                </div>
+                                </div> */}
                             </div>
                         </CardContent>
                     </Card>

@@ -1,11 +1,19 @@
-import { NextResponse } from 'next/server';
 import { prisma } from "@graham/db";
+import { NextResponse } from "next/server";
 
-export async function PATCH(req: Request) {
+export async function PATCH(request: Request) {
     try {
-        const { systemPrompt, voiceId, voiceName, agentId } = await req.json();
-        
-        // Validate required fields
+        const body = await request.json();
+        const { 
+            agentId, 
+            systemPrompt, 
+            voiceId, 
+            voiceName, 
+            phoneNumber,
+            initiateConversation,
+            initialMessage 
+        } = body;
+
         if (!agentId) {
             return NextResponse.json(
                 { error: 'Agent ID is required' },
@@ -26,9 +34,13 @@ export async function PATCH(req: Request) {
         }
 
         const updateData: any = {};
+        
         if (systemPrompt !== undefined) updateData.systemPrompt = systemPrompt;
         if (voiceId !== undefined) updateData.voiceId = voiceId;
         if (voiceName !== undefined) updateData.voiceName = voiceName;
+        if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
+        if (initiateConversation !== undefined) updateData.initiateConversation = initiateConversation;
+        if (initialMessage !== undefined) updateData.initialMessage = initialMessage;
 
         const updatedAgent = await prisma.agent.update({
             where: { id: agentId },
@@ -37,7 +49,6 @@ export async function PATCH(req: Request) {
 
         // console.log('Agent updated successfully:', updatedAgent);
         return NextResponse.json(updatedAgent);
-
     } catch (error) {
         console.error('Error updating agent:', error);
         return NextResponse.json(

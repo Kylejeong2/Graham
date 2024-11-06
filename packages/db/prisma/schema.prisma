@@ -9,63 +9,64 @@ datasource db {
 }
 
 model Agent {
-  id                          String        @id @default(uuid())
-  name                        String
-  createdAt                   DateTime      @default(now())
-  userId                      String        
-  phoneNumber                 String?       
-  systemPrompt                String?       
-  voiceId                     String?       
-  voiceName                   String?       
-  callHistory                 Json?         
-  customResponses             Json          @default("{}")
-  minutesUsed                 Int           @default(0) // round up to the nearest minute
-  lastModificationTimestamp   String?      
-  areaCode                    String?       
-  isSetupComplete            Boolean       @default(false)
-  user                        User          @relation(fields: [userId], references: [id])
-  usageRecords               UsageRecord[]
+  id                        String          @id @default(uuid())
+  name                      String
+  createdAt                 DateTime        @default(now())
+  userId                    String
+  phoneNumber               String?
+  systemPrompt              String?
+  callHistory               Json?
+  customResponses           Json            @default("{}")
+  minutesUsed               Int             @default(0)
+  lastModificationTimestamp String?
+  areaCode                  String?
+  isSetupComplete           Boolean         @default(false)
+  voiceId                   String?
+  voiceName                 String?
+  initialMessage            String?
+  initiateConversation      Boolean         @default(false)
+  user                      User            @relation(fields: [userId], references: [id])
   documentChunks            DocumentChunk[]
+  usageRecords              UsageRecord[]
 }
 
 model UsageRecord {
   id          String   @id @default(uuid())
-  userId      String   
-  agentId     String   
-  minutesUsed Decimal  
-  secondsUsed Decimal  
-  voiceType   String   
+  userId      String
+  agentId     String
+  minutesUsed Decimal
+  secondsUsed Decimal
+  voiceType   String
   timestamp   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
   agent       Agent    @relation(fields: [agentId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model User {
   id                          String        @id
   email                       String        @unique
-  fullName                    String?
-  businessName                String?
-  user_phoneNumber            String?
-  hasPaymentSetup             Boolean       @default(false)
   createdAt                   DateTime      @default(now())
   updatedAt                   DateTime      @default(now())
-  emailVerified               DateTime?     
+  emailVerified               DateTime?
   image                       String?
   stripeCustomerId            String?       @unique
-  stripePlanId                String?       // default or enterprise
-  phoneNumbers                Json          @default("[]") // should be an array of strings
+  stripePlanId                String?
+  phoneNumbers                Json          @default("[]")
   isYearly                    Boolean       @default(false)
-  stripePriceId               String?       
-  subscriptionName            String?       
-  subscriptionStatus          String?       
-  stripeSubscriptionId        String?       
-  subscriptionCancelAt        DateTime?     
-  stripeCurrentPeriodEnd      DateTime?     
+  stripePriceId               String?
+  subscriptionName            String?
+  subscriptionStatus          String?
+  stripeSubscriptionId        String?
+  subscriptionCancelAt        DateTime?
+  stripeCurrentPeriodEnd      DateTime?
   phoneNumberSubscriptionData Json          @default("{}")
-  agents                      Agent[] // most people will only have one agent
-  usageRecords               UsageRecord[]
-  userSettings               UserSettings?
-
+  businessName                String?
+  fullName                    String?
+  user_phoneNumber            String?
+  hasPaymentSetup             Boolean       @default(false)
+  agents                      Agent[]
+  usageRecords                UsageRecord[]
+  userSettings                UserSettings?
 }
 
 model Waitlist {
@@ -78,38 +79,37 @@ model Lead {
   id          String   @id @default(uuid())
   name        String
   email       String   @unique
-  phoneNumber String   
+  phoneNumber String
   createdAt   DateTime @default(now())
-
 }
+
 model UserSettings {
   userId         String   @id @map("user_id")
   stopLossAmount Decimal? @map("stop_loss_amount")
   user           User     @relation(fields: [userId], references: [id])
-
 }
 
 model DocumentChunk {
-    id          String   @id @default(uuid())
-    agentId     String
-    content     String   @db.Text
-    embedding   Float[]
-    metadata    Json
-    fileUrl     String
-    createdAt   DateTime @default(now())
-    agent       Agent    @relation(fields: [agentId], references: [id])
+  id        String   @id @default(uuid())
+  agentId   String
+  content   String
+  embedding Float[]
+  metadata  Json
+  fileUrl   String
+  createdAt DateTime @default(now())
+  agent     Agent    @relation(fields: [agentId], references: [id])
 
-    @@index([agentId])
-    @@index([embedding(type: Vector)])
+  @@index([agentId])
+  @@index([embedding])
 }
 
 model EnterpriseContact {
   id          String   @id @default(uuid())
   name        String
-  email       String   
-  company     String
-  phoneNumber String?  
-  inquiryType String
-  message     String   
+  email       String
+  phoneNumber String?
   createdAt   DateTime @default(now())
+  message     String
+  company     String
+  inquiryType String
 }
