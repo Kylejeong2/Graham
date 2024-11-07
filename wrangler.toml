@@ -1,5 +1,2 @@
 name = "graham"
-
-[build]
-command = "yarn install && yarn workspace @graham/next build"
-pages_build_output_dir = "./.vercel/output/static"
+pages_build_output_dir = "./dist"
