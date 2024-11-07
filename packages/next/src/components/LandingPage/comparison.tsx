@@ -63,7 +63,7 @@ export default function Comparison() {
           {/* Pricing Comparison */}
           <div className="grid grid-cols-4 gap-4 mb-8 pb-8 border-b border-gray-700">
             <div className="font-semibold text-white">Starting Price</div>
-            <div className="text-center text-orange-500 font-semibold">$99/mo</div>
+            <div className="text-center text-orange-500 font-semibold">Only pay for what you use</div>
             <div className="text-center text-gray-400 font-semibold">$299/mo</div>
             <div className="text-center text-gray-400 font-semibold">$199/mo</div>
           </div>
