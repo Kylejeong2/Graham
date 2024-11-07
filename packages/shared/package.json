@@ -7,7 +7,6 @@
     "test": "vitest --no-isolate --maxConcurrency=20 --coverage"
   },
   "dependencies": {
-    "@graham/db": "workspace:*",
     "zod": "^3.22.0"
   },
   "devDependencies": {

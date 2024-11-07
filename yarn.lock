@@ -1255,7 +1255,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graham/db@workspace:*, @graham/db@workspace:packages/db":
+"@graham/db@workspace:^, @graham/db@workspace:packages/db":
   version: 0.0.0-use.local
   resolution: "@graham/db@workspace:packages/db"
   dependencies:
@@ -1276,9 +1276,9 @@ __metadata:
     "@babel/eslint-parser": "npm:^7.25.9"
     "@cartesia/cartesia-js": "npm:^1.2.1"
     "@clerk/nextjs": "npm:^5.3.1"
-    "@graham/db": "workspace:*"
-    "@graham/server": "workspace:*"
-    "@graham/shared": "workspace:*"
+    "@graham/db": "workspace:^"
+    "@graham/server": "workspace:^"
+    "@graham/shared": "workspace:^"
     "@motionone/utils": "npm:^10.16.3"
     "@radix-ui/react-alert-dialog": "npm:^1.1.1"
     "@radix-ui/react-avatar": "npm:^1.1.0"
@@ -1372,7 +1372,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@graham/server@workspace:*, @graham/server@workspace:packages/server":
+"@graham/server@workspace:^, @graham/server@workspace:packages/server":
   version: 0.0.0-use.local
   resolution: "@graham/server@workspace:packages/server"
   dependencies:
@@ -1381,11 +1381,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@graham/shared@workspace:*, @graham/shared@workspace:packages/shared":
+"@graham/shared@workspace:^, @graham/shared@workspace:packages/shared":
   version: 0.0.0-use.local
   resolution: "@graham/shared@workspace:packages/shared"
   dependencies:
-    "@graham/db": "workspace:*"
     "@types/node": "npm:^20"
     typescript: "npm:^5"
     zod: "npm:^3.22.0"
@@ -4691,9 +4690,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001520, caniuse-lite@npm:^1.0.30001579, caniuse-lite@npm:^1.0.30001669":
-  version: 1.0.30001677
-  resolution: "caniuse-lite@npm:1.0.30001677"
-  checksum: 10c0/22b4aa738b213b5d0bc820c26ba23fa265ca90a5c59776e1a686b9ab6fff9120d0825fd920c0a601a4b65056ef40d01548405feb95c8dd6083255f50c71a0864
+  version: 1.0.30001678
+  resolution: "caniuse-lite@npm:1.0.30001678"
+  checksum: 10c0/3209cc0f0b9683514916bed676d8f7965cae7faccaccb90f97c11fbdee32cd3f2f3b9cfec388ef400476299c3dd496fb1f8734c31c6199c4799b42813391517f
   languageName: node
   linkType: hard
 
@@ -8574,14 +8573,14 @@ __metadata:
   linkType: hard
 
 "mem0ai@npm:^1.0.4":
-  version: 1.0.20
-  resolution: "mem0ai@npm:1.0.20"
+  version: 1.0.21
+  resolution: "mem0ai@npm:1.0.21"
   dependencies:
     axios: "npm:^1.7.7"
     crypto: "npm:^1.0.1"
     posthog-node: "npm:^4.2.1"
     ts-node: "npm:^10.9.2"
-  checksum: 10c0/03c858f1957491aa25df9dc4eb54c12cb3c71cbc3bd3613f842d45ce0662b2cf7ac12a4c40d7a612f58b1a08241019b78ac0efb02754302177f8f0b524f92f32
+  checksum: 10c0/18878472ed69f105866a06c6fefef0d893b5a40d467f8f5abd44a625e9d445e5808a3fee92a0ad7fb699c9555c548516034f4a8e6d5a0c46bab62ff45c0df9ce
   languageName: node
   linkType: hard
 
