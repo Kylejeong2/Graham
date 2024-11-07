@@ -4,10 +4,10 @@ import WelcomeEmail from '@/lib/email/emails/welcome'
 import { render } from '@react-email/components'
 import React from 'react'
 
-const resend = new Resend(process.env.RESEND_API_KEY!)
-
 export async function POST(req: Request) {
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY!)
+
     const { to, name } = await req.json()
     const html = await render(React.createElement(WelcomeEmail, { name }))
 
