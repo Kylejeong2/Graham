@@ -48,10 +48,10 @@ export const WaitlistSection: React.FC = () => {
     <section className="py-24 bg-gradient-to-b from-blue-50 to-blue-100">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-5xl font-bold text-blue-900 mb-6">
+          <h2 className="text-5xl font-bold text-gray-900 mb-6">
             Ready to Transform Your Business?
           </h2>
-          <p className="text-xl text-blue-700 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
             Join our exclusive waitlist and get early access to the future of AI-powered customer service.
           </p>
           {showAlert && (

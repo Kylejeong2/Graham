@@ -26,7 +26,7 @@ export default function Footer() {
               </svg>
               <span className="font-bold text-blue-900">Graham</span>
             </Link>
-            <p className="text-sm text-blue-700">AI phone agents for growing small businesses.</p>
+            <p className="text-sm text-blue-700">AI phone agents for growing businesses.</p>
           </div>
           <div className="space-y-4">
             <h3 className="font-bold text-blue-900">Product</h3>

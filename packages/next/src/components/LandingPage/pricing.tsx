@@ -7,18 +7,7 @@ import { Check } from "lucide-react"
 import { useRouter } from 'next/navigation'
 import { useUser } from "@clerk/nextjs"
 
-// const PricingSwitch = ({ onSwitch }: { onSwitch: (value: string) => void }) => (
-//     <Tabs defaultValue="0" className="w-40 mx-auto mb-8" onValueChange={onSwitch}>
-//       <TabsList className="py-6 px-2 border-2 border-blue-200 bg-white">
-//         <TabsTrigger value="0" className="text-base text-blue-600 data-[state=active]:bg-blue-50">Monthly</TabsTrigger>
-//         <TabsTrigger value="1" className="text-base text-blue-600 data-[state=active]:bg-blue-50">Yearly</TabsTrigger>
-//       </TabsList>
-//     </Tabs>
-// )
-
 export default function Pricing() {
-  // const [isYearly, setIsYearly] = useState(false)
-  // const togglePricingPeriod = (value: string) => setIsYearly(parseInt(value) === 1)
   const router = useRouter()
   const { user } = useUser()
 
@@ -60,14 +49,13 @@ export default function Pricing() {
       <div className="container px-4 md:px-6">
         <div className="mb-12"> 
           <h2 className="text-3xl font-bold tracking-tighter text-black sm:text-5xl text-center mb-4">
-            Only pay for what you use
+            Only Pay for What You Use
           </h2>
           <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl text-center">
             Add limits to stay within your budget (we'll notify you when you're close).
           </p>
         </div>
         
-        {/* <PricingSwitch onSwitch={togglePricingPeriod} /> */}
         <div className="grid gap-6 lg:grid-cols-2">
           {plans.map((plan) => (
             <Card key={plan.title} className="bg-white border-blue-100 hover:shadow-lg transition-all duration-300">
@@ -77,7 +65,6 @@ export default function Pricing() {
               </CardHeader>
               <CardContent>
                 <p className="text-4xl font-bold text-blue-900">
-                  {/* {isYearly ? plan.yearlyPrice : plan.monthlyPrice} */}
                   {plan.monthlyPrice}
                 </p>
                 <ul className="mt-4 space-y-2">
