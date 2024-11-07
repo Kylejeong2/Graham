@@ -4,7 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { UserButton, useAuth } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
-import { Phone } from "lucide-react"
+import Image from "next/image"
 
 export function Navbar() {
   const { userId } = useAuth()
@@ -13,7 +13,8 @@ export function Navbar() {
   return (
     <header className="px-4 lg:px-6 h-16 flex items-center bg-white border-b border-blue-100">
       <div className="flex items-center space-x-2">
-        <Phone className="h-6 w-6 text-orange-600" />
+        {/* <Phone className="h-6 w-6 text-orange-600" /> */}
+        <Image src="/graham_logo_transparent.png" alt="Graham Logo" width={50} height={50} />
         <Link href="/">
           <h1 className="text-4xl font-bold text-orange-600">graham</h1>
         </Link>
