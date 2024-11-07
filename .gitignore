@@ -42,3 +42,6 @@ next-env.d.ts
 .github/workflows
 
 packages/next/.yarn
+
+.yarn/install-state.gz
+.yarn/cache
