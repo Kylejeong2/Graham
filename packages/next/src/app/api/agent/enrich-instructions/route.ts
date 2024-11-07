@@ -2,10 +2,6 @@ import { NextResponse } from 'next/server';
 import { OpenAI } from 'openai';
 import { prisma } from '@graham/db';
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY!,
-});
-
 const SYSTEM_PROMPT = `You are an expert at improving AI agent instructions. Your task is to take basic instructions and expand them into detailed, comprehensive guidelines that will help the AI agent better understand its role and responsibilities. Please:
 
 1. Maintain the original intent and context
@@ -32,6 +28,10 @@ Keep the total length reasonable (under 500 characters-ish) while being comprehe
 
 export async function POST(req: Request) {
     try {
+        const openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY!,
+        });
+
         const { instructions, agentId } = await req.json();
 
         if (!instructions || !agentId) {

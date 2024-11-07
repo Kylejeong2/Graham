@@ -33,6 +33,7 @@ export default function LandingPage() {
             {/* <Testimonial /> */}
             {/* VS sameday AI or goodcall or other competitors comparison chart*/} 
             <Comparison />
+            {/* TODO: FAQs */}
             <WaitlistSection />
           </main>
         <Footer />
