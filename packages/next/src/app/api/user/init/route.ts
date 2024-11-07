@@ -23,7 +23,7 @@ export async function POST() {
         data: {
           id: userId,
           email: clerkUser.emailAddresses[0].emailAddress,
-          name: `${clerkUser.firstName} ${clerkUser.lastName}`,
+          fullName: `${clerkUser.firstName} ${clerkUser.lastName}`,
           createdAt: new Date(),
           updatedAt: new Date(),
         }
