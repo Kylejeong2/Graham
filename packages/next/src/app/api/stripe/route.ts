@@ -50,7 +50,7 @@ export async function POST(req: Request) {
   return NextResponse.json({ sessionId: session.id });
 }
 
-export async function GET(req: Request) {
+export async function GET() {
   const { userId } = auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
