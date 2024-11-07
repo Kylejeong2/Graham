@@ -1,6 +1,7 @@
 "use client";
 
 import { Phone, Calendar, MessageSquare, ShoppingCart } from "lucide-react";
+import Spline from '@splinetool/react-spline';
 
 export default function HowItWorks() {
   const features = [
@@ -16,7 +17,7 @@ export default function HowItWorks() {
     },
     {
       icon: <MessageSquare className="h-8 w-8 text-blue-600" />,
-      title: "Answer Questions",
+      title: "Answer Questions", 
       description: "Handle customer inquiries about your business hours, services, and policies"
     },
     {
@@ -30,9 +31,13 @@ export default function HowItWorks() {
     <section className="py-24 bg-white">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center gap-16">
-          <div className="flex-1 flex justify-center">
-            <div className="w-full h-[600px] bg-gray-100 rounded-2xl">
-              {/* Add your Lottie animation here */}
+          <div className="hidden md:flex flex-1 justify-center">
+            <div className="w-full h-[600px] bg-gray-100 rounded-2xl overflow-hidden">
+              <div className="w-[130%] h-[130%] -ml-[15%] -mt-[15%]">
+                <Spline
+                    scene="https://prod.spline.design/r8Q30WXZJaR6TWsS/scene.splinecode" 
+                />
+                </div>
             </div>
           </div>
 

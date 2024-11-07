@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 export default function Trust() {
   const [position, setPosition] = useState(0);
+  const [noTransition, setNoTransition] = useState(false);
   
   // Add your logos here
   const logos = [
@@ -17,7 +18,14 @@ export default function Trust() {
 
   useEffect(() => {
     const animate = () => {
-      setPosition((prev) => (prev - 1) % (logos.length * 200));
+      setPosition((prev) => {
+        if (prev <= -(logos.length * 200)) {
+          setNoTransition(true);
+          return 0;
+        }
+        setNoTransition(false);
+        return prev - 1;
+      });
     };
 
     const interval = setInterval(animate, 30);
@@ -32,11 +40,13 @@ export default function Trust() {
         </h2>
         
         <div className="relative">
-          <div className="flex items-center space-x-16" 
-               style={{
-                 transform: `translateX(${position}px)`,
-                 width: `${logos.length * 200}px`,
-               }}>
+          <div 
+            className="flex items-center space-x-16" 
+            style={{
+              transform: `translateX(${position}px)`,
+              width: `${logos.length * 200}px`,
+              transition: noTransition ? 'none' : 'transform 0.1s linear'
+            }}>
             {[...logos, ...logos].map((logo, index) => (
               <div
                 key={index}
