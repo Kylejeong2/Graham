@@ -2,13 +2,12 @@ import { NextResponse } from 'next/server';
 import twilio from 'twilio';
 import { prisma } from '@graham/db';
 
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
-
 export async function POST(req: Request) {
   try {
+    const client = twilio(
+        process.env.TWILIO_ACCOUNT_SID,
+        process.env.TWILIO_AUTH_TOKEN
+    );
     const { userId, phoneNumber } = await req.json();
 
     const purchasedNumber = await client.incomingPhoneNumbers

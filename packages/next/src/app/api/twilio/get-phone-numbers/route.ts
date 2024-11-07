@@ -1,18 +1,17 @@
 import { NextResponse } from 'next/server';
 import twilio from 'twilio';
 
-// Make sure to properly initialize the client with both credentials
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-
-if (!accountSid || !authToken) {
-  throw new Error('Missing Twilio credentials');
-}
-
-const client = twilio(accountSid, authToken);
-
 export async function POST(req: Request) {
   try {
+    // Make sure to properly initialize the client with both credentials
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+
+    if (!accountSid || !authToken) {
+    throw new Error('Missing Twilio credentials');
+    }
+
+    const client = twilio(accountSid, authToken);
     const { areaCode, countryCode = 'US' } = await req.json();
 
     if (!areaCode) {
