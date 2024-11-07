@@ -1,5 +1,5 @@
 import React from 'react'
-import { Metadata } from 'next'
+import type { Metadata } from 'next'
 import { Toaster } from 'react-hot-toast'
 import { EnterpriseContactForm } from '@/components/Common/EnterpriseContactForm'
 

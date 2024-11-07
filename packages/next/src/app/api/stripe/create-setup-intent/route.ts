@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { stripe } from '@/configs/stripe'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@graham/db'
+import { createStripeCustomer } from '@/configs/stripe'
 
 export async function POST() {
   try {
@@ -17,14 +18,8 @@ export async function POST() {
 
     // Create or get Stripe customer
     let stripeCustomerId = user?.stripeCustomerId
-    if (!stripeCustomerId) {
-      const customer = await stripe.customers.create({
-        email: user?.email,
-        name: user?.fullName,
-        metadata: {
-          userId
-        }
-      })
+    if (!stripeCustomerId && user?.email && user?.fullName) {
+      const customer = await createStripeCustomer(user?.email, user?.fullName, userId)
       stripeCustomerId = customer.id
       
       // Save Stripe customer ID
@@ -32,6 +27,10 @@ export async function POST() {
         where: { id: userId },
         data: { stripeCustomerId }
       })
+    }
+
+    if (!stripeCustomerId) {
+      return NextResponse.json({ error: 'Stripe customer ID not found' }, { status: 400 })
     }
 
     const setupIntent = await stripe.setupIntents.create({
