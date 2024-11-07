@@ -1,7 +1,6 @@
 {
     "name": "graham",
-    "packageManager": "yarn@4.5.1",
-    "private": true,
+    "packageManager": "yarn@4.4.0",
     "workspaces": [
         "packages/*"
     ],
@@ -29,9 +28,7 @@
     },
     "scripts": {
         "postinstall": "husky",
-        "test": "vitest",
-        "build": "yarn workspace @graham/next build",
-        "cloudflare": "npx @cloudflare/next-on-pages@1"
+        "test": "vitest"
     },
     "dependencies": {
         "@axiomhq/winston": "^1.0.0",

@@ -8,18 +8,17 @@
     "start": "next start",
     "lint": "next lint",
     "type:check": "tsc --noEmit",
-    "test": "vitest --no-isolate --maxConcurrency=20 --coverage",
-    "check-types": "tsc --notEmit"
+    "test": "vitest --no-isolate --maxConcurrency=20 --coverage"
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.48",
     "@auth/mongodb-adapter": "^2.0.0",
     "@cartesia/cartesia-js": "^1.2.1",
     "@clerk/nextjs": "^5.3.1",
+    "@graham/db": "workspace:*",
+    "@graham/server": "workspace:*",
+    "@graham/shared": "workspace:*",
     "@motionone/utils": "^10.16.3",
-    "@graham/db": "workspace:^",
-    "@graham/server": "workspace:^",
-    "@graham/shared": "workspace:^",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-avatar": "^1.1.0",
     "@radix-ui/react-checkbox": "^1.1.1",
