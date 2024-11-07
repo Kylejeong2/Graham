@@ -9,7 +9,11 @@
     "lint": "next lint",
     "type:check": "tsc --noEmit",
     "test": "vitest --no-isolate --maxConcurrency=20 --coverage",
-    "check-types": "tsc --notEmit"
+    "check-types": "tsc --notEmit",
+    "pages:build": "npx @cloudflare/next-on-pages",
+    "preview": "yarn workspace @graham/next pages:build && wrangler pages dev",
+    "deploy": "yarn workspace @graham/next pages:build && wrangler pages deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts"
   },
   "dependencies": {
     "@graham/db": "workspace:*",
@@ -90,7 +94,10 @@
     "tailwindcss": "3.3.3",
     "tailwindcss-animate": "^1.0.7",
     "twilio": "^5.3.5",
-    "use-stripe-subscription": "^1.0.6"
+    "use-stripe-subscription": "^1.0.6",
+    "@langchain/core": "^0.1.0",
+    "zod": "^3.22.0",
+    "svelte": "^4.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",

@@ -1,3 +1,0 @@
-[build]
-command = "yarn install && yarn workspace @graham/next build"
-pages_build_output_dir = ".next"
