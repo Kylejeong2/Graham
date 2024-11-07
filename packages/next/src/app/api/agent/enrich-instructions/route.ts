@@ -3,7 +3,7 @@ import { OpenAI } from 'openai';
 import { prisma } from '@graham/db';
 
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY!,
 });
 
 const SYSTEM_PROMPT = `You are an expert at improving AI agent instructions. Your task is to take basic instructions and expand them into detailed, comprehensive guidelines that will help the AI agent better understand its role and responsibilities. Please:
