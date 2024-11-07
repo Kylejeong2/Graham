@@ -94,7 +94,8 @@
     "tailwindcss-animate": "^1.0.7",
     "twilio": "^5.3.5",
     "use-stripe-subscription": "^1.0.6",
-    "zod": "^3.22.0"
+    "zod": "^3.22.0",
+    "@graham/db": "workspace:packages/db"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
