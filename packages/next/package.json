@@ -95,7 +95,6 @@
     "tailwindcss-animate": "^1.0.7",
     "twilio": "^5.3.5",
     "use-stripe-subscription": "^1.0.6",
-    "@langchain/core": "^0.1.0",
     "zod": "^3.22.0",
     "svelte": "^4.0.0"
   },

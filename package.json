@@ -29,7 +29,8 @@
     },
     "scripts": {
         "postinstall": "husky",
-        "test": "vitest"
+        "test": "vitest",
+        "build": "yarn workspace @graham/next build"
     },
     "dependencies": {
         "@axiomhq/winston": "^1.0.0",
