@@ -14,7 +14,7 @@ import { Loader2, User, Mail, CreditCard, AlertTriangle, LogOut, Package, Phone,
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { PaymentElementWrapper } from '@/components/PaymentElement'
+import { PaymentElementWrapper } from '@/components/Stripe/PaymentElement'
 
 const ProfilePage = () => {
   const { user, isLoaded, isSignedIn } = useUser()

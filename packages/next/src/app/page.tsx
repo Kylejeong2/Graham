@@ -18,20 +18,15 @@ export default function LandingPage() {
         <div className="flex min-h-screen flex-col">
           <main className="flex-1">
             <Hero />
-            {/* Add a moving "trusted by" with logos */}
             <Trust />
             <Features />
-            {/* can answer questions about your business ie hours open general questions etc from uploading your documents */}
             {/* can take multiple calls at once all day every day  */}
             <Why />
             <BYOPN />
-            {/* bring your own phone number */}
-            {/* lottie animation with HOW IT WORKS */}
             <HowItWorks />
             <Pricing />
             <Savings /> 
             {/* <Testimonial /> */}
-            {/* VS sameday AI or goodcall or other competitors comparison chart*/} 
             <Comparison />
             {/* TODO: FAQs */}
             <WaitlistSection />

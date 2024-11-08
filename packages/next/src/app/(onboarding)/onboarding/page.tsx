@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'react-toastify'
-import { PaymentElementWrapper } from '@/components/PaymentElement'
+import { PaymentElementWrapper } from '@/components/Stripe/PaymentElement'
 
 export default function OnboardingPage() {
   const router = useRouter()

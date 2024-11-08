@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { toast } from 'react-toastify';
 import { Coffee, Send, CheckCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { joinWaitlist } from '@/components/actions/joinWaitlist';
 
 export const WaitlistSection: React.FC = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
       toast.error('Please enter a valid email address');
@@ -20,28 +21,19 @@ export const WaitlistSection: React.FC = () => {
     }
 
     setIsSubmitting(true);
-    try {
-      const response = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
+    joinWaitlist(email)
+      .then(() => {
+        toast.success('Thank you for joining our waitlist!');
+        setEmail('');
+        setShowAlert(true);
+      })
+      .catch((error: any) => {
+        console.error('Error submitting to waitlist:', error);
+        toast.error('An error occurred. Please try again later.');
+      })
+      .finally(() => {
+        setIsSubmitting(false);
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to join waitlist');
-      }
-
-      toast.success('Thank you for joining our waitlist!');
-      setEmail('');
-      setShowAlert(true);
-    } catch (error) {
-      console.error('Error submitting to waitlist:', error);
-      toast.error('An error occurred. Please try again later.');
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   return (

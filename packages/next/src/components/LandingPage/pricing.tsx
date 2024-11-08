@@ -31,13 +31,24 @@ export default function Pricing() {
       ]
     },
     {
+      title: "Startup",
+      description: "Perfect for startups",
+      monthlyPrice: "$399.99",
+      features: [
+        "Unlimited Call Minutes",
+        "Basic Call Routing",
+        "Email Support",
+        "Standard Voices"
+      ]
+    },
+    {
       title: "Scale",
-      description: "Perfect for businesses looking to scale to the next level.",
+      description: "Looking to scale to the next level?",
       monthlyPrice: "Custom",
       yearlyPrice: "Custom",
       features: [
-        "Everything in Growth",
-        "Access to new features first",
+        "Everything in Growth/Startup",
+        "Access to new features first", 
         "Custom Integrations",
         "24/7 Support",
       ]
@@ -45,39 +56,39 @@ export default function Pricing() {
   ]
 
   return (
-    <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-100">
+    <section className="w-full py-24 bg-gray-100 overflow-hidden">
       <div className="container px-4 md:px-6">
-        <div className="mb-12"> 
-          <h2 className="text-3xl font-bold tracking-tighter text-black sm:text-5xl text-center mb-4">
-            Only Pay for What You Use
+        <div className="mb-16">
+          <h2 className="text-4xl font-bold tracking-tighter text-gray-900 sm:text-6xl text-center mb-4">
+            Only Pay for <span className="text-orange-500">What You Use</span>
           </h2>
-          <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl text-center">
+          <p className="mx-auto max-w-[700px] text-gray-600 md:text-xl text-center">
             Add limits to stay within your budget (we'll notify you when you're close).
           </p>
         </div>
         
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-8 lg:grid-cols-3 max-w-7xl mx-auto relative before:absolute before:-inset-3 before:border-2 before:border-orange-300/30 before:rounded-3xl before:blur-sm">
           {plans.map((plan) => (
-            <Card key={plan.title} className="bg-white border-blue-100 hover:shadow-lg transition-all duration-300">
-              <CardHeader>
-                <CardTitle className="text-2xl text-blue-900">{plan.title}</CardTitle>
-                <CardDescription className="text-blue-600">{plan.description}</CardDescription>
+            <Card key={plan.title} className="bg-white border-2 border-gray-100 hover:border-orange-300 hover:shadow-2xl hover:shadow-orange-100/50 hover:scale-105 transition-all duration-300 rounded-2xl">
+              <CardHeader className="pb-8">
+                <CardTitle className="text-3xl font-bold text-gray-900">{plan.title}</CardTitle>
+                <CardDescription className="text-gray-600 text-lg mt-2">{plan.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-4xl font-bold text-blue-900">
+                <p className="text-5xl font-bold text-blue-500 mb-8">
                   {plan.monthlyPrice}
                 </p>
-                <ul className="mt-4 space-y-2">
+                <ul className="mt-4 space-y-4">
                   {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center text-blue-700">
-                      <Check className="mr-2 h-4 w-4 text-blue-600" /> {feature}
+                    <li key={index} className="flex items-center text-gray-700 text-lg">
+                      <Check className="mr-3 h-5 w-5 text-orange-500 flex-shrink-0" /> {feature}
                     </li>
                   ))}
                 </ul>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="pt-8">
                 <Button 
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-300"
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white text-lg py-6 rounded-xl transition-colors duration-300"
                   onClick={handlePlanClick}
                 >
                   Get Started

@@ -1,47 +1,48 @@
 {
-              "name": "graham",
-              "packageManager": "yarn@4.4.0",
-              "workspaces": [
-                        "packages/*"
-              ],
-              "devDependencies": {
-                        "@types/localtunnel": "^2",
-                        "@types/node": "^20.12.4",
-                        "@types/react": "^18.3.5",
-                        "@typescript-eslint/eslint-plugin": "^7.5.0",
-                        "@typescript-eslint/parser": "^7.5.0",
-                        "eslint": "^8.57.0",
-                        "eslint-config-prettier": "^9.1.0",
-                        "eslint-plugin-react": "^7.34.1",
-                        "eslint-plugin-unused-imports": "^3.1.0",
-                        "husky": "^9.0.11",
-                        "lint-staged": "^15.2.2",
-                        "localtunnel": "^2.0.2",
-                        "prettier": "3.2.5",
-                        "typescript": "^5.4.4"
-              },
-              "lint-staged": {
-                        "*.{js,jsx,ts,tsx}": [
-                                  "yarn eslint --fix",
-                                  "yarn prettier"
-                        ]
-              },
-              "scripts": {
-                        "postinstall": "husky",
-                        "test": "vitest"
-              },
-              "dependencies": {
-                        "@axiomhq/winston": "^1.0.0",
-                        "@prisma/client": "^5.21.1",
-                        "@splinetool/react-spline": "^4.0.0",
-                        "@tanstack/react-query": "^5.55.4",
-                        "follow-redirect-url": "^2.0.2",
-                        "next": "^14.2.7",
-                        "node-gyp": "^10.2.0",
-                        "react": "18.2.0",
-                        "react-dom": "18.2.0",
-                        "turbo": "^2.2.3",
-                        "winston": "^3.14.1"
-              }
-    }
-        
+  "name": "graham",
+  "packageManager": "yarn@4.5.1",
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/localtunnel": "^2",
+    "@types/node": "^20.12.4",
+    "@types/react": "^18.3.5",
+    "@typescript-eslint/eslint-plugin": "^7.5.0",
+    "@typescript-eslint/parser": "^7.5.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-unused-imports": "^3.1.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "localtunnel": "^2.0.2",
+    "prettier": "3.2.5",
+    "typescript": "^5.4.4"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "yarn eslint --fix",
+      "yarn prettier"
+    ]
+  },
+  "scripts": {
+    "vercel-build": "next build",
+    "postinstall": "husky",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@axiomhq/winston": "^1.0.0",
+    "@cloudflare/next-on-pages": "^1.13.5",
+    "@prisma/client": "^5.21.1",
+    "@splinetool/react-spline": "^4.0.0",
+    "@tanstack/react-query": "^5.55.4",
+    "follow-redirect-url": "^2.0.2",
+    "next": "^14.2.7",
+    "node-gyp": "^10.2.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "turbo": "^2.2.3",
+    "winston": "^3.14.1"
+  }
+}

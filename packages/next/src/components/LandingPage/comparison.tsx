@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, X } from "lucide-react";
+import Spline from '@splinetool/react-spline/next';
 
 export default function Comparison() {
   const features = [
@@ -13,7 +14,7 @@ export default function Comparison() {
     {
       name: "24/7 Availability", 
       graham: true,
-      sameday: true,
+      sameday: false,
       goodcall: true
     },
     {
@@ -25,8 +26,8 @@ export default function Comparison() {
     {
       name: "Keep Existing Phone Number",
       graham: true,
-      sameday: false,
-      goodcall: false
+      sameday: true,
+      goodcall: true
     },
     {
       name: "Custom Knowledge Base",
@@ -37,7 +38,31 @@ export default function Comparison() {
     {
       name: "Call Transcripts",
       graham: true,
+      sameday: false,
+      goodcall: false
+    },
+    {
+      name: "Unlimited Caller Phone Numbers",
+      graham: true,
       sameday: true,
+      goodcall: false
+    },
+    {
+      name: "Customizable Voice",
+      graham: true,
+      sameday: true,
+      goodcall: false
+    },
+    {
+      name: "Unlimited Users",
+      graham: true,
+      sameday: true,
+      goodcall: false
+    },
+    {
+      name: "Unlimited Locations",
+      graham: true,
+      sameday: false,
       goodcall: false
     }
   ];
@@ -51,55 +76,71 @@ export default function Comparison() {
           </h2>
           <p className="text-gray-600 mt-4">See how we stack up against the competition</p>
         </div>
-        
-        <div className="max-w-4xl mx-auto bg-gray-800 rounded-2xl p-8 shadow-2xl border border-gray-700">
-          <div className="grid grid-cols-4 gap-4 mb-8">
-            <div className="col-span-1"></div>
-            <div className="text-center font-semibold text-xl text-white">Graham</div>
-            <div className="text-center font-semibold text-xl text-white/40">Sameday AI</div>
-            <div className="text-center font-semibold text-xl text-white/40">GoodCall</div>
+
+        <div className="flex flex-col lg:flex-row gap-8 items-center">
+          {/* Comparison Chart */}
+          <div className="w-full lg:w-3/4">
+            <div className="bg-gray-800 rounded-2xl p-8 shadow-2xl border border-gray-700">
+              <div className="grid grid-cols-4 gap-4 mb-8">
+                <div className="col-span-1"></div>
+                <div className="text-center font-semibold text-xl text-white">Graham</div>
+                <div className="text-center font-semibold text-xl text-white/40">Sameday AI</div>
+                <div className="text-center font-semibold text-xl text-white/40">GoodCall</div>
+              </div>
+
+              {/* Pricing Comparison */}
+              <div className="grid grid-cols-4 gap-4 mb-8 pb-8 border-b border-gray-700">
+                <div className="font-semibold text-white">Starting Price</div>
+                <div className="text-center text-orange-500 font-semibold">Only Pay for What You Use</div>
+                <div className="text-center text-gray-400 font-semibold">$59/mo</div>
+                <div className="text-center text-gray-400 font-semibold">$349/mo</div>
+              </div>
+
+              {/* Feature Comparison */}
+              {features.map((feature, index) => (
+                <div 
+                  key={feature.name}
+                  className={`grid grid-cols-4 gap-4 py-4 ${
+                    index !== features.length - 1 ? "border-b border-gray-700" : ""
+                  }`}
+                >
+                  <div className="font-medium text-gray-300">{feature.name}</div>
+                  <div className="flex justify-center">
+                    {feature.graham ? (
+                      <Check className="text-green-500 h-6 w-6" />
+                    ) : (
+                      <X className="text-red-500 h-6 w-6" />
+                    )}
+                  </div>
+                  <div className="flex justify-center">
+                    {feature.sameday ? (
+                      <Check className="text-green-500 h-6 w-6" />
+                    ) : (
+                      <X className="text-red-500 h-6 w-6" />
+                    )}
+                  </div>
+                  <div className="flex justify-center">
+                    {feature.goodcall ? (
+                      <Check className="text-green-500 h-6 w-6" />
+                    ) : (
+                      <X className="text-red-500 h-6 w-6" />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Pricing Comparison */}
-          <div className="grid grid-cols-4 gap-4 mb-8 pb-8 border-b border-gray-700">
-            <div className="font-semibold text-white">Starting Price</div>
-            <div className="text-center text-orange-500 font-semibold">Only pay for what you use</div>
-            <div className="text-center text-gray-400 font-semibold">$299/mo</div>
-            <div className="text-center text-gray-400 font-semibold">$199/mo</div>
-          </div>
-
-          {/* Feature Comparison */}
-          {features.map((feature, index) => (
-            <div 
-              key={feature.name}
-              className={`grid grid-cols-4 gap-4 py-4 ${
-                index !== features.length - 1 ? "border-b border-gray-700" : ""
-              }`}
-            >
-              <div className="font-medium text-gray-300">{feature.name}</div>
-              <div className="flex justify-center">
-                {feature.graham ? (
-                  <Check className="text-green-500 h-6 w-6" />
-                ) : (
-                  <X className="text-red-500 h-6 w-6" />
-                )}
-              </div>
-              <div className="flex justify-center">
-                {feature.sameday ? (
-                  <Check className="text-green-500 h-6 w-6" />
-                ) : (
-                  <X className="text-red-500 h-6 w-6" />
-                )}
-              </div>
-              <div className="flex justify-center">
-                {feature.goodcall ? (
-                  <Check className="text-green-500 h-6 w-6" />
-                ) : (
-                  <X className="text-red-500 h-6 w-6" />
-                )}
+          {/* Spline Animation */}
+          <div className="w-full lg:w-1/4">
+            <div className="w-full h-[580px] bg-gray-100 rounded-[2rem] overflow-hidden">
+              <div className="w-[130%] h-[130%] -ml-[15%] -mt-[15%]">
+                <Spline
+                  scene="https://prod.spline.design/DClQHRUOtJ5YVOeU/scene.splinecode" 
+                />
               </div>
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </section>

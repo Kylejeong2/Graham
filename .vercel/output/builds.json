@@ -3,13 +3,13 @@
   "target": "preview",
   "argv": [
     "/usr/local/bin/node",
-    "/private/var/folders/fz/6by5l_1d28vd_9n4cfc91jf00000gp/T/xfs-c29d0ce5/dlx-85427/node_modules/vercel/dist/index.js",
+    "/Users/kylejeong/.npm/_npx/69f9afb961c37556/node_modules/.bin/vc",
     "build"
   ],
   "builds": [
     {
       "require": "@vercel/next",
-      "requirePath": "/private/var/folders/fz/6by5l_1d28vd_9n4cfc91jf00000gp/T/xfs-c29d0ce5/dlx-85427/node_modules/@vercel/next/dist/index",
+      "requirePath": "/Users/kylejeong/.npm/_npx/69f9afb961c37556/node_modules/@vercel/next/dist/index",
       "apiVersion": 2,
       "src": "package.json",
       "use": "@vercel/next",
@@ -19,8 +19,8 @@
       },
       "error": {
         "name": "Error",
-        "stack": "Error: Command \"yarn run build\" exited with 1\n    at ChildProcess.<anonymous> (/private/var/folders/fz/6by5l_1d28vd_9n4cfc91jf00000gp/T/xfs-c29d0ce5/dlx-85427/node_modules/@vercel/build-utils/dist/index.js:24586:9)\n    at ChildProcess.emit (node:events:519:28)\n    at ChildProcess.emit (node:domain:488:12)\n    at maybeClose (node:internal/child_process:1105:16)\n    at ChildProcess._handle.onexit (node:internal/child_process:305:5)",
-        "message": "Command \"yarn run build\" exited with 1",
+        "stack": "Error: Command \"yarn run vercel-build\" exited with 1\n    at ChildProcess.<anonymous> (/Users/kylejeong/.npm/_npx/69f9afb961c37556/node_modules/@vercel/build-utils/dist/index.js:24586:9)\n    at ChildProcess.emit (node:events:519:28)\n    at ChildProcess.emit (node:domain:488:12)\n    at maybeClose (node:internal/child_process:1105:16)\n    at ChildProcess._handle.onexit (node:internal/child_process:305:5)",
+        "message": "Command \"yarn run vercel-build\" exited with 1",
         "hideStackTrace": true,
         "code": "BUILD_UTILS_SPAWN_1"
       }
@@ -28,8 +28,8 @@
   ],
   "error": {
     "name": "Error",
-    "stack": "Error: Command \"yarn run build\" exited with 1\n    at ChildProcess.<anonymous> (/private/var/folders/fz/6by5l_1d28vd_9n4cfc91jf00000gp/T/xfs-c29d0ce5/dlx-85427/node_modules/@vercel/build-utils/dist/index.js:24586:9)\n    at ChildProcess.emit (node:events:519:28)\n    at ChildProcess.emit (node:domain:488:12)\n    at maybeClose (node:internal/child_process:1105:16)\n    at ChildProcess._handle.onexit (node:internal/child_process:305:5)",
-    "message": "Command \"yarn run build\" exited with 1",
+    "stack": "Error: Command \"yarn run vercel-build\" exited with 1\n    at ChildProcess.<anonymous> (/Users/kylejeong/.npm/_npx/69f9afb961c37556/node_modules/@vercel/build-utils/dist/index.js:24586:9)\n    at ChildProcess.emit (node:events:519:28)\n    at ChildProcess.emit (node:domain:488:12)\n    at maybeClose (node:internal/child_process:1105:16)\n    at ChildProcess._handle.onexit (node:internal/child_process:305:5)",
+    "message": "Command \"yarn run vercel-build\" exited with 1",
     "hideStackTrace": true,
     "code": "BUILD_UTILS_SPAWN_1"
   }
