@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Check } from "lucide-react"
 import { useRouter } from 'next/navigation'
 import { useUser } from "@clerk/nextjs"
+import Link from "next/link"
 
 export default function Pricing() {
   const router = useRouter()
@@ -33,7 +34,7 @@ export default function Pricing() {
     {
       title: "Startup",
       description: "Perfect for startups",
-      monthlyPrice: "$399.99",
+      monthlyPrice: "$399.99/month",
       features: [
         "Unlimited Call Minutes",
         "Basic Call Routing",
@@ -67,15 +68,15 @@ export default function Pricing() {
           </p>
         </div>
         
-        <div className="grid gap-8 lg:grid-cols-3 max-w-7xl mx-auto relative before:absolute before:-inset-3 before:border-2 before:border-orange-300/30 before:rounded-3xl before:blur-sm">
+        <div className="grid gap-8 lg:grid-cols-3 max-w-7xl hover:border-orange-300 mx-auto relative before:absolute before:-inset-3 before:border-2 before:border-orange-300/30 before:rounded-3xl before:blur-sm">
           {plans.map((plan) => (
-            <Card key={plan.title} className="bg-white border-2 border-gray-100 hover:border-orange-300 hover:shadow-2xl hover:shadow-orange-100/50 hover:scale-105 transition-all duration-300 rounded-2xl">
+            <Card key={plan.title} className="bg-white border-2 border-gray-100 hover:border-orange-300 hover:shadow-2xl hover:shadow-orange-100/50 hover:scale-105 transition-all duration-300 rounded-2xl group">
               <CardHeader className="pb-8">
-                <CardTitle className="text-3xl font-bold text-gray-900">{plan.title}</CardTitle>
+                <CardTitle className="text-3xl font-bold text-gray-900 group-hover:text-orange-500 transition-colors">{plan.title}</CardTitle>
                 <CardDescription className="text-gray-600 text-lg mt-2">{plan.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-5xl font-bold text-blue-500 mb-8">
+                <p className="text-3xl font-bold text-blue-500 mb-8 group-hover:text-orange-500 transition-colors">
                   {plan.monthlyPrice}
                 </p>
                 <ul className="mt-4 space-y-4">
@@ -87,12 +88,14 @@ export default function Pricing() {
                 </ul>
               </CardContent>
               <CardFooter className="pt-8">
-                <Button 
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white text-lg py-6 rounded-xl transition-colors duration-300"
-                  onClick={handlePlanClick}
-                >
-                  Get Started
-                </Button>
+                <Link href='/sign-up' className="w-full">
+                  <Button 
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white text-lg py-6 rounded-xl transition-all duration-300 group-hover:shadow-lg group-hover:shadow-orange-200"
+                    onClick={handlePlanClick}
+                  >
+                    Get Started
+                  </Button>
+                </Link>
               </CardFooter>
             </Card>
           ))}

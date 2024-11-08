@@ -1,7 +1,6 @@
 "use client";
 
 import { Check, X } from "lucide-react";
-import Spline from '@splinetool/react-spline/next';
 
 export default function Comparison() {
   const features = [
@@ -28,18 +27,6 @@ export default function Comparison() {
       graham: true,
       sameday: true,
       goodcall: true
-    },
-    {
-      name: "Custom Knowledge Base",
-      graham: true,
-      sameday: false,
-      goodcall: false
-    },
-    {
-      name: "Call Transcripts",
-      graham: true,
-      sameday: false,
-      goodcall: false
     },
     {
       name: "Unlimited Caller Phone Numbers",
@@ -79,8 +66,8 @@ export default function Comparison() {
 
         <div className="flex flex-col lg:flex-row gap-8 items-center">
           {/* Comparison Chart */}
-          <div className="w-full lg:w-3/4">
-            <div className="bg-gray-800 rounded-2xl p-8 shadow-2xl border border-gray-700">
+          <div className="w-full">
+            <div className="bg-gray-800 rounded-2xl p-8 shadow-2xl border border-gray-700 max-w-5xl mx-auto">
               <div className="grid grid-cols-4 gap-4 mb-8">
                 <div className="col-span-1"></div>
                 <div className="text-center font-semibold text-xl text-white">Graham</div>
@@ -92,8 +79,8 @@ export default function Comparison() {
               <div className="grid grid-cols-4 gap-4 mb-8 pb-8 border-b border-gray-700">
                 <div className="font-semibold text-white">Starting Price</div>
                 <div className="text-center text-orange-500 font-semibold">Only Pay for What You Use</div>
-                <div className="text-center text-gray-400 font-semibold">$59/mo</div>
                 <div className="text-center text-gray-400 font-semibold">$349/mo</div>
+                <div className="text-center text-gray-400 font-semibold">$59/mo</div>
               </div>
 
               {/* Feature Comparison */}
@@ -128,17 +115,6 @@ export default function Comparison() {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* Spline Animation */}
-          <div className="w-full lg:w-1/4">
-            <div className="w-full h-[580px] bg-gray-100 rounded-[2rem] overflow-hidden">
-              <div className="w-[130%] h-[130%] -ml-[15%] -mt-[15%]">
-                <Spline
-                  scene="https://prod.spline.design/DClQHRUOtJ5YVOeU/scene.splinecode" 
-                />
-              </div>
             </div>
           </div>
         </div>

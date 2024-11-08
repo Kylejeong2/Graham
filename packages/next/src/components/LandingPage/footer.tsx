@@ -2,7 +2,7 @@ import Link from "next/link"
 
 export default function Footer() {
   return (
-    <footer className="w-full py-12 md:py-24 lg:py-32 border-t bg-blue-50">
+    <footer className="w-full py-12 md:py-24 lg:py-32 border-t bg-white">
       <div className="container px-4 md:px-6">
         <div className="grid gap-8 lg:grid-cols-4">
           <div className="space-y-4">
@@ -24,12 +24,12 @@ export default function Footer() {
                 <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
                 <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
               </svg>
-              <span className="font-bold text-blue-900">Graham</span>
+              <span className="font-bold text-black">Graham</span>
             </Link>
             <p className="text-sm text-blue-700">AI phone agents for growing businesses.</p>
           </div>
           <div className="space-y-4">
-            <h3 className="font-bold text-blue-900">Product</h3>
+            <h3 className="font-bold text-black">Product</h3>
             <ul className="space-y-2 text-sm text-blue-700">
               <li><Link href="#">Features</Link></li>
               <li><Link href="#">Pricing</Link></li>
@@ -38,7 +38,7 @@ export default function Footer() {
             </ul>
           </div>
           <div className="space-y-4">
-            <h3 className="font-bold text-blue-900">Company</h3>
+            <h3 className="font-bold text-black">Company</h3>
             <ul className="space-y-2 text-sm text-blue-700">
               <li><Link href="#">About</Link></li>
               <li><Link href="#">Blog</Link></li>
@@ -47,7 +47,7 @@ export default function Footer() {
             </ul>
           </div>
           <div className="space-y-4">
-            <h3 className="font-bold text-blue-900">Legal</h3>
+            <h3 className="font-bold text-black">Legal</h3>
             <ul className="space-y-2 text-sm text-blue-700">
               <li><Link href="#">Privacy</Link></li>
               <li><Link href="#">Terms</Link></li>

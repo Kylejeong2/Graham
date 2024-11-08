@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { MessageSquare, Upload, Volume2, UploadCloud, Download, Loader2, Play, Square, Phone, Settings, Calendar, CreditCard, ExternalLink } from 'lucide-react'
+import { MessageSquare, Upload, Volume2, UploadCloud, Download, Loader2, Play, Square, Phone, Settings, Calendar, CreditCard, ExternalLink, CalendarDays, ArrowRight } from 'lucide-react'
 import debounce from 'lodash/debounce';
 import type { Agent } from '@graham/db';
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { Switch } from '@radix-ui/react-switch';
 import { Badge } from "@/components/ui/badge"
 import type { User } from '@graham/db';
-import { createPhoneNumberSubscription } from './setup-functions/createPhoneNumberSubscription';
+import { createPhoneNumberSubscription } from './setup/setup-functions/createPhoneNumberSubscription';
 
 type ConversationInitType = 'user' | 'ai-default' | 'ai-custom';
 
@@ -45,6 +45,9 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
     const [searchError, setSearchError] = useState('');
     const [initialMessage, setInitialMessage] = useState('');
     const [conversationType, setConversationType] = useState<ConversationInitType>('user');
+    const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
+    const [calendarStep, setCalendarStep] = useState<'select' | 'google' | 'servicetitan'>('select');
+    const [isConnectingCalendar, setIsConnectingCalendar] = useState(false);
 
     // Move this hook up with other hooks
     const debouncedMessageUpdate = useCallback(
@@ -456,6 +459,23 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
         }
     };
 
+    const handleGoogleAuth = async () => {
+        setIsConnectingCalendar(true);
+        try {
+            const response = await fetch('/api/integrations/google-calendar');
+            const { url } = await response.json();
+            
+            if (url) {
+                window.location.href = url;
+            }
+        } catch (error) {
+            console.error('Failed to start Google Calendar auth:', error);
+            toast.error('Failed to connect to Google Calendar');
+        } finally {
+            setIsConnectingCalendar(false);
+        }
+    };
+
     return (
         <div className="flex flex-col min-h-full gap-6">
             <div className="grid grid-cols-12 gap-6">
@@ -728,7 +748,17 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                                                         <p className="text-xs text-gray-500">{feature.desc}</p>
                                                     </div>
                                                 </div>
-                                                <Switch className="scale-75" />
+                                                {feature.label === 'Appointment Booking' ? (
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm"
+                                                        onClick={() => setIsCalendarModalOpen(true)}
+                                                    >
+                                                        Connect
+                                                    </Button>
+                                                ) : (
+                                                    <Switch className="scale-75" />
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -918,6 +948,89 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                                 ))}
                             </div>
                         </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isCalendarModalOpen} onOpenChange={setIsCalendarModalOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {calendarStep === 'select' ? 'Calendar Integration' : 
+                             calendarStep === 'google' ? 'Connect Google Calendar' : 
+                             'ServiceTitan Calendar'}
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    {calendarStep === 'select' ? (
+                        <div className="space-y-4">
+                            <Button 
+                                onClick={() => setCalendarStep('google')}
+                                className="w-full justify-between group"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <CalendarDays className="w-5 h-5" />
+                                    Google Calendar
+                                </div>
+                                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                            </Button>
+                            
+                            <Button 
+                                disabled
+                                className="w-full justify-between opacity-50"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <CalendarDays className="w-5 h-5" />
+                                    ServiceTitan
+                                </div>
+                                <Badge variant="outline" className="ml-2">Coming Soon</Badge>
+                            </Button>
+                        </div>
+                    ) : calendarStep === 'google' ? (
+                        <div className="space-y-4">
+                            <p className="text-sm text-gray-500">
+                                Connect your Google Calendar to enable automatic appointment scheduling through your AI agent.
+                            </p>
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-sm text-blue-600">
+                                    <Calendar className="w-4 h-4" />
+                                    Your agent will be able to:
+                                </div>
+                                <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                                    <li>Check your availability</li>
+                                    <li>Schedule appointments</li>
+                                    <li>Send calendar invites</li>
+                                    <li>Manage appointment changes</li>
+                                </ul>
+                            </div>
+                            <Button 
+                                onClick={handleGoogleAuth}
+                                disabled={isConnectingCalendar}
+                                className="w-full"
+                            >
+                                {isConnectingCalendar ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        Connecting...
+                                    </>
+                                ) : (
+                                    <>
+                                        <CalendarDays className="w-4 h-4 mr-2" />
+                                        Connect Google Calendar
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    ) : null}
+
+                    {calendarStep !== 'select' && (
+                        <Button
+                            variant="ghost"
+                            onClick={() => setCalendarStep('select')}
+                            className="mt-2"
+                        >
+                            ← Back to integrations
+                        </Button>
                     )}
                 </DialogContent>
             </Dialog>

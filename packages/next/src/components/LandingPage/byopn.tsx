@@ -1,6 +1,7 @@
 "use client";
 
-import { Phone, ArrowRight, Check, Link } from "lucide-react";
+import { Phone, ArrowRight, Check } from "lucide-react";
+import Link from "next/link";
 
 export default function BYOPN() {
   return (
@@ -41,8 +42,8 @@ export default function BYOPN() {
                 <p className="text-gray-600 leading-relaxed mb-6">
                   Get started in minutes. We handle all the technical details of integrating your existing phone number with Graham's AI system.
                 </p>
-                <Link href="/sign-up">
-                  <button className="flex items-center gap-2 text-orange-600 font-semibold hover:gap-4 transition-all">
+                <Link href="/sign-up" className="w-full border-2 border-orange-300 hover:border-orange-400 hover:shadow-2xl hover:shadow-orange-100/50 hover:scale-105 transition-all duration-300 rounded-xl group">
+                  <button className="flex items-center gap-2 border border-orange-300 text-orange-600 font-semibold hover:gap-4 transition-all">
                     Learn more <ArrowRight className="h-4 w-4" />
                   </button>
                 </Link>

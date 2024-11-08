@@ -28,6 +28,7 @@ model Agent {
   user                      User            @relation(fields: [userId], references: [id])
   documentChunks            DocumentChunk[]
   usageRecords              UsageRecord[]
+  googleCalendarIntegrations  GoogleCalendarIntegration[]
 }
 
 model UsageRecord {
@@ -67,6 +68,7 @@ model User {
   agents                      Agent[]
   usageRecords                UsageRecord[]
   userSettings                UserSettings?
+  googleCalendarIntegrations  GoogleCalendarIntegration[]
 }
 
 model Waitlist {
@@ -122,4 +124,20 @@ model BlogPost {
   published Boolean  @default(false)
   coverImage String?  // url to be the cover image of the blog post
   createdAt DateTime @default(now())
+}
+
+model GoogleCalendarIntegration {
+    id              String   @id @default(cuid())
+    userId          String
+    agentId         String
+    accessToken     String
+    refreshToken    String
+    expiresAt       DateTime
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+
+    user            User     @relation(fields: [userId], references: [id])
+    agent           Agent    @relation(fields: [agentId], references: [id])
+
+    @@unique([userId, agentId])
 }
