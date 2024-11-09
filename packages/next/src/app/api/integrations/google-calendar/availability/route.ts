@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
 import { getCalendarAvailability } from '@/lib/google-calendar';
 
 export async function POST(req: Request) {

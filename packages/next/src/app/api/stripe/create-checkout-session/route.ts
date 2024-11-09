@@ -4,11 +4,11 @@ import { prisma } from '@graham/db'
 
 export async function POST(req: Request) {
   try {
-    const { planId, userId, successUrl, cancelUrl, quantity } = await req.json()
+    const { planId, userId, successUrl, cancelUrl, quantity, metadata } = await req.json()
 
     // Validate required fields
     if (!planId || !userId || !successUrl || !cancelUrl || !quantity) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 401 })
     }
 
     // Fetch the user
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     const price = await stripe.prices.retrieve(product.default_price as string)
 
     if (!price) {
-      return NextResponse.json({ error: 'Invalid plan ID' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid plan ID' }, { status: 402 })
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -56,13 +56,14 @@ export async function POST(req: Request) {
       success_url: successUrl,
       cancel_url: cancelUrl,
       client_reference_id: userId,
+      metadata: metadata || {},
     })
 
-    return NextResponse.json({ sessionId: session.id, url: session.url })
-  } catch (error) {
+    return NextResponse.json({ url: session.url })
+  } catch (error: any) {
     console.error('Error creating checkout session:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || 'Internal server error' },
       { status: 500 }
     )
   }

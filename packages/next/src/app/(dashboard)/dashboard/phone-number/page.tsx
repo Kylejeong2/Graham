@@ -2,146 +2,166 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Phone, AlertCircle, ExternalLink, DollarSign } from "lucide-react"
+import { Phone, AlertCircle, ExternalLink, Loader2 } from "lucide-react"
+import { useState, useEffect } from 'react';
+import { toast } from "react-toastify";
+import { BuyPhoneNumberModal } from "@/components/Agent/setup/modals/buy-phone-number";
 
 export default function PhoneNumberPage() {
+    const [setupChoice, setSetupChoice] = useState('routing');
+    const [userPhoneNumbers, setUserPhoneNumbers] = useState<string[]>([]);
+    const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch('/api/user/get-info');
+                const data = await response.json();
+                setUserPhoneNumbers(data.phoneNumbers || []);
+                setUser(data);
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                toast.error('Failed to load user data');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            </div>
+        );
+    }
+
     return (
         <div className="container mx-auto p-6 max-w-4xl">
             <h1 className="text-2xl font-bold text-blue-900 mb-6">
-                Phone Number Setup
+                Phone Number Management
             </h1>
 
-            {/* Status Card */}
-            <Card className="mb-6 border-orange-200 bg-orange-50">
-                <CardContent className="pt-6">
-                    <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-orange-500 mt-0.5" />
-                        <div>
-                            <h3 className="font-medium text-orange-900 mb-1">
-                                A2P 10DLC Registration Required
-                            </h3>
-                            <p className="text-sm text-orange-700">
-                                All US phone numbers must be registered through Twilio's A2P 10DLC process. Registration typically takes 1-2 business days.
-                            </p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+            <div className="flex gap-4 mb-6">
+                <Button
+                    variant={setupChoice === 'routing' ? 'default' : 'outline'}
+                    onClick={() => setSetupChoice('routing')}
+                    className={setupChoice === 'routing' ? 'bg-blue-600' : 'border-blue-200'}
+                >
+                    Quick Call Routing Setup
+                </Button>
+                <Button
+                    variant={setupChoice === 'twilio' ? 'default' : 'outline'}
+                    onClick={() => setSetupChoice('twilio')}
+                    className={setupChoice === 'twilio' ? 'bg-blue-600' : 'border-blue-200'}
+                >
+                    Twilio Registration
+                </Button>
+            </div>
 
-            {/* Registration Options Card */}
-            <Card className="mb-6">
-                <CardHeader>
-                    <CardTitle className="text-blue-900 flex items-center gap-2">
-                        <DollarSign className="w-5 h-5 text-orange-500" />
-                        Registration Options
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="space-y-4">
-                        <div className="p-4 bg-blue-50 rounded-lg">
-                            <h3 className="font-medium text-blue-900 mb-2">Standard Registration</h3>
-                            <ul className="text-sm text-blue-700 space-y-2">
-                                <li>• $44 one-time brand registration</li>
-                                <li>• $15 per campaign one-time vetting fee</li>
-                                <li>• $1.50-$10 per campaign monthly</li>
-                                <li>• For businesses with EIN sending 6,000+ messages/day</li>
-                            </ul>
-                        </div>
-                        
-                        <div className="p-4 bg-green-50 rounded-lg">
-                            <h3 className="font-medium text-green-900 mb-2">Low-Volume Registration</h3>
-                            <ul className="text-sm text-green-700 space-y-2">
-                                <li>• $4 one-time brand registration</li>
-                                <li>• $15 per campaign one-time vetting fee</li>
-                                <li>• $1.50-$10 per campaign monthly</li>
-                                <li>• For businesses with EIN sending under 6,000 messages/day</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                        <Button
-                            className="w-full bg-blue-600 hover:bg-blue-700"
-                            onClick={() => window.open('https://pages.twilio.com/10DLC-HelpArticles-WW.html?_gl=1*z9cstp*_gcl_aw*R0NMLjE3MzA0OTYyNjcuQ2p3S0NBanctSkc1QmhCWkVpd0F0N0pSNl9tb2ZaM29CWUdWTkVtd2RMWDVBc0UtUk1xaWZkclprb2EweTk4TlRlSmlfX2M0T0lxY1dob0NGc1lRQXZEX0J3RQ..*_gcl_au*Nzk0MzE0NTY2LjE3MzA0OTE3MTM.*_ga*OTg5NDYyMjM1LjE3MzA0OTE3MTM.*_ga_RRP8K4M4F3*MTczMDY5NzM4My45LjEuMTczMDY5NzQ0My4wLjAuMA..', '_blank')}
-                        >
-                            Start Registration
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="w-full border-blue-200"
-                            onClick={() => window.open('https://help.twilio.com/articles/4418081745179-How-do-I-check-that-I-have-completed-US-A2P-10DLC-registration', '_blank')}
-                        >
-                            Troubleshooting
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Process Steps Card */}
-            <Card className="mb-6">
-                <CardHeader>
-                    <CardTitle className="text-blue-900 flex items-center gap-2">
-                        <Phone className="w-5 h-5 text-orange-500" />
-                        Registration Process
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="space-y-4">
+            {setupChoice === 'routing' ? (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-blue-900 flex items-center gap-2">
+                            <Phone className="w-5 h-5 text-green-500" />
+                            Call Routing Setup
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        {userPhoneNumbers.length > 0 ? (
+                            <div className="p-4 bg-blue-50 rounded-lg space-y-4">
+                                <h3 className="font-medium text-blue-900">Quick Setup Instructions</h3>
+                                <div className="space-y-3">
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                            <span className="text-sm text-blue-600 font-medium">1</span>
+                                        </div>
+                                        <p className="text-sm text-blue-700">
+                                            From your phone, dial *72
+                                        </p>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                            <span className="text-sm text-blue-600 font-medium">2</span>
+                                        </div>
+                                        <p className="text-sm text-blue-700">
+                                            Enter the 10-digit number where you want calls forwarded
+                                        </p>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                            <span className="text-sm text-blue-600 font-medium">3</span>
+                                        </div>
+                                        <p className="text-sm text-blue-700">
+                                            Wait for the confirmation tone (2 short beeps)
+                                        </p>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                            <span className="text-sm text-blue-600 font-medium">4</span>
+                                        </div>
+                                        <p className="text-sm text-blue-700">
+                                            To disable forwarding later, dial *73 and wait for confirmation tone
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="p-6 text-center space-y-4">
+                                <div className="bg-blue-50 rounded-full w-12 h-12 mx-auto flex items-center justify-center">
+                                    <Phone className="w-6 h-6 text-blue-600" />
+                                </div>
+                                <div className="space-y-2">
+                                    <h3 className="font-medium text-blue-900">No Phone Number Found</h3>
+                                    <p className="text-sm text-blue-600">First, let's get you a phone number to set up call routing.</p>
+                                </div>
+                                <Button 
+                                    className="bg-blue-600 hover:bg-blue-700"
+                                    onClick={() => setIsPhoneModalOpen(true)}
+                                >
+                                    Purchase Phone Number
+                                </Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            ) : (
+                <Card className="mb-6">
+                    <CardContent className="pt-6">
                         <div className="flex items-start gap-3">
-                            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <span className="text-sm text-blue-600 font-medium">1</span>
-                            </div>
+                            <AlertCircle className="w-5 h-5 text-orange-500 mt-0.5" />
                             <div>
-                                <h3 className="font-medium text-blue-900 mb-1">Brand Registration</h3>
-                                <p className="text-sm text-gray-600">
-                                    Provide information about your business and who will be sending the messages.
+                                <h3 className="font-medium text-orange-900 mb-1">
+                                    A2P 10DLC Registration Required
+                                </h3>
+                                <p className="text-sm text-orange-700">
+                                    All US phone numbers must be registered through Twilio's A2P 10DLC process. Registration typically takes 1-2 business days.
                                 </p>
+                                <Button 
+                                    className="mt-4"
+                                    onClick={() => window.open('https://www.twilio.com/console/sms/settings/10dlc-registration', '_blank')}
+                                >
+                                    Register with Twilio
+                                    <ExternalLink className="w-4 h-4 ml-2" />
+                                </Button>
                             </div>
                         </div>
+                    </CardContent>
+                </Card>
+            )}
 
-                        <div className="flex items-start gap-3">
-                            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <span className="text-sm text-blue-600 font-medium">2</span>
-                            </div>
-                            <div>
-                                <h3 className="font-medium text-blue-900 mb-1">Campaign Setup</h3>
-                                <p className="text-sm text-gray-600">
-                                    Register your use cases and how you'll manage customer consent for messaging.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-start gap-3">
-                            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <span className="text-sm text-blue-600 font-medium">3</span>
-                            </div>
-                            <div>
-                                <h3 className="font-medium text-blue-900 mb-1">Number Assignment</h3>
-                                <p className="text-sm text-gray-600">
-                                    Add your phone numbers to the registered campaign in a Messaging Service.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                        <Button 
-                            className="flex-1 bg-blue-600 hover:bg-blue-700"
-                            onClick={() => window.open('https://help.twilio.com/articles/223179348-Porting-a-Phone-Number-to-Twilio', '_blank')}
-                        >
-                            Start Registration
-                        </Button>
-                        <Button 
-                            variant="outline" 
-                            className="flex-1 border-blue-200"
-                            onClick={() => window.open('https://www.twilio.com/docs/verify/api', '_blank')}
-                        >
-                            <span>Learn More</span>
-                            <ExternalLink className="w-4 h-4 ml-2" />
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
+            <BuyPhoneNumberModal 
+                isOpen={isPhoneModalOpen}
+                onClose={() => setIsPhoneModalOpen(false)}
+                userPhoneNumbers={userPhoneNumbers}
+                setUserPhoneNumbers={setUserPhoneNumbers}
+                user={user}
+                agentId=""
+            />
         </div>
-    )
+    );
 }

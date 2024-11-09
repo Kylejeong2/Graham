@@ -42,3 +42,5 @@ packages/next/.yarn
 
 .yarn/install-state.gz
 .yarn/cache
+
+.vercel

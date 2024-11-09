@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { Switch } from '@radix-ui/react-switch';
 import { Badge } from "@/components/ui/badge"
 import type { User } from '@graham/db';
-import { createPhoneNumberSubscription } from './setup/setup-functions/createPhoneNumberSubscription';
+import { BuyPhoneNumberModal } from './setup/modals/buy-phone-number';
 
 type ConversationInitType = 'user' | 'ai-default' | 'ai-custom';
 
@@ -37,19 +37,12 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
     const [isEnrichingInstructions, setIsEnrichingInstructions] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
-    const [availableNumbers, setAvailableNumbers] = useState([]);
-    const [selectedAreaCode, setSelectedAreaCode] = useState('');
-    const [isLoadingNumbers, setIsLoadingNumbers] = useState(false);
-    const [searchStep, setSearchStep] = useState<'input' | 'results'>('input');
-    const [countryCode, setCountryCode] = useState('US');
-    const [searchError, setSearchError] = useState('');
     const [initialMessage, setInitialMessage] = useState('');
     const [conversationType, setConversationType] = useState<ConversationInitType>('user');
     const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
     const [calendarStep, setCalendarStep] = useState<'select' | 'google' | 'servicetitan'>('select');
     const [isConnectingCalendar, setIsConnectingCalendar] = useState(false);
 
-    // Move this hook up with other hooks
     const debouncedMessageUpdate = useCallback(
         debounce(async (newMessage: string) => {
             try {
@@ -68,22 +61,19 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
         [agentId]
     );
 
-    // Voice selection modal handlers
     const openVoiceModal = () => setIsVoiceModalOpen(true);
     const closeVoiceModal = () => setIsVoiceModalOpen(false);
     
-    // File upload handlers
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Check file type and size
         if (!file.type.includes('pdf')) {
             toast.error('Only PDF files are currently supported');
             return;
         }
 
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        if (file.size > 5 * 1024 * 1024) {
             toast.error('File size must be less than 5MB');
             return;
         }
@@ -180,7 +170,6 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
         }
     };
 
-    // Create debounced save function
     const debouncedInstructionUpdate = useCallback(
         debounce(async (newInstructions: string) => {
             setIsSaving(true);
@@ -208,30 +197,25 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
         [agentId]
     );
 
-    // Update the instructions textarea handler
     const handleInstructionsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newInstructions = e.target.value;
         setCustomInstructions(newInstructions);
         debouncedInstructionUpdate(newInstructions);
     };
 
-    // Add audio preview handler
     const handlePreviewVoice = async (voice: any, e: React.MouseEvent) => {
         e.stopPropagation();
         
-        // If there's currently playing audio, stop it
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
         }
 
-        // If clicking the same voice that's playing, stop it
         if (playingVoiceId === voice.voice_id) {
             setPlayingVoiceId(null);
             return;
         }
 
-        // Play the new voice preview
         if (voice.preview_url) {
             const audio = new Audio(voice.preview_url);
             audioRef.current = audio;
@@ -240,7 +224,6 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                 setPlayingVoiceId(voice.voice_id);
                 await audio.play();
                 
-                // Reset playing state when audio ends
                 audio.onended = () => {
                     setPlayingVoiceId(null);
                 };
@@ -254,7 +237,6 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
         }
     };
 
-    // Update the initial data fetch
     useEffect(() => {
         const fetchAgentData = async () => {
             if (!agentId) {
@@ -271,7 +253,6 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                 }
                 const agent: Agent = await response.json();
                 
-                // Initialize states with database values
                 if (agent.systemPrompt) {
                     setCustomInstructions(agent.systemPrompt);
                 }
@@ -306,7 +287,6 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
         fetchAgentData();
     }, [agentId]);
 
-    // Add phone numbers fetch
     useEffect(() => {
         const fetchUserPhoneNumbers = async () => {
             try {
@@ -327,7 +307,6 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
         fetchUserPhoneNumbers();
     }, []);
 
-    // Add instruction enhancement handler
     const handleEnhanceInstructions = async () => {
         if (!customInstructions) {
             toast.warn('Please add some instructions first');
@@ -358,7 +337,6 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
         }
     };
 
-    // Update the phone number selection handler
     const handlePhoneNumberSelect = async (phoneNumber: string) => {
         try {
             setSelectedPhoneNumber(phoneNumber);
@@ -380,7 +358,6 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
         }
     };
 
-    // Add this animation component
     const EnhancingAnimation = () => (
         <motion.div 
             className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-orange-500/10"
@@ -392,7 +369,6 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
         />
     );
 
-    // Update the return statement to handle loading state
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
@@ -400,64 +376,6 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
             </div>
         );
     }
-
-    const handleSearchNumbers = async () => {
-        setIsLoadingNumbers(true);
-        setSearchError('');
-
-        try {
-            if (!selectedAreaCode || selectedAreaCode.length !== 3) {
-                throw new Error('Please enter a valid 3-digit area code');
-            }
-
-            const response = await fetch('/api/twilio/get-phone-numbers', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    areaCode: selectedAreaCode,
-                    countryCode
-                })
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Failed to fetch numbers');
-            }
-
-            if (data.numbers.length === 0) {
-                throw new Error('No available numbers found for this area code');
-            }
-
-            setAvailableNumbers(data.numbers);
-            setSearchStep('results');
-        } catch (error: any) {
-            setSearchError(error.message);
-            toast.error(error.message);
-        } finally {
-            setIsLoadingNumbers(false);
-        }
-    };
-
-    const handleBuyNumber = async (phoneNumber: string) => {
-        try {
-            const payment = await createPhoneNumberSubscription(phoneNumber, user?.id || '', agentId, user?.stripeCustomerId || '');
-
-            if (!payment?.success) {
-                toast.error('Failed to create subscription');
-                return;
-            }
-
-            if (payment?.number) {
-                toast.success('Phone number purchased successfully');
-                setIsPhoneModalOpen(false);
-                setUserPhoneNumbers([...userPhoneNumbers, payment.number]);
-            }
-        } catch (error) {
-            toast.error('Failed to purchase number. Your subscription will be cancelled.');
-            throw error; 
-        }
-    };
 
     const handleGoogleAuth = async () => {
         setIsConnectingCalendar(true);
@@ -668,7 +586,7 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                                 </Button>
                             </div>
                             <p className="text-xs text-gray-500">
-                                Numbers start at $2/month
+                                Numbers start at $3/month
                             </p>
                         </CardContent>
                     </Card>
@@ -853,104 +771,14 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                 </DialogContent>
             </Dialog>
 
-            <Dialog open={isPhoneModalOpen} onOpenChange={setIsPhoneModalOpen}>
-                <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                        <DialogTitle>Purchase Phone Number</DialogTitle>
-                    </DialogHeader>
-                    
-                    {searchStep === 'input' ? (
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label>Country</Label>
-                                <select 
-                                    value={countryCode}
-                                    onChange={(e) => setCountryCode(e.target.value)}
-                                    className="w-full p-2 border rounded-md"
-                                >
-                                    <option value="US">United States (+1)</option>
-                                    <option value="CA">Canada (+1)</option>
-                                    {/* Add more countries as needed */}
-                                </select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>Area Code</Label>
-                                <div className="flex gap-2">
-                                    <Input
-                                        placeholder="e.g., 415"
-                                        value={selectedAreaCode}
-                                        onChange={(e) => {
-                                            const value = e.target.value.replace(/\D/g, '');
-                                            setSelectedAreaCode(value);
-                                        }}
-                                        maxLength={3}
-                                        className="font-mono"
-                                    />
-                                    <Button 
-                                        onClick={handleSearchNumbers} 
-                                        disabled={isLoadingNumbers || selectedAreaCode.length !== 3}
-                                    >
-                                        {isLoadingNumbers ? (
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                        ) : (
-                                            'Search'
-                                        )}
-                                    </Button>
-                                </div>
-                                {searchError && (
-                                    <p className="text-sm text-red-500">{searchError}</p>
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                                <p className="text-sm text-gray-500">
-                                    Found {availableNumbers.length} numbers in {selectedAreaCode}
-                                </p>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setSearchStep('input')}
-                                >
-                                    New Search
-                                </Button>
-                            </div>
-
-                            <div className="max-h-[400px] overflow-y-auto space-y-2">
-                                {availableNumbers.map((number: any) => (
-                                    <div 
-                                        key={number.phoneNumber} 
-                                        className="flex justify-between items-center p-4 border rounded-lg hover:bg-gray-50"
-                                    >
-                                        <div className="space-y-1">
-                                            <p className="font-mono font-medium">{number.friendlyName}</p>
-                                            <div className="flex gap-2">
-                                                <Badge variant="secondary">
-                                                    {number.locality || number.region}
-                                                </Badge>
-                                                {number.capabilities.voice && (
-                                                    <Badge variant="outline">Voice</Badge>
-                                                )}
-                                                {number.capabilities.SMS && (
-                                                    <Badge variant="outline">SMS</Badge>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <Button 
-                                            onClick={() => handleBuyNumber(number.phoneNumber)}
-                                            className="ml-4"
-                                        >
-                                            Purchase
-                                        </Button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
+            <BuyPhoneNumberModal 
+                isOpen={isPhoneModalOpen}
+                onClose={() => setIsPhoneModalOpen(false)}
+                userPhoneNumbers={userPhoneNumbers}
+                setUserPhoneNumbers={setUserPhoneNumbers}
+                user={user}
+                agentId={agentId}
+            />
 
             <Dialog open={isCalendarModalOpen} onOpenChange={setIsCalendarModalOpen}>
                 <DialogContent className="max-w-md">

@@ -18,8 +18,12 @@ export async function POST() {
 
     // Create or get Stripe customer
     let stripeCustomerId = user?.stripeCustomerId
-    if (!stripeCustomerId && user?.email && user?.fullName) {
-      const customer = await createStripeCustomer(user?.email, user?.fullName, userId)
+    if (!stripeCustomerId) {
+      const customer = await createStripeCustomer(
+        user?.email || 'pending@example.com', 
+        user?.fullName || 'Pending User',
+        userId
+      )
       stripeCustomerId = customer.id
       
       // Save Stripe customer ID

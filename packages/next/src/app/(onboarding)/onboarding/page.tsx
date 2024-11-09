@@ -36,7 +36,34 @@ export default function OnboardingPage() {
     hasPaymentSetup: false
   })
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleBusinessDetailsSubmit = async () => {
+    try {
+      const response = await fetch('/api/user/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          ...formData,
+          hasPaymentSetup: false
+        })
+      })
+
+      if (!response.ok) throw new Error('Failed to update user')
+      
+      const setupResponse = await fetch('/api/stripe/create-setup-intent', {
+        method: 'POST'
+      })
+
+      if (!setupResponse.ok) throw new Error('Failed to create setup intent')
+      
+      setStep(3)
+    } catch (error: any) {
+      console.error('Business details update failed:', error)
+      toast.error(error.message)
+    }
+  }
+
+  const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     try {
@@ -67,7 +94,7 @@ export default function OnboardingPage() {
       
       router.push('/creating-account')
     } catch (error: any) {
-      console.error('Onboarding failed:', error)
+      console.error('Final submission failed:', error)
       toast.error(error.message)
     }
   }
@@ -112,7 +139,12 @@ export default function OnboardingPage() {
               id="phoneNumber"
               placeholder="(555) 555-5555"
               value={formData.phoneNumber}
-              onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+              onChange={(e) => {
+                const cleaned = e.target.value.replace(/\D/g, '');
+                const truncated = cleaned.slice(0, 10);
+                const formatted = truncated.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                setFormData({...formData, phoneNumber: formatted});
+              }}
               className="mt-1"
             />
           </div>
@@ -155,6 +187,14 @@ export default function OnboardingPage() {
     }
   }
 
+  const handleContinue = () => {
+    if (step === 2 && isStepValid(step)) {
+      handleBusinessDetailsSubmit()
+    } else if (step < steps.length && isStepValid(step)) {
+      setStep(step + 1)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 justify-center items-center to-white p-6">
       <div className="max-w-2xl mx-auto space-y-8">
@@ -164,7 +204,7 @@ export default function OnboardingPage() {
             <CardDescription>{steps[step - 1].description}</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={step === 3 ? handleFinalSubmit : handleBusinessDetailsSubmit} className="space-y-6">
               {steps[step - 1].fields}
               
               <div className="flex justify-between pt-4">
@@ -180,7 +220,7 @@ export default function OnboardingPage() {
                 <Button 
                   type={step === steps.length ? "submit" : "button"}
                   className="ml-auto"
-                  onClick={() => step < steps.length && isStepValid(step) && setStep(step + 1)}
+                  onClick={handleContinue}
                   disabled={!isStepValid(step)}
                 >
                   {step === steps.length ? 'Get Started' : 'Continue'}

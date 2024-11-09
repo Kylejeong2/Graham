@@ -1,16 +1,15 @@
 import { toast } from "react-toastify";
 
-export const createPhoneNumberSubscription = async (phoneNumber: string, userId: string, agentId: string, stripeCustomerId: string) => {
+export const createPhoneNumberSubscription = async (phoneNumber: string, userId: string, agentId: string) => {
     try {
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          planId: process.env.STRIPE_PHONE_NUMBER_PLAN_ID!,
-          userId: userId,
-          stripeCustomerId: stripeCustomerId,
-          successUrl: `${window.location.origin}/dashboard/agent/${agentId}`,
-          cancelUrl: `${window.location.origin}/dashboard/error-with-payment`,
+          planId: process.env.NEXT_PUBLIC_STRIPE_PHONE_NUMBER_PLAN_ID,
+          userId,
+          successUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/agent/${agentId}`,
+          cancelUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/error-with-payment`,
           quantity: 1,
           metadata: {
             phoneNumber

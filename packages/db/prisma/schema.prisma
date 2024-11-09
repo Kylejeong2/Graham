@@ -52,7 +52,7 @@ model User {
   image                       String?
   stripeCustomerId            String?       @unique
   stripePlanId                String?
-  phoneNumbers                Json          @default("[]")
+  phoneNumbers                Json          @default("[]") // Array of phone numbers "+15103401579"
   isYearly                    Boolean       @default(false)
   stripePriceId               String?
   subscriptionName            String?
