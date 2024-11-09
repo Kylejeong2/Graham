@@ -1,10 +1,10 @@
 {
-      "name": "graham",
-      "packageManager": "yarn@4.5.1",
-      "workspaces": [
+    "name": "graham",
+    "packageManager": "yarn@4.5.1",
+    "workspaces": [
         "packages/*"
-      ],
-      "devDependencies": {
+    ],
+    "devDependencies": {
         "@types/localtunnel": "^2",
         "@types/node": "^20.12.4",
         "@types/react": "^18.3.5",
@@ -19,19 +19,19 @@
         "localtunnel": "^2.0.2",
         "prettier": "3.2.5",
         "typescript": "^5.4.4"
-      },
-      "lint-staged": {
+    },
+    "lint-staged": {
         "*.{js,jsx,ts,tsx}": [
-          "yarn eslint --fix",
-          "yarn prettier"
+                "yarn eslint --fix",
+                "yarn prettier"
         ]
-      },
-      "scripts": {
+    },
+    "scripts": {
         "vercel-build": "next build",
         "postinstall": "husky",
         "test": "vitest"
-      },
-      "dependencies": {
+    },
+    "dependencies": {
         "@axiomhq/winston": "^1.0.0",
         "@cloudflare/next-on-pages": "^1.13.5",
         "@prisma/client": "^5.21.1",
@@ -44,6 +44,6 @@
         "react-dom": "18.2.0",
         "turbo": "^2.2.3",
         "winston": "^3.14.1"
-      }
     }
+}
         
