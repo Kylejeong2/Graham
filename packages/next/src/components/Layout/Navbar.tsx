@@ -19,7 +19,7 @@ export function Navbar() {
           <Link href="/">
             <h1 className="text-5xl font-bold text-orange-600 -ml-1">raham</h1>
           </Link>
-        </div>
+      </div>
       </div>
       <NavLinks />
       <UserActions isSignedIn={isSignedIn} userId={userId || ''} />
