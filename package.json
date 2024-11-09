@@ -1,6 +1,6 @@
 {
     "name": "graham",
-    "packageManager": "yarn@4.5.1",
+    "packageManager": "yarn@4.4.0",
     "workspaces": [
         "packages/*"
     ],
@@ -22,8 +22,8 @@
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx}": [
-                "yarn eslint --fix",
-                "yarn prettier"
+            "yarn eslint --fix",
+            "yarn prettier"
         ]
     },
     "scripts": {
@@ -46,4 +46,3 @@
         "winston": "^3.14.1"
     }
 }
-        
