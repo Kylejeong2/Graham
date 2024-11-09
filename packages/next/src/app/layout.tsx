@@ -7,6 +7,7 @@ import Provider from "@/components/Layout/QueryClientProvider";
 import MainLayout from "@/components/Layout/MainLayout";
 import { Navbar } from "@/components/Layout/Navbar";
 import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,6 +31,7 @@ export default function RootLayout({
             <Navbar />
             <MainLayout>
               {children}
+              <SpeedInsights />
             </MainLayout>
           </Provider>
         </body>

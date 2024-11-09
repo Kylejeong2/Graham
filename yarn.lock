@@ -1397,6 +1397,7 @@ __metadata:
     "@vercel/analytics": "npm:^1.3.2"
     "@vercel/blob": "npm:^0.25.1"
     "@vercel/postgres": "npm:^0.9.0"
+    "@vercel/speed-insights": "npm:^1.1.0"
     ai: "npm:^3.3.9"
     autoprefixer: "npm:10.4.15"
     axios: "npm:^1.7.7"
@@ -4086,6 +4087,33 @@ __metadata:
     utf-8-validate: "npm:^6.0.4"
     ws: "npm:^8.17.1"
   checksum: 10c0/f9f980c06b0d73adf74947810e39a71ded3c85589da3a6445960dc311b0d441249d928772de46d1ceb74ff6edc13d5d8849d7415f1788a9fe0addd89940cb983
+  languageName: node
+  linkType: hard
+
+"@vercel/speed-insights@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@vercel/speed-insights@npm:1.1.0"
+  peerDependencies:
+    "@sveltejs/kit": ^1 || ^2
+    next: ">= 13"
+    react: ^18 || ^19 || ^19.0.0-rc
+    svelte: ">= 4"
+    vue: ^3
+    vue-router: ^4
+  peerDependenciesMeta:
+    "@sveltejs/kit":
+      optional: true
+    next:
+      optional: true
+    react:
+      optional: true
+    svelte:
+      optional: true
+    vue:
+      optional: true
+    vue-router:
+      optional: true
+  checksum: 10c0/2bfaef328b30b1d8a5a1b65e201875a78076b0223f6719a4cac04dd24e9f336da8f1648f8b33b0fe05624f25f957b67f46b7d6c3c290ac53c6ac3dac4540922a
   languageName: node
   linkType: hard
 
@@ -7425,6 +7453,7 @@ __metadata:
     "@types/react": "npm:^18.3.5"
     "@typescript-eslint/eslint-plugin": "npm:^7.5.0"
     "@typescript-eslint/parser": "npm:^7.5.0"
+    "@vercel/speed-insights": "npm:^1.1.0"
     eslint: "npm:^8.57.0"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-react: "npm:^7.34.1"
