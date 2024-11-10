@@ -59,11 +59,11 @@ export async function POST(req: Request) {
       metadata: metadata || {},
     })
 
-    return NextResponse.json({ url: session.url })
+    return NextResponse.json({ url: session.url, success: true })
   } catch (error: any) {
     console.error('Error creating checkout session:', error)
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error.message || 'Internal server error', success: false },
       { status: 500 }
     )
   }

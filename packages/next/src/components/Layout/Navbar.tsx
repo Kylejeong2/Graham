@@ -14,7 +14,7 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full backdrop-blur-sm bg-white/80 border-b border-gray-200">
       <div className="container mx-auto px-4 h-16 flex items-center">
         {/* Logo section - fixed width */}
-        <div className="w-[200px] flex items-center space-x-2">
+        <div className="w-[200px] flex items-center space-x-2 py-2">
           <div className="flex items-center hover:opacity-80 transition-opacity py-2">
             <Image src="/logo/graham_transparent.png" alt="Graham Logo" width={70} height={70} className="mr-0 -mb-1"/>
             <Link href="/">
