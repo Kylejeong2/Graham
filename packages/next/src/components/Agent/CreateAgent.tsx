@@ -59,7 +59,7 @@ export const CreateAgent: React.FC<Props> = ({ children }) => {
             onSuccess: (data) => {
                 if (data && data.agent_id) {
                     console.log("Agent Created", { agent_id: data.agent_id })
-                    router.push(`/agent/${data.agent_id}`);
+                    router.push(`/dashboard/agent/${data.agent_id}`);
                 } else {
                     console.error("Agent created, but no ID returned")
                     window.alert("Agent created, but there was an issue. Please try again.")

@@ -21,7 +21,7 @@ type TPrice = {
   unit_amount_decimal: string;
 };
 
-type Metadata = {};
+type Metadata = Record<string, never>;
 
 type Recurring = {
   aggregate_usage: null;

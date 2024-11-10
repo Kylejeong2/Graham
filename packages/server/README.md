@@ -1,5 +1,1 @@
-# Graham
-
-Fork of Vocode
-
-Backend for Graham (phone agents for SMBs)
+# Livekit Engine for Graham

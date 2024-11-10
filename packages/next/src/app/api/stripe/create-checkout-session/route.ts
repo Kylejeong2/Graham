@@ -1,29 +1,37 @@
 import { NextResponse } from 'next/server'
 import { stripe } from '@/configs/stripe'
-import { clerk } from '@/configs/clerk-server'
+import { prisma } from '@graham/db'
 
 export async function POST(req: Request) {
   try {
-    const { planId, userId, successUrl, cancelUrl } = await req.json()
+    const { planId, userId, successUrl, cancelUrl, quantity, metadata } = await req.json()
 
     // Validate required fields
-    if (!planId || !userId || !successUrl || !cancelUrl) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    if (!planId || !userId || !successUrl || !cancelUrl || !quantity) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 401 })
     }
 
     // Fetch the user
-    const user = await clerk.users.getUser(userId)
-    let stripeCustomerId = user.privateMetadata.stripeCustomerId as string | undefined
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    let stripeCustomerId = user.stripeCustomerId
 
     // Create a new customer if one doesn't exist
     if (!stripeCustomerId) {
       const customer = await stripe.customers.create({
-        email: user.emailAddresses[0].emailAddress,
-        name: `${user.firstName} ${user.lastName}`,
+        email: user.email,
+        name: user.fullName || undefined,
       })
       stripeCustomerId = customer.id
-      await clerk.users.updateUser(userId, {
-        privateMetadata: { ...user.privateMetadata, stripeCustomerId },
+      await prisma.user.update({
+        where: { id: userId },
+        data: { stripeCustomerId }
       })
     }
 
@@ -32,7 +40,7 @@ export async function POST(req: Request) {
     const price = await stripe.prices.retrieve(product.default_price as string)
 
     if (!price) {
-      return NextResponse.json({ error: 'Invalid plan ID' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid plan ID' }, { status: 402 })
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -41,19 +49,21 @@ export async function POST(req: Request) {
       line_items: [
         {
           price: price.id,
+          quantity: quantity,
         },
       ],
       mode: 'subscription',
       success_url: successUrl,
       cancel_url: cancelUrl,
       client_reference_id: userId,
+      metadata: metadata || {},
     })
 
-    return NextResponse.json({ sessionId: session.id, url: session.url })
-  } catch (error) {
+    return NextResponse.json({ url: session.url, success: true })
+  } catch (error: any) {
     console.error('Error creating checkout session:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || 'Internal server error', success: false },
       { status: 500 }
     )
   }

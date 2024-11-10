@@ -1,0 +1,1 @@
+// blog directory page for SEO

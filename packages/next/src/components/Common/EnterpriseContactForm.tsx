@@ -34,8 +34,17 @@ export const EnterpriseContactForm: React.FC = () => {
     setIsSubmitting(true)
 
     try {
-      // Simulating API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      const response = await fetch('/api/enterprise-contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Something went wrong')
+      }
+
       toast.success('Your inquiry has been submitted successfully!')
       setFormData({
         name: '',
@@ -46,23 +55,23 @@ export const EnterpriseContactForm: React.FC = () => {
         message: ''
       })
     } catch (error) {
-      toast.error('An error occurred. Please try again later.')
+      toast.error(error instanceof Error ? error.message : 'An error occurred. Please try again later.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#F5E6D3] py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
       <Card className="max-w-4xl mx-auto bg-white shadow-lg">
-        <CardHeader className="text-center border-b border-[#E6CCB2] pb-8">
+        <CardHeader className="text-center border-b border-gray-200 pb-8">
           <div className="flex justify-center mb-4">
-            <Building2 className="w-16 h-16 text-[#8B4513]" />
+            <Building2 className="w-16 h-16 text-orange-500" />
           </div>
-          <CardTitle className="text-3xl font-bold text-[#5D4037]">
+          <CardTitle className="text-3xl font-bold text-black">
             Contact Us for Enterprise Inquiries
           </CardTitle>
-          <CardDescription className="text-[#795548] mt-2">
+          <CardDescription className="text-gray-600 mt-2">
             Let's discuss how Graham can transform your business communications
           </CardDescription>
         </CardHeader>
@@ -70,54 +79,58 @@ export const EnterpriseContactForm: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-[#5D4037]">Full Name</label>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
                 <Input
                   id="name"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="mt-1 block w-full border-[#8B4513] text-[#5D4037]"
+                  className="mt-1 block w-full border-gray-300 text-gray-900"
                   required
                 />
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-[#5D4037]">Email Address</label>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email Address</label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="mt-1 block w-full border-[#8B4513] text-[#5D4037]"
+                  className="mt-1 block w-full border-gray-300 text-gray-900"
                   required
                 />
               </div>
               <div>
-                <label htmlFor="company" className="block text-sm font-medium text-[#5D4037]">Company Name</label>
+                <label htmlFor="company" className="block text-sm font-medium text-gray-700">Company Name</label>
                 <Input
                   id="company"
                   name="company"
                   value={formData.company}
                   onChange={handleChange}
-                  className="mt-1 block w-full border-[#8B4513] text-[#5D4037]"
+                  className="mt-1 block w-full border-gray-300 text-gray-900"
                   required
                 />
               </div>
               <div>
-                <label htmlFor="phoneNumber" className="block text-sm font-medium text-[#5D4037]">Phone Number</label>
+                <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">Phone Number</label>
                 <Input
                   id="phoneNumber"
                   name="phoneNumber"
+                  type="tel"
+                  pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+                  placeholder="123-456-7890"
                   value={formData.phoneNumber}
                   onChange={handleChange}
-                  className="mt-1 block w-full border-[#8B4513] text-[#5D4037]"
+                  className="mt-1 block w-full border-gray-300 text-gray-900"
+                  required
                 />
               </div>
             </div>
             <div>
-              <label htmlFor="inquiryType" className="block text-sm font-medium text-[#5D4037]">Inquiry Type</label>
+              <label htmlFor="inquiryType" className="block text-sm font-medium text-gray-700">Inquiry Type</label>
               <Select onValueChange={handleSelectChange} value={formData.inquiryType}>
-                <SelectTrigger className="w-full mt-1 border-[#8B4513] text-[#5D4037]">
+                <SelectTrigger className="w-full mt-1 border-gray-300 text-gray-900">
                   <SelectValue placeholder="Select inquiry type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -129,13 +142,13 @@ export const EnterpriseContactForm: React.FC = () => {
               </Select>
             </div>
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-[#5D4037]">Message</label>
+              <label htmlFor="message" className="block text-sm font-medium text-gray-700">Message</label>
               <Textarea
                 id="message"
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
-                className="mt-1 block w-full border-[#8B4513] text-[#5D4037]"
+                className="mt-1 block w-full border-gray-300 text-gray-900"
                 rows={4}
                 required
               />
@@ -143,7 +156,7 @@ export const EnterpriseContactForm: React.FC = () => {
             <div>
               <Button
                 type="submit"
-                className="w-full bg-[#8B4513] hover:bg-[#A0522D] text-white transition-colors duration-300"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white transition-colors duration-300"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -155,14 +168,14 @@ export const EnterpriseContactForm: React.FC = () => {
               </Button>
             </div>
           </form>
-          <div className="mt-8 pt-8 border-t border-[#E6CCB2]">
-            <h3 className="text-lg font-semibold text-[#5D4037] mb-4">Other Ways to Reach Us</h3>
+          <div className="mt-8 pt-8 border-t border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Other Ways to Reach Us</h3>
             <div className="space-y-2">
-              <p className="flex items-center text-[#795548]">
+              <p className="flex items-center text-gray-600">
                 <Mail className="mr-2 h-5 w-5" />
                 enterprise@graham.ai
               </p>
-              <p className="flex items-center text-[#795548]">
+              <p className="flex items-center text-gray-600">
                 <Phone className="mr-2 h-5 w-5" />
                 +1 (555) 123-4567
               </p>

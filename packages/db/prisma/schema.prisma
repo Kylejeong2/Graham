@@ -9,58 +9,66 @@ datasource db {
 }
 
 model Agent {
-  id                          String        @id @default(uuid())
-  name                        String
-  createdAt                   DateTime      @default(now())
-  userId                      String        
-  phoneNumber                 String?       
-  systemPrompt                String?       
-  voiceType                   String?       
-  callHistory                 Json?         
-  customResponses             Json          @default("{}")
-  minutesUsed                 Decimal       @default("0")
-  lastModificationTimestamp   Decimal?      
-  areaCode                    String?       
-  isSetupComplete            Boolean       @default(false)
-  user                        User          @relation(fields: [userId], references: [id])
-  usageRecords               UsageRecord[]
+  id                        String          @id @default(uuid())
+  name                      String
+  createdAt                 DateTime        @default(now())
+  userId                    String
+  phoneNumber               String?
+  systemPrompt              String?
+  callHistory               Json?
+  customResponses           Json            @default("{}")
+  minutesUsed               Int             @default(0)
+  lastModificationTimestamp String?
+  areaCode                  String?
+  isSetupComplete           Boolean         @default(false)
+  voiceId                   String?
+  voiceName                 String?
+  initialMessage            String?
+  initiateConversation      Boolean         @default(false)
+  user                      User            @relation(fields: [userId], references: [id])
+  documentChunks            DocumentChunk[]
+  usageRecords              UsageRecord[]
+  googleCalendarIntegrations  GoogleCalendarIntegration[]
 }
 
 model UsageRecord {
   id          String   @id @default(uuid())
-  userId      String   
-  agentId     String   
-  minutesUsed Decimal  
-  secondsUsed Decimal  
-  voiceType   String   
+  userId      String
+  agentId     String
+  minutesUsed Decimal
+  secondsUsed Decimal
+  voiceType   String
   timestamp   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
   agent       Agent    @relation(fields: [agentId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model User {
   id                          String        @id
   email                       String        @unique
-  name                        String?
   createdAt                   DateTime      @default(now())
   updatedAt                   DateTime      @default(now())
-  emailVerified               DateTime?     
+  emailVerified               DateTime?
   image                       String?
-  stripeCustomerId            String?       
-  stripePlanId                String?       
-  phoneNumbers                Json          @default("[]")
+  stripeCustomerId            String?       @unique
+  stripePlanId                String?
+  phoneNumbers                Json          @default("[]") // Array of phone numbers "+15103401579"
   isYearly                    Boolean       @default(false)
-  stripePriceId               String?       
-  subscriptionName            String?       
-  subscriptionStatus          String?       
-  stripeSubscriptionId        String?       
-  subscriptionCancelAt        DateTime?     
-  stripeCurrentPeriodEnd      DateTime?     
+  stripePriceId               String?
+  subscriptionName            String?
+  subscriptionStatus          String?
+  stripeSubscriptionId        String?
+  subscriptionCancelAt        DateTime?
+  stripeCurrentPeriodEnd      DateTime?
   phoneNumberSubscriptionData Json          @default("{}")
+  businessName                String?
+  fullName                    String?
+  user_phoneNumber            String?
+  hasPaymentSetup             Boolean       @default(false)
   agents                      Agent[]
-  usageRecords               UsageRecord[]
-  userSettings               UserSettings?
-
+  usageRecords                UsageRecord[]
+  userSettings                UserSettings?
+  googleCalendarIntegrations  GoogleCalendarIntegration[]
 }
 
 model Waitlist {
@@ -73,13 +81,63 @@ model Lead {
   id          String   @id @default(uuid())
   name        String
   email       String   @unique
-  phoneNumber String   
+  phoneNumber String
   createdAt   DateTime @default(now())
-
 }
+
 model UserSettings {
   userId         String   @id @map("user_id")
   stopLossAmount Decimal? @map("stop_loss_amount")
   user           User     @relation(fields: [userId], references: [id])
+}
 
+model DocumentChunk {
+  id        String   @id @default(uuid())
+  agentId   String
+  content   String
+  embedding Float[]
+  metadata  Json
+  fileUrl   String
+  createdAt DateTime @default(now())
+  agent     Agent    @relation(fields: [agentId], references: [id])
+
+  @@index([agentId])
+  @@index([embedding])
+}
+
+model EnterpriseContact {
+  id          String   @id @default(uuid())
+  name        String
+  email       String
+  phoneNumber String?
+  createdAt   DateTime @default(now())
+  message     String
+  company     String
+  inquiryType String
+}
+
+model BlogPost {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  slug      String   @unique
+  published Boolean  @default(false)
+  coverImage String?  // url to be the cover image of the blog post
+  createdAt DateTime @default(now())
+}
+
+model GoogleCalendarIntegration {
+    id              String   @id @default(cuid())
+    userId          String
+    agentId         String
+    accessToken     String
+    refreshToken    String
+    expiresAt       DateTime
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+
+    user            User     @relation(fields: [userId], references: [id])
+    agent           Agent    @relation(fields: [agentId], references: [id])
+
+    @@unique([userId, agentId])
 }

@@ -1,11 +1,10 @@
-// TODO: fix retell stuff
+// Might not need this if everything is invoice based.
+
 
 // import { stripe } from '@/configs/stripe'
-// import { clerk } from '@/configs/clerk-server'
 // import { NextRequest, NextResponse } from "next/server";
 // import Stripe from 'stripe'
 // import { prisma } from "@graham/db";
-// import { sendEmail } from '@/lib/email/email';
 
 // const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
@@ -48,14 +47,6 @@
 //           stripeCurrentPeriodEnd: new Date(session.expires_at! * 1000)
 //         }
 //       });
-
-//       // Send welcome email
-//       await sendEmail({
-//         to: user.email,
-//         subject: 'Welcome to Graham AI!',
-//         text: 'Thank you for subscribing!'
-//       });
-
 //       break;
 
 //     case 'customer.subscription.updated':

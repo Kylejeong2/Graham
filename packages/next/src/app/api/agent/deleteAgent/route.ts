@@ -2,12 +2,24 @@ import { prisma } from "@graham/db";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-    const { agentId } = await req.json(); // TODO: take phone number to delete
+    const { agentId, deletePhoneNumber } = await req.json(); 
 
-    // Fetch the agent from the database
     const agent = await prisma.agent.findUnique({
         where: { id: agentId }
     });
+
+    if (deletePhoneNumber) {
+        await prisma.user.update({
+            where: { id: agent?.userId },
+            data: {
+                phoneNumbers: {
+                    set: {
+                        array_remove: agent?.phoneNumber
+                    }
+                }
+            }
+        })
+    }
 
     if (!agent) {
         return new NextResponse('Agent not found', { status: 404 });

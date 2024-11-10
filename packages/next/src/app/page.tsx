@@ -1,26 +1,41 @@
-import Hero from "@/components/LandingPage/hero";
+import Hero from "@/components/LandingPage/Hero";
 import Savings from "@/components/LandingPage/savings";
 import Features from "@/components/LandingPage/features";
 import Pricing from "@/components/LandingPage/pricing";
 import Footer from "@/components/LandingPage/footer";
 import { WaitlistSection } from "@/components/LandingPage/waitlist";
+import Why from "@/components/LandingPage/why";
+import BYOPN from "@/components/LandingPage/byopn";
+import Comparison from "@/components/LandingPage/comparison";
+// import Trust from "@/components/LandingPage/trust";
+import HowItWorks from "@/components/LandingPage/how-it-works";
+// import { Navbar } from "@/components/Layout/Navbar";
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <main className="flex-1">
-        <Hero />
-        {/* Add a moving "trusted by" with logos */}
-        <Features />
-        {/* can answer questions about your business ie hours open general questions etc from uploading your documents */}
-        {/* bring your own phone number */}
-        {/* lottie animation with HOW IT WORKS */}
-        <Pricing />
-        <Savings />
-        {/* <Testimonial /> */}
-        <WaitlistSection />
-      </main>
-      <Footer />
-    </div>
+    <>
+      {/* <Navbar /> */}
+        <div className="flex min-h-screen flex-col">
+          <main className="flex-1">
+            <Hero />
+            {/* <Trust /> */}
+            <section id="features" className="scroll-mt-20">
+              <Features />
+            </section>
+              <Why />
+            <BYOPN />
+            <section id="how-it-works" className="scroll-mt-20">
+              <HowItWorks />
+            </section>
+            <section id="pricing" className="scroll-mt-20">
+              <Pricing />
+            </section>
+            <Savings />
+            <Comparison />
+            <WaitlistSection />
+          </main>
+        <Footer />
+      </div>
+    </>
   )
 }

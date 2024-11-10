@@ -5,22 +5,18 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import DeleteButton from '@/components/Common/DeleteButton';
-import { ArrowLeft, Edit2, Save, X } from 'lucide-react';
-import { UserType, AgentType } from '@/lib/db/schema';
+import { ArrowLeft } from 'lucide-react';
+import type { Agent } from '@graham/db';
 
 type Props = {
-  agent: AgentType;
-  user: UserType;
+  agent: Agent;
 };
 
-export const AgentTitleBar: React.FC<Props> = ({ agent, user }) => {
+export const AgentTitleBar: React.FC<Props> = ({ agent }) => {
   const [agentState, setAgentState] = useState(agent);
-  const [newName, setNewName] = useState(agent.name || '');
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setAgentState(agent);
-    setNewName(agent.name || '');
   }, [agent]);
 
   return (
@@ -29,19 +25,18 @@ export const AgentTitleBar: React.FC<Props> = ({ agent, user }) => {
         <div className='flex items-center justify-between'>
           <div className="flex items-center space-x-4">
             <Link href="/dashboard" replace>
-              <Button variant="outline" size="sm" className="border-[#8B4513] text-white hover:bg-[#E6CCB2]">
+              <Button variant="outline" size="sm" className="border-blue-500 text-black hover:bg-orange-50">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Back
               </Button>
             </Link>
-            <div className="text-[#5D4037] font-semibold">
-              {user ? `${user.name}` : 'User'}
+            <div className="text-black font-semibold">
+              {/* {user ? `${user.name}` : 'User'} */}
             </div>
           </div>
           <div className="flex items-center space-x-4">
             <DeleteButton agentId={agentState.id as string}/>
           </div>
         </div>
-        {error && <div className="text-red-500 mt-2">{error}</div>}
       </CardContent>
     </Card>
   )

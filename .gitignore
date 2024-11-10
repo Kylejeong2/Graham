@@ -30,9 +30,6 @@ yarn-error.log*
 # local env files
 .env*.local
 
-# vercel
-.vercel
-
 # typescript
 *.tsbuildinfo
 next-env.d.ts
@@ -42,3 +39,8 @@ next-env.d.ts
 .github/workflows
 
 packages/next/.yarn
+
+.yarn/install-state.gz
+.yarn/cache
+
+.vercel

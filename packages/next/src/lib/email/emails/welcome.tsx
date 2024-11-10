@@ -12,52 +12,43 @@ import {
   } from "@react-email/components";
   import { Logo } from "../components/logo";
   
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3001";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
   
-  export default function WelcomeEmail() {
+  interface WelcomeEmailProps {
+    name?: string;
+  }
+  
+  export default function WelcomeEmail({ name = 'there' }: WelcomeEmailProps) {
     return (
       <Html>
-        <Preview>Welcome</Preview>
+        <Preview>Welcome to Graham</Preview>
         <Tailwind>
           <Body className="my-auto mx-auto font-sans">
             <Container className="border-transparent my-[40px] mx-auto max-w-[600px]">
               <Logo baseUrl={baseUrl} />
               <Heading className="font-normal text-center p-0 my-[30px] mx-0">
-                Welcome to v1
+                Welcome to Graham
               </Heading>
               <Section className="mb-4">
-                Hi, I'm Pontus, one of the founders.
+                Hi {name}, welcome aboard!
               </Section>
               <Section className="mb-4">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam
-                euismod, nisi vel consectetur interdum, nisl nunc egestas nunc,
-                vitae tincidunt nisl nunc euismod nunc. Sed euismod, nisi vel
-                consectetur interdum, nisl nunc egestas nunc, vitae tincidunt nisl
-                nunc euismod nunc. Sed euismod, nisi vel consectetur interdum,
-                nisl nunc egestas nunc, vitae tincidunt nisl nunc euismod nunc.
-              </Section>
-              <Section className="mb-4">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                nisi ut aliquip ex ea commodo consequat.
+                We're excited to help you set up your AI phone agent. With Graham, you'll be able to handle calls more efficiently and provide better service to your customers.
               </Section>
               <Section className="mb-8">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                nisi ut aliquip ex ea commodo consequat.
+                To get started, click the button below to access your dashboard and begin configuring your AI agent.
               </Section>
               <Section className="mb-6">
-                <Link href={baseUrl}>
+                <Link href={`${baseUrl}/dashboard`}>
                   <Button className="bg-black text-white p-4 text-center">
-                    Get started
+                    Set up your agent
                   </Button>
                 </Link>
               </Section>
               <Hr />
+              <Section className="text-sm text-gray-500 mt-4">
+                If you have any questions, just reply to this email - we're always happy to help.
+              </Section>
             </Container>
           </Body>
         </Tailwind>

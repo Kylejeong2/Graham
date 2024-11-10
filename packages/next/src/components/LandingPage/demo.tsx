@@ -8,6 +8,7 @@ import { toast } from "react-toastify"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { PhoneCall, User, Mail, Phone } from "lucide-react"
 import { Label } from "@/components/ui/label"
+import { initiateDemo } from '@/components/actions/demo-call';
 
 export function Demo() {
   const [name, setName] = useState("")
@@ -15,23 +16,21 @@ export function Demo() {
   const [phoneNumber, setPhoneNumber] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    try {
-      const response = await fetch('/api/demo-call', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phoneNumber }),
+    
+    initiateDemo({ name, email, phoneNumber })
+      .then(() => {
+        toast.success('Demo call initiated! You should receive a call shortly.')
       })
-      if (!response.ok) throw new Error('Failed to initiate demo call')
-      toast.success('Demo call initiated! You should receive a call shortly.')
-    } catch (error) {
-      console.error('Error initiating demo call:', error)
-      toast.error('Failed to initiate demo call. Please try again.')
-    } finally {
-      setIsSubmitting(false)
-    }
+      .catch((error: any) => {
+        console.error('Error initiating demo call:', error)
+        toast.error('Failed to initiate demo call. Please try again.')
+      })
+      .finally(() => {
+        setIsSubmitting(false)
+      })
   }
 
   return (

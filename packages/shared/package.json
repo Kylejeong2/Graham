@@ -1,0 +1,17 @@
+{
+    "name": "@graham/shared",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "type:check": "tsc --noEmit",
+        "test": "vitest --no-isolate --maxConcurrency=20 --coverage"
+    },
+    "dependencies": {
+        "zod": "^3.22.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20",
+        "typescript": "^5"
+    },
+    "packageManager": "yarn@4.4.0"
+}
