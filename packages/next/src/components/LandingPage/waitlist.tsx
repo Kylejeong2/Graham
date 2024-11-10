@@ -37,7 +37,7 @@ export const WaitlistSection: React.FC = () => {
   }
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-blue-50 via-blue-100 to-white py-32">
+    <section className="relative overflow-hidden border-t-4 border-gray-200 bg-gradient-to-b from-blue-50 via-blue-100 to-white py-32">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-7xl font-bold text-gray-900 leading-tight mb-8">

@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch"
 import { Progress } from "@/components/ui/progress"
 import { Calculator } from "lucide-react"
 import { motion } from "framer-motion"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 // Minimum wage by state (2024 data)
 const STATE_MIN_WAGES: { [key: string]: number } = {
@@ -42,12 +43,12 @@ export default function SavingsCalculator() {
   const [benefitsPercentage, setBenefitsPercentage] = useState<number>(25)
   const [showYearly, setShowYearly] = useState<boolean>(false)
   const [hoursPerDay, setHoursPerDay] = useState<number>(8)
-  const [daysPerWeek, setDaysPerWeek] = useState<number>(5)
+  const [daysPerWeek, setDaysPerWeek] = useState<string>("5")
 
   // Calculate traditional receptionist cost
   const calculateTraditionalCost = () => {
     const hourlyWage = STATE_MIN_WAGES[selectedState]
-    const hoursPerMonth = hoursPerDay * daysPerWeek * 4.33 // 4.33 weeks per month average
+    const hoursPerMonth = hoursPerDay * parseInt(daysPerWeek) * 4.33 // 4.33 weeks per month average
     const baseMonthlyCost = hourlyWage * hoursPerMonth
     const totalMonthlyCost = baseMonthlyCost * (1 + benefitsPercentage / 100)
     return showYearly ? totalMonthlyCost * 12 : totalMonthlyCost
@@ -140,14 +141,23 @@ export default function SavingsCalculator() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-blue-900 text-lg">Days per Week: {daysPerWeek}</Label>
-                <Slider
-                  value={[daysPerWeek]}
-                  onValueChange={(value) => setDaysPerWeek(value[0])}
-                  min={5}
-                  max={7}
-                  step={1}
-                />
+                <Label className="text-blue-900 text-lg">Days per Week</Label>
+                <ToggleGroup 
+                  type="single" 
+                  value={daysPerWeek}
+                  onValueChange={(value) => value && setDaysPerWeek(value)}
+                  className="justify-between"
+                >
+                  {["5", "6", "7"].map((days) => (
+                    <ToggleGroupItem 
+                      key={days} 
+                      value={days}
+                      className="flex-1 text-lg"
+                    >
+                      {days}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
               </div>
             </div>
 

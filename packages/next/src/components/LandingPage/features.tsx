@@ -3,7 +3,7 @@ import { Clock, BarChart, Globe } from "lucide-react"
 
 export default function Features() {
   return (
-    <section className="w-full py-12 md:py-24 lg:py-32 bg-white">
+    <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-100">
       <div className="container px-4 md:px-6">
         <h2 className="text-3xl font-bold tracking-tighter text-black sm:text-5xl text-center mb-12">
           Your receptionist who works 24/7.

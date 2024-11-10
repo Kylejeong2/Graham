@@ -7,7 +7,7 @@ import { WaitlistSection } from "@/components/LandingPage/waitlist";
 import Why from "@/components/LandingPage/why";
 import BYOPN from "@/components/LandingPage/byopn";
 import Comparison from "@/components/LandingPage/comparison";
-import Trust from "@/components/LandingPage/trust";
+// import Trust from "@/components/LandingPage/trust";
 import HowItWorks from "@/components/LandingPage/how-it-works";
 // import { Navbar } from "@/components/Layout/Navbar";
 
@@ -18,17 +18,20 @@ export default function LandingPage() {
         <div className="flex min-h-screen flex-col">
           <main className="flex-1">
             <Hero />
-            <Trust />
-            <Features />
-            {/* can take multiple calls at once all day every day  */}
-            <Why />
+            {/* <Trust /> */}
+            <section id="features" className="scroll-mt-20">
+              <Features />
+            </section>
+              <Why />
             <BYOPN />
-            <HowItWorks />
-            <Pricing />
-            <Savings /> 
-            {/* <Testimonial /> */}
+            <section id="how-it-works" className="scroll-mt-20">
+              <HowItWorks />
+            </section>
+            <section id="pricing" className="scroll-mt-20">
+              <Pricing />
+            </section>
+            <Savings />
             <Comparison />
-            {/* TODO: FAQs */}
             <WaitlistSection />
           </main>
         <Footer />

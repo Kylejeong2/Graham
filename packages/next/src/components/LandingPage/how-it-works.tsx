@@ -28,7 +28,7 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section className="py-24 bg-white">
+    <section className="py-24 bg-white border-t-4 border-gray-200">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center gap-16">
           <div className="hidden md:flex flex-1 justify-center">

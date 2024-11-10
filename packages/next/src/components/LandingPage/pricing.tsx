@@ -1,23 +1,12 @@
 "use client"
 
-import * as React from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Check } from "lucide-react"
-import { useRouter } from 'next/navigation'
-import { useUser } from "@clerk/nextjs"
+import { Check } from "lucide-react"  
 import Link from "next/link"
 
 export default function Pricing() {
-  const router = useRouter()
-  const { user } = useUser()
-
-  const handlePlanClick = () => {
-    if (!user) {
-      router.push(`${process.env.NEXT_PUBLIC_BASE_URL}/sign-up`)
-      return
-    }
-  }
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null)
 
   const plans = [
     {
@@ -27,12 +16,13 @@ export default function Pricing() {
       features: [
         "Pay only for what you use",
         "Basic Call Routing",
-        "Email Support",
+        "Email Support", 
         "Standard Voices"
-      ]
+      ],
+      href: "/sign-up"
     },
     {
-      title: "Startup",
+      title: "Startup", 
       description: "Perfect for startups",
       monthlyPrice: "$399.99/month",
       features: [
@@ -40,24 +30,25 @@ export default function Pricing() {
         "Basic Call Routing",
         "Email Support",
         "Standard Voices"
-      ]
+      ],
+      href: "/sign-up"
     },
     {
       title: "Scale",
       description: "Looking to scale to the next level?",
       monthlyPrice: "Custom",
-      yearlyPrice: "Custom",
       features: [
         "Everything in Growth/Startup",
-        "Access to new features first", 
-        "Custom Integrations",
+        "Access to new features first",
+        "Custom Integrations", 
         "24/7 Support",
-      ]
+      ],
+      href: "/contact"
     }
   ]
 
   return (
-    <section className="w-full py-24 bg-gray-100 overflow-hidden">
+    <section id="pricing" className="w-full py-24 bg-gray-100 border-t-4 border-gray-200 overflow-hidden">
       <div className="container px-4 md:px-6">
         <div className="mb-16">
           <h2 className="text-4xl font-bold tracking-tighter text-gray-900 sm:text-6xl text-center mb-4">
@@ -68,15 +59,20 @@ export default function Pricing() {
           </p>
         </div>
         
-        <div className="grid gap-8 lg:grid-cols-3 max-w-7xl hover:border-orange-300 mx-auto relative before:absolute before:-inset-3 before:border-2 before:border-orange-300/30 before:rounded-3xl before:blur-sm">
+        <div className="grid gap-8 lg:grid-cols-3 max-w-7xl mx-auto relative before:absolute before:-inset-3 before:border-2 before:border-orange-300/30 before:rounded-3xl before:blur-sm before:-z-10">
           {plans.map((plan) => (
-            <Card key={plan.title} className="bg-white border-2 border-gray-100 hover:border-orange-300 hover:shadow-2xl hover:shadow-orange-100/50 hover:scale-105 transition-all duration-300 rounded-2xl group">
+            <Card 
+              key={plan.title} 
+              className={`relative z-10 bg-white border-2 ${hoveredCard === plan.title ? 'border-orange-300 shadow-2xl shadow-orange-100/50 scale-105' : 'border-gray-100'} transition-all duration-300 rounded-2xl group`}
+              onMouseEnter={() => setHoveredCard(plan.title)}
+              onMouseLeave={() => setHoveredCard(null)}
+            >
               <CardHeader className="pb-8">
-                <CardTitle className="text-3xl font-bold text-gray-900 group-hover:text-orange-500 transition-colors">{plan.title}</CardTitle>
+                <CardTitle className={`text-3xl font-bold ${hoveredCard === plan.title ? 'text-orange-500' : 'text-gray-900'} transition-colors`}>{plan.title}</CardTitle>
                 <CardDescription className="text-gray-600 text-lg mt-2">{plan.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold text-blue-500 mb-8 group-hover:text-orange-500 transition-colors">
+                <p className={`text-3xl font-bold ${hoveredCard === plan.title ? 'text-orange-500' : 'text-blue-500'} mb-8 transition-colors`}>
                   {plan.monthlyPrice}
                 </p>
                 <ul className="mt-4 space-y-4">
@@ -88,13 +84,11 @@ export default function Pricing() {
                 </ul>
               </CardContent>
               <CardFooter className="pt-8">
-                <Link href='/sign-up' className="w-full">
-                  <Button 
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white text-lg py-6 rounded-xl transition-all duration-300 group-hover:shadow-lg group-hover:shadow-orange-200"
-                    onClick={handlePlanClick}
-                  >
-                    Get Started
-                  </Button>
+                <Link 
+                  href={plan.href}
+                  className={`w-full bg-orange-500 hover:bg-orange-700 text-white text-lg py-2 rounded-xl transition-all duration-300 text-center ${hoveredCard === plan.title ? 'shadow-lg shadow-orange-200' : ''}`}
+                >
+                  {plan.title === "Scale" ? "Contact Sales" : "Get Started"}
                 </Link>
               </CardFooter>
             </Card>
