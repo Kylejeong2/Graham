@@ -32,7 +32,7 @@ WORKDIR /home/appuser
 COPY requirements.txt .
 RUN python -m pip install --user --no-cache-dir -r requirements.txt
 
-COPY demo-worker.py .
+COPY packages/server/demo-worker/demo-worker.py .
 
 # Preload VAD model
 RUN python demo-worker.py download-files
