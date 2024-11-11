@@ -25,14 +25,14 @@ export async function POST(req: Request) {
     const formattedPhoneNumber = `+1${phoneNumber.replace(/\D/g, '')}`;
 
     // Create SIP participant
-    const participant = await livekit.createSIPParticipant({
-      sipTrunkId: process.env.LIVEKIT_DEMO_SIP_TRUNK_ID!,
-      roomName: 'My outbound trunk',
-      number: formattedPhoneNumber,
-      opts: {
+    const participant = await livekit.createSipParticipant(
+      process.env.LIVEKIT_DEMO_SIP_TRUNK_ID!,
+      formattedPhoneNumber,
+      'My outbound trunk',
+      {
         playDialtone: true,
       }
-    });
+    );
 
     if (!participant) {
       throw new Error('Failed to create SIP participant');
