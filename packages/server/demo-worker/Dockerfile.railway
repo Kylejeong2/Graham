@@ -14,10 +14,12 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
+# Install system dependencies including ffmpeg
 RUN apt-get update && \
     apt-get install -y \
     gcc \
     python3-dev \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 USER appuser
@@ -37,4 +39,4 @@ COPY .env .
 RUN python demo-worker.py download-files
 
 ENTRYPOINT ["python", "demo-worker.py"]
-CMD ["start"]
+CMD ["dev"]
