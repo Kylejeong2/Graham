@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from "@graham/db";
-import { RoomServiceClient } from 'livekit-server-sdk';
+import { SipClient } from 'livekit-server-sdk';
 
-// Initialize LiveKit client
-const livekit = new RoomServiceClient(
-  process.env.LIVEKIT_API_ENDPOINT!,
+const livekit = new SipClient(
+  process.env.LIVEKIT_URL!,
   process.env.LIVEKIT_API_KEY!,
   process.env.LIVEKIT_API_SECRET!
 );
@@ -18,29 +17,21 @@ export async function POST(req: Request) {
     }
 
     // Save lead to database
-    const lead = await prisma.lead.create({
+    await prisma.lead.create({
       data: { name, email, phoneNumber }
     });
 
     // Format phone number for SIP
     const formattedPhoneNumber = `+1${phoneNumber.replace(/\D/g, '')}`;
-    const participantId = `demo-${lead.id}`;
-
-    // Create or get room
-    const room = await livekit.createRoom({
-      name: 'demo-worker',
-      emptyTimeout: 10 * 60, // 10 minutes
-      maxParticipants: 2,
-    });
 
     // Create SIP participant
     const participant = await livekit.createSIPParticipant({
-      roomName: room.name,
-      participantIdentity: participantId,
-      participantName: name,
-      sipCallTo: formattedPhoneNumber,
       sipTrunkId: process.env.LIVEKIT_DEMO_SIP_TRUNK_ID!,
-      playRingtone: true,
+      roomName: 'My outbound trunk',
+      number: formattedPhoneNumber,
+      opts: {
+        playDialtone: true,
+      }
     });
 
     if (!participant) {
