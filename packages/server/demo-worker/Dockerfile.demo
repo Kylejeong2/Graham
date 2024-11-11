@@ -29,7 +29,7 @@ RUN chown -R appuser /home/appuser/.cache
 
 WORKDIR /home/appuser
 
-COPY requirements.txt .
+COPY packages/server/demo-worker/requirements.txt .
 RUN python -m pip install --user --no-cache-dir -r requirements.txt
 
 COPY packages/server/demo-worker/demo-worker.py .
