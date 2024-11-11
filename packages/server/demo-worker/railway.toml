@@ -1,0 +1,13 @@
+[build]
+builder = "Dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "python demo-worker.py dev"
+healthcheckPath = "/"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
+
+[deploy.env]
+PYTHON_VERSION = "3.11.6"
