@@ -33,7 +33,6 @@ COPY requirements.txt .
 RUN python -m pip install --user --no-cache-dir -r requirements.txt
 
 COPY demo-worker.py .
-COPY .env .
 
 # Preload VAD model
 RUN python demo-worker.py download-files
