@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 
 from dotenv import load_dotenv
@@ -17,6 +18,13 @@ load_dotenv()
 
 logger = logging.getLogger("demo-worker")
 logger.setLevel(logging.INFO)
+
+async def end_call(ctx, agent):
+    await asyncio.sleep(180)  # Wait 3 minutes
+    await agent.send_message("I need to wrap up our call now. Is there anything else I can quickly help you with before we end?")
+    await asyncio.sleep(30)  # Give 30 seconds for final response
+    await agent.send_message("Thanks for chatting! Have a great day.")
+    await ctx.disconnect()
 
 async def entrypoint(ctx: JobContext):
     logger.info("starting entrypoint")
@@ -57,6 +65,9 @@ Start the conversation with: 'Hello! I'm Graham, your AI assistant. How can I he
         ),
     )
     agent.start(ctx.room, participant)
+    
+    # Start timer to end call after ~3.5 minutes
+    asyncio.create_task(end_call(ctx, agent))
     
 if __name__ == "__main__":
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint, worker_type=WorkerType.ROOM))
