@@ -2,23 +2,23 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { UserButton, useAuth } from "@clerk/nextjs"
-import { Button } from "@/components/ui/button"
+// import { UserButton } from "@clerk/nextjs";
+// import { Button } from "@/components/ui/button"
 import Image from "next/image"
 
 export function Navbar() {
-  const { userId } = useAuth()
-  const isSignedIn = !!userId
+  // const { userId } = useAuth()
+  // const isSignedIn = !!userId
 
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-sm bg-white/80 border-b border-gray-200">
-      <div className="container mx-auto px-4 h-16 flex items-center">
+      <div className="container mx-auto px-4 h-20 flex items-center">
         {/* Logo section - fixed width */}
-        <div className="w-[200px] flex items-center space-x-2 py-2">
+        <div className="w-[200px] flex items-center space-x-2 py-4">
           <div className="flex items-center hover:opacity-80 transition-opacity py-2">
-            <Image src="/logo/graham_transparent.png" alt="Graham Logo" width={70} height={70} className="mr-0 -mb-1"/>
+            <Image src="/logo/graham_transparent.png" alt="Graham Logo" width={70} height={70} className="mr-0 -mb-2"/>
             <Link href="/">
-              <h1 className="text-5xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent -ml-1 -mt-4">raham</h1>
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent -ml-2 -mt-3">raham</h1>
             </Link>
           </div>
         </div>
@@ -30,7 +30,7 @@ export function Navbar() {
 
         {/* UserActions section - fixed width */}
         <div className="w-[200px] flex justify-end">
-          <UserActions isSignedIn={isSignedIn} userId={userId || ''} />
+          {/* <UserActions isSignedIn={isSignedIn} userId={userId || ''} /> */}
         </div>
       </div>
     </header>
@@ -39,10 +39,10 @@ export function Navbar() {
 
 function NavLinks() {
   return (
-    <nav className="hidden md:flex gap-6">
+    <nav className="hidden md:flex items-center gap-8">
       <Link 
         href="/#pricing" 
-        className="text-gray-600 hover:text-orange-600 transition-colors"
+        className="text-gray-600 hover:text-orange-600 font-medium text-md tracking-wide transition-all duration-200 hover:scale-105"
         onClick={(e) => {
           e.preventDefault();
           document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
@@ -52,7 +52,7 @@ function NavLinks() {
       </Link>
       <Link 
         href="/#features" 
-        className="text-gray-600 hover:text-orange-600 transition-colors"
+        className="text-gray-600 hover:text-orange-600 font-medium text-md tracking-wide transition-all duration-200 hover:scale-105"
         onClick={(e) => {
           e.preventDefault();
           document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
@@ -62,7 +62,7 @@ function NavLinks() {
       </Link>
       <Link 
         href="/#how-it-works" 
-        className="text-gray-600 hover:text-orange-600 transition-colors"
+        className="text-gray-600 hover:text-orange-600 font-medium text-md tracking-wide transition-all duration-200 hover:scale-105"
         onClick={(e) => {
           e.preventDefault();
           document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
@@ -74,29 +74,29 @@ function NavLinks() {
   )
 }
 
-function UserActions({ isSignedIn, userId }: { isSignedIn: boolean, userId: string | null }) {
-  return (
-    <div className="hidden md:flex items-center space-x-4">
-      {isSignedIn ? (
-        <>
-          <Link href="/dashboard">
-            <Button variant="outline" className="border-orange-600 text-orange-600 hover:text-white hover:bg-orange-600">Dashboard</Button>
-          </Link>
-          <Link href={`/dashboard/profile/${userId}`}>
-            <Button className="bg-orange-600 text-white hover:bg-orange-700">Profile</Button>
-          </Link>
-          <UserButton afterSignOutUrl="/" />
-        </>
-      ) : (
-        <>
-          <Link href="/sign-in">
-            <Button variant="outline" className="border-orange-600 text-orange-600 hover:text-white hover:bg-orange-600">Sign In</Button>
-          </Link>
-          <Link href="/sign-up">
-            <Button className="bg-orange-600 text-white hover:bg-orange-700">Get Started</Button>
-          </Link>
-        </>
-      )}
-    </div>
-  )
-}
+// function UserActions({ isSignedIn, userId }: { isSignedIn: boolean, userId: string | null }) {
+//   return (
+//     <div className="hidden md:flex items-center space-x-4">
+//       {isSignedIn ? (
+//         <>
+//           <Link href="/dashboard">
+//             <Button variant="outline" className="border-orange-600 text-orange-600 hover:text-white hover:bg-orange-600">Dashboard</Button>
+//           </Link>
+//           <Link href={`/dashboard/profile/${userId}`}>
+//             <Button className="bg-orange-600 text-white hover:bg-orange-700">Profile</Button>
+//           </Link>
+//           <UserButton afterSignOutUrl="/" />
+//         </>
+//       ) : (
+//         <>
+//           <Link href="/sign-in">
+//             <Button variant="outline" className="border-orange-600 text-orange-600 hover:text-white hover:bg-orange-600">Sign In</Button>
+//           </Link>
+//           <Link href="/sign-up">
+//             <Button className="bg-orange-600 text-white hover:bg-orange-700">Get Started</Button>
+//           </Link>
+//         </>
+//       )}
+//     </div>
+//   )
+// }

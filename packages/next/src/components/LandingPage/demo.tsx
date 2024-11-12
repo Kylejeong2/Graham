@@ -15,22 +15,59 @@ export function Demo() {
   const [email, setEmail] = useState("")
   const [phoneNumber, setPhoneNumber] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [demoNumber, setDemoNumber] = useState<string | null>(null)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     
+    // initiateDemo({ name, email, phoneNumber })
+    //   .then(() => {
+    //     toast.success('Demo call initiated! You should receive a call shortly.')
+    //   })
+    //   .catch((error: any) => {
+    //     console.error('Error initiating demo call:', error)
+    //     toast.error('Failed to initiate demo call. Please try again.')
+    //   })
+    //   .finally(() => {
+    //     setIsSubmitting(false)
+    //   })
     initiateDemo({ name, email, phoneNumber })
-      .then(() => {
-        toast.success('Demo call initiated! You should receive a call shortly.')
+      .then((response) => {
+        setDemoNumber(response.phoneNumber)
+        toast.success('Demo number ready!')
       })
       .catch((error: any) => {
-        console.error('Error initiating demo call:', error)
-        toast.error('Failed to initiate demo call. Please try again.')
+        console.error('Error processing demo request:', error)
+        toast.error('Failed to process request. Please try again.')
       })
       .finally(() => {
         setIsSubmitting(false)
       })
+  }
+
+  if (demoNumber) {
+    return (
+      <Card className="max-w-2xl mx-auto bg-white shadow-2xl">
+        <CardHeader className="text-center border-b border-blue-100 pb-6">
+          <div className="flex justify-center mb-4">
+            <PhoneCall className="w-16 h-16 text-green-600" />
+          </div>
+          <CardTitle className="text-3xl font-bold text-black">
+            Ready for Your Demo!
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-8 text-center">
+          <p className="text-lg mb-4">Please call:</p>
+          <p className="text-4xl font-bold text-blue-600 mb-6">
+            {demoNumber.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3')}
+          </p>
+          <p className="text-gray-600">
+            Our team is ready to give you a personalized demo of Graham.
+          </p>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (

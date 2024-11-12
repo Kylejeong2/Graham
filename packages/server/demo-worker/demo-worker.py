@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import time
 
 from dotenv import load_dotenv
 from livekit.agents import (
@@ -26,24 +25,6 @@ async def end_call(ctx, agent):
     await asyncio.sleep(30)  # Give 30 seconds for final response
     await agent.send_message("Thanks for chatting! Have a great day.")
     await ctx.disconnect()
-    
-async def check_silence_and_participants(ctx, agent, participant):
-    while True:
-        await asyncio.sleep(1)  # Check every second
-        
-        # Check if participant is still in the room
-        if not ctx.room.participants:
-            logger.info("no participants in room, disconnecting")
-            await ctx.disconnect()
-            return
-            
-        # Check if participant hasn't spoken in 30 seconds
-        last_spoken = participant.last_spoken
-        if last_spoken and (time.time() - last_spoken) > 30:
-            logger.info("participant silent for 30 seconds, disconnecting")
-            await agent.send_message("Since I haven't heard from you, I'll end our call now. Have a great day!")
-            await ctx.disconnect()
-            return
 
 async def entrypoint(ctx: JobContext):
     logger.info("starting entrypoint")
@@ -85,10 +66,9 @@ Start the conversation with: 'Hello! I'm Graham, your AI assistant. How can I he
         ),
     )
     agent.start(ctx.room, participant)
+    
     # Start timer to end call after ~3.5 minutes
     asyncio.create_task(end_call(ctx, agent))
-    # Start silence/participant checker instead of fixed timer
-    asyncio.create_task(check_silence_and_participants(ctx, agent, participant))
     
 if __name__ == "__main__":
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint, worker_type=WorkerType.ROOM))
