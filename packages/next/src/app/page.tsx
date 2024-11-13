@@ -32,7 +32,9 @@ export default function LandingPage() {
             </section>
             <Savings />
             <Comparison />
-            <WaitlistSection />
+            <section id="waitlist" className="scroll-mt-20">
+              <WaitlistSection />
+            </section>
           </main>
         <Footer />
       </div>

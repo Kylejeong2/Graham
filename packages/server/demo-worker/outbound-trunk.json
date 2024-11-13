@@ -1,0 +1,7 @@
+{
+    "trunk": {
+      "name": "My outbound trunk",
+      "address": "graham-demo-worker.pstn.twilio.com",
+      "numbers": ["+18778815735"]
+    }
+}

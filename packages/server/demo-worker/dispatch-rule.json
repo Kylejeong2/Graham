@@ -1,0 +1,9 @@
+{
+    "name": "Graham Demo Call Dispatch Rule",
+    "trunk_ids": ["ST_Ye3kg9xt5py7"],
+    "rule": {
+      "dispatchRuleIndividual": {
+        "roomPrefix": "call"
+      }
+    }
+  }

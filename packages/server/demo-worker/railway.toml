@@ -1,6 +1,6 @@
 [build]
-builder = "dockerfile"
-dockerfilePath = "Dockerfile"
+builder = "Dockerfile"
+dockerfilePath = "Dockerfile.demo"
 
 [deploy]
 startCommand = "python demo-worker.py dev"

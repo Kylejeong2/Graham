@@ -84,12 +84,19 @@ export default function Pricing() {
                 </ul>
               </CardContent>
               <CardFooter className="pt-8">
-                <Link 
+                {/* <Link 
                   href={plan.href}
                   className={`w-full bg-orange-500 hover:bg-orange-700 text-white text-lg py-2 rounded-xl transition-all duration-300 text-center ${hoveredCard === plan.title ? 'shadow-lg shadow-orange-200' : ''}`}
                 >
                   {plan.title === "Scale" ? "Contact Sales" : "Get Started"}
-                </Link>
+                </Link> */}
+                <Link href="#waitlist"
+                 className="w-full bg-orange-500 hover:bg-orange-700 text-white text-lg py-2 rounded-xl transition-all duration-300 text-center"
+                 onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                >Get Started</Link>
               </CardFooter>
             </Card>
           ))}

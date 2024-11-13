@@ -14,10 +14,12 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
+# Install system dependencies including ffmpeg
 RUN apt-get update && \
     apt-get install -y \
     gcc \
     python3-dev \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 USER appuser
@@ -27,14 +29,13 @@ RUN chown -R appuser /home/appuser/.cache
 
 WORKDIR /home/appuser
 
-COPY requirements.txt .
+COPY packages/server/demo-worker/requirements.txt .
 RUN python -m pip install --user --no-cache-dir -r requirements.txt
 
-COPY demo-worker.py .
-COPY .env .
+COPY packages/server/demo-worker/demo-worker.py .
 
 # Preload VAD model
 RUN python demo-worker.py download-files
 
 ENTRYPOINT ["python", "demo-worker.py"]
-CMD ["start"]
+CMD ["dev"]
