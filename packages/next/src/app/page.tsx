@@ -9,6 +9,7 @@ import BYOPN from "@/components/LandingPage/byopn";
 import Comparison from "@/components/LandingPage/comparison";
 // import Trust from "@/components/LandingPage/trust";
 import HowItWorks from "@/components/LandingPage/how-it-works";
+import FAQ from "@/components/LandingPage/faq";
 // import { Navbar } from "@/components/Layout/Navbar";
 
 export default function LandingPage() {
@@ -33,7 +34,7 @@ export default function LandingPage() {
             </section>
             <Savings />
             <Comparison />
-            {/* <FAQ /> */}
+            <FAQ />
             <section id="waitlist" className="scroll-mt-20">
               <WaitlistSection />
             </section>
