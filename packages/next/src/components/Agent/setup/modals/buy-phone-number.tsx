@@ -138,6 +138,7 @@ export const BuyPhoneNumberModal = ({ isOpen, onClose, userPhoneNumbers, setUser
                                 <Button 
                                     onClick={handleSearchNumbers} 
                                     disabled={isLoadingNumbers || selectedAreaCode.length !== 3}
+                                    className="bg-blue-500 hover:bg-blue-600"
                                 >
                                     {isLoadingNumbers ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -188,7 +189,7 @@ export const BuyPhoneNumberModal = ({ isOpen, onClose, userPhoneNumbers, setUser
                                     </div>
                                     <Button 
                                         onClick={() => handleBuyNumber(number.phoneNumber)}
-                                        className="ml-4"
+                                        className="ml-4 bg-blue-500 hover:bg-blue-600"
                                         disabled={isPurchasing === number.phoneNumber}
                                     >
                                         Purchase

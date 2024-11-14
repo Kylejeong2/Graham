@@ -1,38 +1,47 @@
-import { Calendar, ChevronDown, ChevronUp, Home, Inbox, Plus, Search, Settings, User2 } from "lucide-react"
+'use client'
+
+import { Calendar, ChevronDown, CreditCard, Folder, Home, Inbox, Plus, Search, Settings, User2 } from "lucide-react"
+import { UserButton, useAuth, useUser } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, } from "@/components/ui/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+
 // Menu items.
 const items = [
   {
     title: "Home",
-    url: "#",
+    url: "/dashboard",
     icon: Home,
   },
   {
     title: "Inbox",
-    url: "#",
+    url: "/inbox",
     icon: Inbox,
   },
   {
     title: "Calendar",
-    url: "#",
+    url: "/calendar",
     icon: Calendar,
   },
   {
     title: "Search",
-    url: "#",
+    url: "/search",
     icon: Search,
   },
   {
     title: "Settings",
-    url: "#",
+    url: "/settings",
     icon: Settings,
   },
 ]
 
 export function AppSidebar() {
+  const { userId } = useAuth()
+  const { user } = useUser()
+  const router = useRouter()
+
   return (
     <Sidebar>
         <SidebarHeader>
@@ -85,7 +94,15 @@ export function AppSidebar() {
             </CollapsibleTrigger>
           </SidebarGroupLabel>
           <CollapsibleContent>
-            <SidebarGroupContent />
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href="mailto:support@yourdomain.com">Contact Support</a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
           </CollapsibleContent>
         </SidebarGroup>
       </Collapsible>
@@ -97,33 +114,32 @@ export function AppSidebar() {
           <SidebarGroupContent></SidebarGroupContent>
         </SidebarGroup>
       <SidebarFooter>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <SidebarMenuButton>
-                    <User2 /> Username
-                    <ChevronUp className="ml-auto" />
-                  </SidebarMenuButton>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  side="top"
-                  className="w-[--radix-popper-anchor-width]"
-                >
-                  <DropdownMenuItem>
-                    <span>Account</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <span>Billing</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <span>Sign out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild onClick={() => router.push('/billing')}>
+              <a>
+                <CreditCard />
+                <span>Billing</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild onClick={() => router.push(`/dashboard/profile/${userId}`)}>
+              <a>
+                <Folder />
+                <span>Profile</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton>
+              <User2 />
+              <span>{user?.emailAddresses[0]?.emailAddress ?? 'Guest'}</span>
+              <UserButton afterSignOutUrl="/sign-in" />
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   )
 }

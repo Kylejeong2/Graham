@@ -5,10 +5,13 @@ import Link from "next/link"
 import { UserButton,useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import { usePathname } from "next/navigation"
 
 export function Navbar() {
   const { userId } = useAuth()
   const isSignedIn = !!userId
+  const pathname = usePathname()
+  const isDashboard = pathname?.startsWith('/dashboard')
 
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-sm bg-white/80 border-b border-gray-200">
@@ -25,7 +28,7 @@ export function Navbar() {
 
         {/* NavLinks - centered with flex-1 */}
         <div className="flex-1 flex justify-center">
-          <NavLinks />
+          {!isDashboard && <NavLinks />}
         </div>
 
         {/* UserActions section - fixed width */}
