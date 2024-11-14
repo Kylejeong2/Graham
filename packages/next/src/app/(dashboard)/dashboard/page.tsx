@@ -4,7 +4,7 @@ import { ArrowLeft, Plus } from 'lucide-react';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from "@graham/db";
 
-import { CreateAgent } from '@/components/Agent/CreateAgent';
+import { CreateAgent } from '@/components/Agent/components/CreateAgent';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

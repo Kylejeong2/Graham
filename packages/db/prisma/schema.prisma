@@ -43,6 +43,21 @@ model UsageRecord {
   user        User      @relation(fields: [userId], references: [id])
 }
 
+model CallLog {
+  id            String    @id @default(uuid())
+  userId        String
+  agentId       String
+  timestamp     String
+  duration      Int
+  summary       String?
+  outcome       String?
+  transcription String?
+  callerNumber  String
+  secondsUsed   Int
+  minutesUsed   Int
+  callData      Json
+}
+
 model User {
   id                          String                      @id
   email                       String                      @unique

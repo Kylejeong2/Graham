@@ -16,6 +16,7 @@ import type { User, Agent } from '@graham/db';
 import { BuyPhoneNumberModal, CalendarIntegrationModal, VoiceSelectionModal } from './setup/modals';
 import { handleVoiceSelect, handlePreviewVoice, handleGoogleAuth, handleFileUpload, fetchAgentData, createDebouncedMessageUpdate, handleCompleteSetup, fetchVoices, handleEnhanceInstructions, createDebouncedInstructionUpdate, handlePhoneNumberSelect, fetchUserPhoneNumbers } from './setup/setup-functions';
 import type { ConversationInitType } from './setup/types';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 
 export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user }) => {
     const [isLoading, setIsLoading] = useState(true);
@@ -310,16 +311,21 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                             <p className="text-sm text-gray-500">Connect or purchase a number</p>
                         </CardHeader>
                         <CardContent className="pt-4 space-y-4">
-                            <select
+                            <Select
                                 value={selectedPhoneNumber}
-                                onChange={(e) => handlePhoneNumberSelectWrapper(e.target.value)}
-                                className="w-full p-2 border border-blue-200 rounded-md text-sm"
+                                onValueChange={handlePhoneNumberSelectWrapper}
                             >
-                                <option value="">Select existing number</option>
-                                {userPhoneNumbers.map((number) => (
-                                    <option key={number} value={number}>{number}</option>
-                                ))}
-                            </select>
+                                <SelectTrigger className="w-full border-blue-200">
+                                    <SelectValue placeholder="Select existing number" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {userPhoneNumbers.map((number) => (
+                                        <SelectItem key={number} value={number.toString()}>
+                                            {number}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <div className="flex flex-col gap-2">
                                 <Button 
                                     className="w-full bg-blue-600 hover:bg-blue-700 text-white"

@@ -2,7 +2,7 @@ import { prisma } from "@graham/db";
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import React from 'react'
-import { AgentTitleBar } from '@/components/Agent/AgentTitleBar';
+import { AgentTitleBar } from '@/components/Agent/components/AgentTitleBar';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { AgentSetup } from '@/components/Agent/AgentSetup';
 import { AgentTesting } from "@/components/Agent/AgentTesting";
@@ -27,12 +27,12 @@ const AgentPage = async ({params: { agentId }}: Props) => {
     if (!user || !agent) return redirect('/dashboard')
 
     return (
-        <div className='h-full bg-white py-4 px-10'>
-            <div className='max-w-8xl mx-auto space-y-4 h-full bg-white'>
+        <div className='h-full bg-white py-2 px-10'>
+            <div className='max-w-8xl mx-auto h-full bg-white'>
                 <AgentTitleBar 
                     agent={agent}
                 />
-                <Tabs defaultValue={agent.isSetupComplete ? "editing" : "setup"} className="bg-white h-full rounded-lg p-4">
+                <Tabs defaultValue={agent.isSetupComplete ? "editing" : "setup"} className="bg-white h-full rounded-lg pt-2">
                     <TabsList className="border-b border-blue-100">
                         <TabsTrigger value="setup" className="text-blue-600">Setup</TabsTrigger>
                         <TabsTrigger value="testing" className="text-blue-600">Testing</TabsTrigger>
