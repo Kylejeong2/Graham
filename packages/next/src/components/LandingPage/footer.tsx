@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="container px-4 md:px-6">
         <div className="grid gap-8 lg:grid-cols-4">
           <div className="space-y-4">
-            <Link className="flex items-center gap-2" href="#">
+            <Link className="flex items-center gap-2" href="/">
               <svg
                 className="h-6 w-6 text-blue-600"
                 fill="none"
@@ -31,27 +31,27 @@ export default function Footer() {
           <div className="space-y-4">
             <h3 className="font-bold text-black">Product</h3>
             <ul className="space-y-2 text-sm text-blue-700">
-              <li><Link href="#">Features</Link></li>
-              <li><Link href="#">Pricing</Link></li>
-              <li><Link href="#">Integrations</Link></li>
-              <li><Link href="#">FAQ</Link></li>
+              <li><Link href="/features">Features</Link></li>
+              <li><Link href="/pricing">Pricing</Link></li>
+              <li><Link href="/integrations">Integrations</Link></li>
+              <li><Link href="/faq">FAQ</Link></li>
             </ul>
           </div>
           <div className="space-y-4">
             <h3 className="font-bold text-black">Company</h3>
             <ul className="space-y-2 text-sm text-blue-700">
-              <li><Link href="#">About</Link></li>
-              <li><Link href="#">Blog</Link></li>
-              <li><Link href="#">Careers</Link></li>
-              <li><Link href="#">Press</Link></li>
+              <li><Link href="/about">About</Link></li>
+              <li><Link href="/blog">Blog</Link></li>
+              <li><Link href="/careers">Careers</Link></li>
+              <li><Link href="/press">Press</Link></li>
             </ul>
           </div>
           <div className="space-y-4">
             <h3 className="font-bold text-black">Legal</h3>
             <ul className="space-y-2 text-sm text-blue-700">
-              <li><Link href="#">Privacy</Link></li>
-              <li><Link href="#">Terms</Link></li>
-              <li><Link href="#">Security</Link></li>
+              <li><Link href="/privacy">Privacy</Link></li>
+              <li><Link href="/terms">Terms</Link></li>
+              <li><Link href="/security">Security</Link></li>
             </ul>
           </div>
         </div>

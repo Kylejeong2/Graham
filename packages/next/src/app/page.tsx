@@ -27,11 +27,13 @@ export default function LandingPage() {
             <section id="how-it-works" className="scroll-mt-20">
               <HowItWorks />
             </section>
+            {/* <Integrations /> */}
             <section id="pricing" className="scroll-mt-20">
               <Pricing />
             </section>
             <Savings />
             <Comparison />
+            {/* <FAQ /> */}
             <section id="waitlist" className="scroll-mt-20">
               <WaitlistSection />
             </section>
