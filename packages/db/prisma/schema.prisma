@@ -9,66 +9,68 @@ datasource db {
 }
 
 model Agent {
-  id                        String          @id @default(uuid())
-  name                      String
-  createdAt                 DateTime        @default(now())
-  userId                    String
-  phoneNumber               String?
-  systemPrompt              String?
-  callHistory               Json?
-  customResponses           Json            @default("{}")
-  minutesUsed               Int             @default(0)
-  lastModificationTimestamp String?
-  areaCode                  String?
-  isSetupComplete           Boolean         @default(false)
-  voiceId                   String?
-  voiceName                 String?
-  initialMessage            String?
-  initiateConversation      Boolean         @default(false)
-  user                      User            @relation(fields: [userId], references: [id])
-  documentChunks            DocumentChunk[]
-  usageRecords              UsageRecord[]
+  id                          String                      @id @default(uuid())
+  name                        String
+  createdAt                   DateTime                    @default(now())
+  userId                      String
+  phoneNumber                 String?
+  systemPrompt                String?
+  callHistory                 Json?
+  customResponses             Json                        @default("{}")
+  minutesUsed                 Int                         @default(0)
+  lastModificationTimestamp   String?
+  areaCode                    String?
+  isSetupComplete            Boolean                     @default(false)
+  voiceId                     String?
+  voiceName                   String?
+  initialMessage              String?
+  initiateConversation       Boolean                     @default(false)
+  user                        User                        @relation(fields: [userId], references: [id])
+  documentChunks              DocumentChunk[]
+  usageRecords                UsageRecord[]
   googleCalendarIntegrations  GoogleCalendarIntegration[]
 }
 
 model UsageRecord {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   userId      String
   agentId     String
   minutesUsed Decimal
   secondsUsed Decimal
   voiceType   String
-  timestamp   DateTime @default(now())
-  agent       Agent    @relation(fields: [agentId], references: [id])
-  user        User     @relation(fields: [userId], references: [id])
+  timestamp   DateTime  @default(now())
+  agent       Agent     @relation(fields: [agentId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
 }
 
 model User {
-  id                          String        @id
-  email                       String        @unique
-  createdAt                   DateTime      @default(now())
-  updatedAt                   DateTime      @default(now())
+  id                          String                      @id
+  email                       String                      @unique
+  createdAt                   DateTime                    @default(now())
+  updatedAt                   DateTime                    @default(now())
   emailVerified               DateTime?
   image                       String?
-  stripeCustomerId            String?       @unique
+  stripeCustomerId            String?                     @unique
   stripePlanId                String?
-  phoneNumbers                Json          @default("[]") // Array of phone numbers "+15103401579"
-  isYearly                    Boolean       @default(false)
+  phoneNumbers                Json                        @default("[]") // Array of phone numbers "+15103401579"
+  isYearly                    Boolean                     @default(false)
   stripePriceId               String?
   subscriptionName            String?
   subscriptionStatus          String?
   stripeSubscriptionId        String?
   subscriptionCancelAt        DateTime?
   stripeCurrentPeriodEnd      DateTime?
-  phoneNumberSubscriptionData Json          @default("{}")
+  phoneNumberSubscriptionData Json                        @default("{}")
   businessName                String?
   fullName                    String?
   user_phoneNumber            String?
-  hasPaymentSetup             Boolean       @default(false)
+  hasPaymentSetup            Boolean                     @default(false)
   agents                      Agent[]
   usageRecords                UsageRecord[]
   userSettings                UserSettings?
   googleCalendarIntegrations  GoogleCalendarIntegration[]
+  organization                Organization?                @relation(fields: [organizationId], references: [id])
+  organizationId              String?
 }
 
 model Waitlist {
@@ -117,27 +119,39 @@ model EnterpriseContact {
 }
 
 model BlogPost {
-  id        String   @id @default(uuid())
-  title     String
-  content   String
-  slug      String   @unique
-  published Boolean  @default(false)
+  id         String   @id @default(uuid())
+  title      String
+  content    String
+  slug       String   @unique
+  published  Boolean  @default(false)
   coverImage String?  // url to be the cover image of the blog post
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
 }
 
 model GoogleCalendarIntegration {
-    id              String   @id @default(cuid())
-    userId          String
-    agentId         String
-    accessToken     String
-    refreshToken    String
-    expiresAt       DateTime
-    createdAt       DateTime @default(now())
-    updatedAt       DateTime @updatedAt
+  id           String   @id @default(cuid())
+  userId       String
+  agentId      String
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id])
+  agent        Agent    @relation(fields: [agentId], references: [id])
 
-    user            User     @relation(fields: [userId], references: [id])
-    agent           Agent    @relation(fields: [agentId], references: [id])
+  @@unique([userId, agentId])
+}
 
-    @@unique([userId, agentId])
+model Organization {
+  id                                String   @id @default(uuid())
+  name                              String
+  stripeCustomerId                  String?  @unique
+  stripeSubscriptionId              String?
+  stripeSubscriptionPriceId         String?
+  stripeSubscriptionStatus          String?
+  stripeSubscriptionCurrentPeriodEnd BigInt?
+  createdAt                         DateTime @default(now())
+  updatedAt                         DateTime @updatedAt
+  users                             User[]
 }
