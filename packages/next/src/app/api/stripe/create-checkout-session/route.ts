@@ -16,11 +16,19 @@ export async function POST(req: Request) {
       where: { id: userId }
     })
 
+    const subscription = await prisma.subscription.findFirst({
+      where: {
+        user: {
+          id: userId
+        }
+      }
+    })
+
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    let stripeCustomerId = user.stripeCustomerId
+    let stripeCustomerId = subscription?.stripeCustomerId
 
     // Create a new customer if one doesn't exist
     if (!stripeCustomerId) {
@@ -29,8 +37,8 @@ export async function POST(req: Request) {
         name: user.fullName || undefined,
       })
       stripeCustomerId = customer.id
-      await prisma.user.update({
-        where: { id: userId },
+      await prisma.subscription.update({
+        where: { id: subscription?.id },
         data: { stripeCustomerId }
       })
     }
