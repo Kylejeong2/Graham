@@ -11,22 +11,20 @@ export async function GET() {
     return NextResponse.json({ error: "User not found" }, { status: 401 });
   }
 
-  const user = await prisma.user.findUnique({
+  const subscription = await prisma.subscription.findFirst({
     where: {
-      id: userId
-    },
-    include: {
-      subscriptions: true
+      user: {
+        id: userId
+      }
     }
   });
 
-  if (!user || !user.subscriptions[0]) {
+  if (!subscription) {
     return NextResponse.json({
       isSubscribed: false
     });
   }
 
-  const subscription = user.subscriptions[0];
   const { stripeCustomerId, stripePriceId, stripeSubscriptionId, stripeCurrentPeriodEnd,
     subscriptionName, subscriptionStatus, subscriptionCancelAt } = subscription;
 

@@ -10,18 +10,17 @@ export async function GET() {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
+    const subscription = await prisma.subscription.findFirst({
+      where: { 
+        user: {
+          id: userId
+        },
+        status: 'active',
+        stripeSubscriptionId: { not: null }
+      }
     });
     
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // Check the user's metadata for subscription status and type
-    const hasSubscription = (user.subscriptionStatus === "active");
-
-    return NextResponse.json({ hasSubscription });
+    return NextResponse.json({ hasSubscription: !!subscription });
 
   } catch (error) {
     console.error("Error checking subscription:", error);

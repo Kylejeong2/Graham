@@ -186,7 +186,7 @@ const ProfilePage = () => {
                       <Separator className="bg-black opacity-20" />
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-medium text-black">Next Billing Date</span>
-                        <span className="text-lg text-black">{new Date(subscription.stripeCurrentPeriodEnd).toLocaleDateString()}</span>
+                        <span className="text-lg text-black">{subscription.stripeCurrentPeriodEnd ? new Date(subscription.stripeCurrentPeriodEnd).toLocaleDateString() : 'N/A'}</span>
                       </div>
                       <Separator className="bg-black opacity-20" />
                       {subscription.subscriptionCancelAt && (

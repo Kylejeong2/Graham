@@ -15,9 +15,16 @@ export async function POST() {
     const user = await prisma.user.findUnique({
       where: { id: userId }
     })
+    const subscription = await prisma.subscription.findFirst({
+      where: {
+        user: {
+          id: userId
+        }
+      }
+    })
 
     // Create or get Stripe customer
-    let stripeCustomerId = user?.stripeCustomerId
+    let stripeCustomerId = subscription?.stripeCustomerId
     if (!stripeCustomerId) {
       const customer = await createStripeCustomer(
         user?.email || 'pending@example.com', 
@@ -27,8 +34,8 @@ export async function POST() {
       stripeCustomerId = customer.id
       
       // Save Stripe customer ID
-      await prisma.user.update({
-        where: { id: userId },
+      await prisma.subscription.update({
+        where: { id: subscription?.id },
         data: { stripeCustomerId }
       })
     }

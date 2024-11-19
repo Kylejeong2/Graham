@@ -72,7 +72,7 @@ model Subscription {
   subscriptionCancelAt        DateTime?
   stripeCurrentPeriodEnd      DateTime?
   phoneNumberSubscriptionData Json                        @default("{}")
-  user User @relation(fields: [userId], references: [id])
+  user                        User                        @relation(fields: [userId], references: [id])
 }
 
 model User {

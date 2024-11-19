@@ -30,7 +30,15 @@ const DashboardPage = async () => {
         }
     });
 
-    const isSubscribed = user?.subscriptionStatus === 'active';
+    const subscription = await prisma.subscription.findFirst({
+        where: {
+            user: {
+                id: user?.id
+            }
+        }
+    });
+
+    const isSubscribed = subscription?.status === 'active';
 
     return (
         <div className='h-full bg-white text-blue-900'>
@@ -54,7 +62,6 @@ const DashboardPage = async () => {
                 {agents.length === 0 ? (
                     <Card className='bg-white shadow-lg'>
                         <CardContent className='p-6 text-center'>
-                            {/* <Coffee className='w-16 h-16 text-blue-600 mx-auto mb-4' /> */}
                             <h2 className='text-xl text-blue-900 mb-2'>You don&apos;t have any Agents yet!</h2>
                             <p className='text-blue-700 mb-4'>Create your first Agent to get started.</p>
                             <CreateAgent />

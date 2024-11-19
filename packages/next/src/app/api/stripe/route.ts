@@ -76,7 +76,9 @@ export async function GET() {
 
   const subscription = await prisma.subscription.findFirst({
     where: {
-      userId,
+      user: {
+        id: userId
+      },
       status: 'active',
       stripeSubscriptionId: { not: null }
     }

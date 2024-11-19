@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+import { type Subscription } from '@graham/db';
 
 const useSubscriptions = () => {
-  const [subscription, setSubscription] = useState<any>(null);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
