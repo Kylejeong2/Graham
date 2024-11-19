@@ -58,17 +58,13 @@ model CallLog {
   callData      Json
 }
 
-model User {
-  id                          String                      @id
-  email                       String                      @unique
-  createdAt                   DateTime                    @default(now())
-  updatedAt                   DateTime                    @default(now())
-  emailVerified               DateTime?
-  image                       String?
+model Subscription {
+  id                          String                      @id @default(cuid())
+  userId                      String                      @unique
+  status                      String
+  updatedAt                   DateTime                    @updatedAt
   stripeCustomerId            String?                     @unique
   stripePlanId                String?
-  phoneNumbers                Json                        @default("[]") // Array of phone numbers "+15103401579"
-  isYearly                    Boolean                     @default(false)
   stripePriceId               String?
   subscriptionName            String?
   subscriptionStatus          String?
@@ -76,16 +72,28 @@ model User {
   subscriptionCancelAt        DateTime?
   stripeCurrentPeriodEnd      DateTime?
   phoneNumberSubscriptionData Json                        @default("{}")
+  user User @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id                          String                      @id
+  email                       String                      @unique
+  createdAt                   DateTime                    @default(now())
+  updatedAt                   DateTime                    @default(now())
+  emailVerified               DateTime?
+  image                       String?
+  phoneNumbers                Json                        @default("[]") // Array of phone numbers "+15103401579"
   businessName                String?
   fullName                    String?
   user_phoneNumber            String?
-  hasPaymentSetup            Boolean                     @default(false)
+  hasPaymentSetup             Boolean                     @default(false)
   agents                      Agent[]
   usageRecords                UsageRecord[]
   userSettings                UserSettings?
   googleCalendarIntegrations  GoogleCalendarIntegration[]
   organization                Organization?                @relation(fields: [organizationId], references: [id])
   organizationId              String?
+  subscriptions               Subscription[]
 }
 
 model Waitlist {

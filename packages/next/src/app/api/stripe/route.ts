@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { stripe } from '@/configs/stripe';
-import { clerk } from '@/configs/clerk-server';
 import { auth } from '@clerk/nextjs/server';
+import { prisma } from '@graham/db';
 
 export async function POST(req: Request) {
   const { userId } = auth();
@@ -9,19 +9,37 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { plan, price, isYearly } = await req.json();
+  const { plan, price } = await req.json();
 
-  const user = await clerk.users.getUser(userId);
-  let stripeCustomerId = user.privateMetadata.stripeCustomerId as string | undefined;
+  const subscription = await prisma.subscription.findUnique({
+    where: { userId }
+  });
+
+  let stripeCustomerId = subscription?.stripeCustomerId;
 
   if (!stripeCustomerId) {
-    const customer = await stripe.customers.create({
-      email: user.emailAddresses[0].emailAddress,
-      name: `${user.firstName} ${user.lastName}`,
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
     });
+
+    if (!user?.email) {
+      return NextResponse.json({ error: "User email not found" }, { status: 400 });
+    }
+
+    const customer = await stripe.customers.create({
+      email: user.email,
+      ...(user.fullName ? { name: user.fullName } : {})
+    });
+
     stripeCustomerId = customer.id;
-    await clerk.users.updateUser(userId, {
-      privateMetadata: { ...user.privateMetadata, stripeCustomerId },
+
+    await prisma.subscription.create({
+      data: {
+        userId,
+        status: 'incomplete',
+        stripeCustomerId: customer.id,
+        updatedAt: new Date()
+      }
     });
   }
 
@@ -36,7 +54,7 @@ export async function POST(req: Request) {
           },
           unit_amount: price * 100,
           recurring: {
-            interval: isYearly ? 'year' : 'month',
+            interval: 'month',
           },
         },
         quantity: 1,
@@ -56,17 +74,13 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const user = await clerk.users.getUser(userId);
-  const stripeCustomerId = user.privateMetadata.stripeCustomerId as string | undefined;
-
-  if (!stripeCustomerId) {
-    return NextResponse.json({ hasSubscription: false });
-  }
-
-  const subscriptions = await stripe.subscriptions.list({
-    customer: stripeCustomerId,
-    status: 'active',
+  const subscription = await prisma.subscription.findFirst({
+    where: {
+      userId,
+      status: 'active',
+      stripeSubscriptionId: { not: null }
+    }
   });
 
-  return NextResponse.json({ hasSubscription: subscriptions.data.length > 0 });
+  return NextResponse.json({ hasSubscription: !!subscription });
 }

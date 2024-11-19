@@ -21,9 +21,10 @@ export const CalendarIntegrationModal = ({
   handleGoogleAuth
 }: CalendarModalProps) => (
   <Dialog open={isOpen} onOpenChange={onClose}>
-    <DialogContent className="max-w-md">
+    <DialogContent className="max-w-md bg-white">
       <DialogHeader>
-        <DialogTitle>
+        <DialogTitle className="text-blue-900 flex items-center gap-2">
+          <CalendarDays className="w-5 h-5 text-orange-500" />
           {calendarStep === 'select' ? 'Calendar Integration' : 
            calendarStep === 'google' ? 'Connect Google Calendar' : 
            'ServiceTitan Calendar'}
@@ -34,7 +35,7 @@ export const CalendarIntegrationModal = ({
         <div className="space-y-4">
           <Button 
             onClick={() => setCalendarStep('google')}
-            className="w-full justify-between group"
+            className="w-full justify-between group bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
           >
             <div className="flex items-center gap-2">
               <CalendarDays className="w-5 h-5" />
@@ -45,22 +46,22 @@ export const CalendarIntegrationModal = ({
           
           <Button 
             disabled
-            className="w-full justify-between opacity-50"
+            className="w-full justify-between opacity-50 bg-black text-white"
           >
             <div className="flex items-center gap-2">
               <CalendarDays className="w-5 h-5" />
               ServiceTitan
             </div>
-            <Badge variant="outline" className="ml-2">Coming Soon</Badge>
+            <Badge variant="outline" className="ml-2 text-white border-blue-200">Coming Soon</Badge>
           </Button>
         </div>
       ) : calendarStep === 'google' ? (
         <div className="space-y-4">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-600">
             Connect your Google Calendar to enable automatic appointment scheduling through your AI agent.
           </p>
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm text-blue-600">
+            <div className="flex items-center gap-2 text-sm text-blue-600 font-medium">
               <Calendar className="w-4 h-4" />
               Your agent will be able to:
             </div>
@@ -74,7 +75,7 @@ export const CalendarIntegrationModal = ({
           <Button 
             onClick={handleGoogleAuth}
             disabled={isConnectingCalendar}
-            className="w-full"
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white"
           >
             {isConnectingCalendar ? (
               <>
@@ -95,11 +96,11 @@ export const CalendarIntegrationModal = ({
         <Button
           variant="ghost"
           onClick={() => setCalendarStep('select')}
-          className="mt-2"
+          className="mt-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
         >
           ← Back to integrations
         </Button>
       )}
     </DialogContent>
   </Dialog>
-); 
+);

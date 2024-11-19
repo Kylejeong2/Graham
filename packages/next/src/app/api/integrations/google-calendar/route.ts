@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
-import { prisma } from '@graham/db';
 import { auth } from '@clerk/nextjs/server';
 
 export async function GET() {
@@ -17,6 +16,7 @@ export async function GET() {
 
     const authUrl = oauth2Client.generateAuthUrl({
         access_type: 'offline',
+        prompt: 'consent',
         scope: [
             'https://www.googleapis.com/auth/calendar',
             'https://www.googleapis.com/auth/calendar.events',
@@ -29,47 +29,33 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-    try {
-        const { code, agentId } = await req.json();
-        const { userId } = auth();
-        
-        if (!userId || !agentId) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+  try {
+    const { userId } = auth();
+    const { agentId } = await req.json();
 
-        const oauth2Client = new google.auth.OAuth2(
-            process.env.GOOGLE_CLIENT_ID,
-            process.env.GOOGLE_CLIENT_SECRET,
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/integrations/google-calendar/callback`
-        );
-
-        const { tokens } = await oauth2Client.getToken(code);
-        
-        // Store tokens in database
-        await prisma.googleCalendarIntegration.upsert({
-            where: {
-                userId_agentId: {
-                    userId,
-                    agentId
-                }
-            },
-            create: {
-                userId,
-                agentId,
-                accessToken: tokens.access_token!,
-                refreshToken: tokens.refresh_token!,
-                expiresAt: new Date(Date.now() + (tokens.expiry_date || 3600000)),
-            },
-            update: {
-                accessToken: tokens.access_token!,
-                refreshToken: tokens.refresh_token!,
-                expiresAt: new Date(Date.now() + (tokens.expiry_date || 3600000)),
-            }
-        });
-
-        return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error('Google Calendar integration error:', error);
-        return NextResponse.json({ error: 'Failed to integrate with Google Calendar' }, { status: 500 });
+    if (!userId || !agentId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/integrations/google-calendar/callback`
+    );
+
+    const authUrl = oauth2Client.generateAuthUrl({
+      access_type: 'offline',
+      prompt: 'consent',
+      scope: [
+        'https://www.googleapis.com/auth/calendar',
+        'https://www.googleapis.com/auth/calendar.events'
+      ],
+      state: JSON.stringify({ userId, agentId })
+    });
+
+    return NextResponse.json({ url: authUrl });
+  } catch (error) {
+    console.error('Google Calendar auth error:', error);
+    return NextResponse.json({ error: 'Failed to initiate Google Calendar auth' }, { status: 500 });
+  }
 }

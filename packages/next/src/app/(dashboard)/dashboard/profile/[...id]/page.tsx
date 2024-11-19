@@ -181,7 +181,7 @@ const ProfilePage = () => {
                       <Separator className="bg-black opacity-20" />
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-medium text-black">Billing Cycle</span>
-                        <span className="text-md text-black">{subscription?.isYearly ? 'Yearly' : 'Monthly'}</span>
+                        <span className="text-md text-black">Monthly</span>
                       </div>
                       <Separator className="bg-black opacity-20" />
                       <div className="flex justify-between items-center">

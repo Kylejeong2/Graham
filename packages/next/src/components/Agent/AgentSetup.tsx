@@ -501,7 +501,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                 calendarStep={calendarStep}
                 setCalendarStep={setCalendarStep}
                 isConnectingCalendar={isConnectingCalendar}
-                handleGoogleAuth={() => handleGoogleAuth(setIsConnectingCalendar)}
+                handleGoogleAuth={() => handleGoogleAuth(setIsConnectingCalendar, agent.id)}
             />
         </div>
     );
