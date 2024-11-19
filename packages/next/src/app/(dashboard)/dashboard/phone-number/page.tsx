@@ -73,43 +73,66 @@ export default function PhoneNumberPage() {
                     </CardHeader>
                     <CardContent className="space-y-6">
                         {userPhoneNumbers.length > 0 ? (
-                            <div className="p-4 bg-blue-50 rounded-lg space-y-4">
-                                <h3 className="font-medium text-blue-900">Quick Setup Instructions</h3>
-                                <div className="space-y-3">
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                            <span className="text-sm text-blue-600 font-medium">1</span>
+                            <>
+                                <div className="p-4 bg-blue-50 rounded-lg space-y-4">
+                                    <h3 className="font-medium text-blue-900">Call Forwarding Instructions</h3>
+                                    <div className="space-y-3">
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                                <span className="text-sm text-blue-600 font-medium">1</span>
+                                            </div>
+                                            <p className="text-sm text-blue-700">
+                                                From your phone, dial *72 (AT&T/Verizon) or *21* (T-Mobile)
+                                            </p>
                                         </div>
-                                        <p className="text-sm text-blue-700">
-                                            From your phone, dial *72
-                                        </p>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                            <span className="text-sm text-blue-600 font-medium">2</span>
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                                <span className="text-sm text-blue-600 font-medium">2</span>
+                                            </div>
+                                            <p className="text-sm text-blue-700">
+                                                Enter the 10-digit number where you want calls forwarded
+                                            </p>
                                         </div>
-                                        <p className="text-sm text-blue-700">
-                                            Enter the 10-digit number where you want calls forwarded
-                                        </p>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                            <span className="text-sm text-blue-600 font-medium">3</span>
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                                <span className="text-sm text-blue-600 font-medium">3</span>
+                                            </div>
+                                            <p className="text-sm text-blue-700">
+                                                Wait for the confirmation tone (2 short beeps)
+                                            </p>
                                         </div>
-                                        <p className="text-sm text-blue-700">
-                                            Wait for the confirmation tone (2 short beeps)
-                                        </p>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                            <span className="text-sm text-blue-600 font-medium">4</span>
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                                <span className="text-sm text-blue-600 font-medium">4</span>
+                                            </div>
+                                            <p className="text-sm text-blue-700">
+                                                To disable forwarding later, dial *73 and wait for confirmation tone
+                                            </p>
                                         </div>
-                                        <p className="text-sm text-blue-700">
-                                            To disable forwarding later, dial *73 and wait for confirmation tone
-                                        </p>
                                     </div>
+                                    <p className="text-xs text-blue-600 mt-2">Note: These instructions may vary by carrier. Contact your carrier if these codes don't work.</p>
                                 </div>
-                            </div>
+
+                                <div className="p-4 bg-orange-50 rounded-lg space-y-3">
+                                    <h3 className="font-medium text-orange-900">Want to Port Your Existing Number?</h3>
+                                    <p className="text-sm text-orange-700">
+                                        You can port your existing number to our service. Requirements:
+                                    </p>
+                                    <ul className="text-sm text-orange-700 list-disc pl-5 space-y-1">
+                                        <li>Active service with current carrier</li>
+                                        <li>Account number and PIN from current carrier</li>
+                                        <li>Latest phone bill</li>
+                                        <li>Authorized user on the account</li>
+                                    </ul>
+                                    <Button 
+                                        variant="outline"
+                                        className="mt-2"
+                                        onClick={() => window.open('https://www.twilio.com/console/phone-numbers/porting', '_blank')}
+                                    >
+                                        Start Porting Process <ExternalLink className="w-4 h-4 ml-2" />
+                                    </Button>
+                                </div>
+                            </>
                         ) : (
                             <div className="p-6 text-center space-y-4">
                                 <div className="bg-blue-50 rounded-full w-12 h-12 mx-auto flex items-center justify-center">
