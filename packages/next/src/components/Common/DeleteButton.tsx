@@ -1,4 +1,5 @@
 "use client"
+
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Trash } from 'lucide-react'
@@ -17,72 +18,81 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 
-type Props = {
-    agentId: string
+interface DeleteButtonProps {
+  agentId: string
 }
 
-const DeleteButton = ({agentId}: Props) => {
-    const router = useRouter()
-    const [isOpen, setIsOpen] = useState(false)
-    const [deletePhoneNumber, setDeletePhoneNumber] = useState(false)
+export default function DeleteButton({ agentId }: DeleteButtonProps) {
+  const router = useRouter()
+  const [isOpen, setIsOpen] = useState(false)
+  const [deletePhoneNumber, setDeletePhoneNumber] = useState(false)
 
-    const deleteAgent = useMutation({
-      mutationFn: async () => {
-        const response = await axios.post('/api/agent/deleteAgent', {
-            agentId,
-            deletePhoneNumber
-        })
-        return response.data
-      }  
-    })
-
-    const handleDelete = () => {
-        deleteAgent.mutate(undefined, {
-            onSuccess: () => {
-                router.push('/dashboard')
-            },
-            onError: (err) => {
-                console.error(err)
-            }
-        })
-        setIsOpen(false)
+  const { mutate, isPending } = useMutation({
+    mutationFn: async () => {
+      const { data } = await axios.post('/api/agent/deleteAgent', {
+        agentId,
+        deletePhoneNumber
+      })
+      return data
+    },
+    onSuccess: () => {
+      router.push('/dashboard')
+    },
+    onError: (error) => {
+      console.error('Failed to delete agent:', error)
     }
+  })
 
   return (
     <>
-      <Button variant={'destructive'} size="sm" disabled={deleteAgent.isPending} onClick={() => setIsOpen(true)}>
-          <Trash />
+      <Button 
+        variant="destructive" 
+        size="sm" 
+        disabled={isPending}
+        onClick={() => setIsOpen(true)}
+      >
+        <Trash className="h-4 w-4" />
       </Button>
+
       <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-        <AlertDialogContent className="bg-white text-blue-500 p-8 max-w-md">
+        <AlertDialogContent className="bg-white">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-3xl font-bold text-black">Are you sure you want to delete this agent?</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-500 mt-2">
-              This action cannot be undone. This will permanently delete the agent.
+            <AlertDialogTitle className="text-2xl font-semibold text-gray-900">
+              Delete Agent
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600 mt-2">
+              Are you sure you want to delete this agent? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="flex items-center space-x-2 mt-4">
+
+          <div className="flex items-center space-x-3 py-4">
             <Checkbox
               id="deletePhoneNumber"
               checked={deletePhoneNumber}
               onCheckedChange={(checked) => setDeletePhoneNumber(checked as boolean)}
-              className="border-[#8B4513]"
+              className="border-gray-300"
             />
             <label
               htmlFor="deletePhoneNumber"
-              className="text-sm font-medium leading-none text-[#5D4037] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              className="text-sm text-gray-700 cursor-pointer"
             >
-              Delete associated phone number and cancel that number's subscription
+              Also delete associated phone number and cancel subscription
             </label>
           </div>
-          <AlertDialogFooter className="mt-6">
-            <AlertDialogCancel className="bg-white text-blue-500 hover:bg-blue-100">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600 text-white">Delete</AlertDialogAction>
+
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="bg-white hover:bg-gray-100 text-gray-700">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => mutate()}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isPending ? 'Deleting...' : 'Delete Agent'}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
   )
 }
-
-export default DeleteButton

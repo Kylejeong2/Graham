@@ -27,16 +27,16 @@ const AgentPage = async ({params: { agentId }}: Props) => {
     if (!user || !agent) return redirect('/dashboard')
 
     return (
-        <div className='h-full bg-white py-2 px-10'>
+        <div className='h-full bg-white px-10 overflow-y-auto'>
             <div className='max-w-8xl mx-auto h-full bg-white'>
                 <AgentTitleBar 
                     agent={agent}
                 />
                 <Tabs defaultValue={agent.isSetupComplete ? "editing" : "setup"} className="bg-white h-full rounded-lg pt-2">
-                    <TabsList className="border-b border-blue-100">
-                        <TabsTrigger value="setup" className="text-blue-600">Setup</TabsTrigger>
-                        <TabsTrigger value="testing" className="text-blue-600">Testing</TabsTrigger>
-                        <TabsTrigger value="analytics" className="text-blue-600">Analytics</TabsTrigger>
+                    <TabsList className="hidden">
+                        <TabsTrigger value="setup">Setup</TabsTrigger>
+                        <TabsTrigger value="testing">Testing</TabsTrigger>
+                        <TabsTrigger value="analytics">Analytics</TabsTrigger>
                     </TabsList>
                     <TabsContent value="setup">
                         <AgentSetup agent={agent} user={user} />

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { MessageSquare, Upload, Volume2, UploadCloud, Download, Loader2, Phone, Settings, Calendar, CreditCard, ExternalLink } from 'lucide-react'
+import { MessageSquare, Upload, Volume2, UploadCloud, Download, Loader2, Phone, Settings, Calendar, CreditCard, ExternalLink, Mail, BrainCircuit } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch"
@@ -437,7 +437,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                 </div>
 
                                 {/* Integrations */}
-                                {/* <div className="space-y-3">
+                                <div className="space-y-3">
                                     <h4 className="text-xs font-medium text-blue-900">Integrations</h4>
                                     <div className="space-y-2">
                                         {[
@@ -456,7 +456,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                             </div>
                                         ))}
                                     </div>
-                                </div> */}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
