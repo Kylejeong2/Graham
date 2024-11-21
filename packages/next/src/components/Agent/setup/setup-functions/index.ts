@@ -8,4 +8,4 @@ export { createDebouncedMessageUpdate } from './handleMessageOperations';
 export { handleEnhanceInstructions, createDebouncedInstructionUpdate } from './handleInstructionsOperations';
 export { handlePhoneNumberSelect } from './handlePhoneNumberOperations';
 export { fetchUserPhoneNumbers } from './handleUserPhoneNumbers';
- 
+export { handleDocumentSelect } from './document-functions';

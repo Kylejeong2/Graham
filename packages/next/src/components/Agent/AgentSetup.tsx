@@ -15,11 +15,13 @@ import { Badge } from "@/components/ui/badge"
 import Link from 'next/link';
 import type { User, Agent } from '@graham/db';
 import { BuyPhoneNumberModal, CalendarIntegrationModal, VoiceSelectionModal } from './setup/modals';
-import { handleVoiceSelect, handlePreviewVoice, handleGoogleAuth, handleFileUpload, fetchAgentData, createDebouncedMessageUpdate, handleCompleteSetup, fetchVoices, handleEnhanceInstructions, createDebouncedInstructionUpdate, handlePhoneNumberSelect, fetchUserPhoneNumbers } from './setup/setup-functions';
+import { handleDocumentSelect, handleVoiceSelect, handlePreviewVoice, handleGoogleAuth, handleFileUpload, fetchAgentData, createDebouncedMessageUpdate, handleCompleteSetup, fetchVoices, handleEnhanceInstructions, createDebouncedInstructionUpdate, handlePhoneNumberSelect, fetchUserPhoneNumbers } from './setup/setup-functions';
 import type { ConversationInitType } from './setup/types';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { BUSINESS_INFO_TEMPLATE } from '@/constants/business-info-template';
 import { jsPDF } from 'jspdf';
+import type { BusinessDocument } from './setup/types/business';
+
 export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isCompleting, setIsCompleting] = useState(false);
@@ -42,6 +44,8 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
     const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
     const [calendarStep, setCalendarStep] = useState<'select' | 'google' | 'servicetitan'>('select');
     const [isConnectingCalendar, setIsConnectingCalendar] = useState(false);
+    const [businessDocuments, setBusinessDocuments] = useState<BusinessDocument[]>([]);
+    const [selectedDocument, setSelectedDocument] = useState<string>('');
 
     const debouncedMessageUpdate = useCallback(
         createDebouncedMessageUpdate(agent.id, setIsSaving),
@@ -54,7 +58,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
     const handleFileUploadWrapper = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        await handleFileUpload(file, agent.id, setUploadedFile);
+        await handleFileUpload(file, agent.id, setUploadedFile, user.id);
     };
 
     const handleDownloadTemplate = () => {
@@ -161,6 +165,26 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
             }}
         />
     );
+
+    useEffect(() => {
+        const fetchBusinessDocs = async () => {
+            try {
+                const response = await fetch(`/api/agent/information/get-documents`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: user.id })
+                });
+                const data = await response.json();
+                setBusinessDocuments(data);
+            } catch (error) {
+                toast.error('Failed to fetch business documents');
+            }
+        };
+        
+        if (user?.id) {
+            fetchBusinessDocs();
+        }
+    }, [user?.id]);
 
     if (isLoading) {
         return (
@@ -384,7 +408,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                 <UploadCloud className="w-5 h-5 mr-2 text-orange-500" />
                                 Business Information
                             </CardTitle>
-                            <p className="text-sm text-gray-500">Upload documents & templates</p>
+                            <p className="text-sm text-gray-500">Upload & select documents</p>
                         </CardHeader>
                         <CardContent className="pt-4 space-y-4">
                             <div className="border-2 border-dashed border-blue-200 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
@@ -410,6 +434,40 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                     </span>
                                 </Label>
                             </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-sm font-medium">Available Documents</Label>
+                                <Select
+                                    value={selectedDocument}
+                                    onValueChange={(value) => handleDocumentSelect(value, agent.id, setSelectedDocument)}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Select a document" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {businessDocuments.map((doc) => (
+                                            <SelectItem 
+                                                key={doc.id} 
+                                                value={doc.id}
+                                                disabled={doc.status !== 'COMPLETED'}
+                                            >
+                                                <div className="flex items-center justify-between w-full">
+                                                    <span className="truncate">{doc.fileName}</span>
+                                                    <Badge variant={doc.status === 'COMPLETED' ? 'default' : 'secondary'}>
+                                                        {doc.status}
+                                                    </Badge>
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                        {businessDocuments.length === 0 && (
+                                            <SelectItem value="none" disabled>
+                                                No documents uploaded yet
+                                            </SelectItem>
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
                             <div className="flex gap-2">
                                 <Button variant="outline" className="flex-1 text-xs h-auto py-2" onClick={handleDownloadTemplate}>
                                     <Download className="w-3 h-3 mr-1" />
@@ -418,8 +476,8 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                 <Link href="https://docs.google.com/document/d/1WcGjJawOhVAuSCyjTXwrUJ3tp-0Ce0QSTVddL2ynWLs/edit?usp=sharing" target="_blank">
                                     <Button variant="outline" className="flex-1 text-xs h-auto py-2">
                                         <ExternalLink className="w-3 h-3 mr-1" />
-                                    Google Docs
-                                </Button>
+                                        Google Docs
+                                    </Button>
                                 </Link>
                             </div>
                         </CardContent>

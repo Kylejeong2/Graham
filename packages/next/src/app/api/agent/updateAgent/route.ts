@@ -11,7 +11,8 @@ export async function PATCH(request: Request) {
             voiceName, 
             phoneNumber,
             initiateConversation,
-            initialMessage 
+            initialMessage,
+            documentId
         } = body;
 
         if (!agentId) {
@@ -41,6 +42,7 @@ export async function PATCH(request: Request) {
         if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
         if (initiateConversation !== undefined) updateData.initiateConversation = initiateConversation;
         if (initialMessage !== undefined) updateData.initialMessage = initialMessage;
+        if (documentId !== undefined) updateData.ragDocumentId = documentId;
 
         const updatedAgent = await prisma.agent.update({
             where: { id: agentId },

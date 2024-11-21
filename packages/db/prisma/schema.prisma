@@ -34,13 +34,14 @@ model Agent {
   user                        User                        @relation(fields: [userId], references: [id])
   usageRecords                UsageRecord[]
   googleCalendarIntegrations  GoogleCalendarIntegration[]
-  businessDocuments           BusinessDocument[]          // Added relation to BusinessDocument
+  ragDocumentId               String?
 }
 
 model BusinessDocument {
   id            String         @id @default(cuid())
   agentId       String
-  agent         Agent          @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  userId        String         // Added userId to connect documents with users
+  user          User           @relation(fields: [userId], references: [id]) // Relation to User
   fileName      String
   fileType      String
   fileSize      Int
@@ -115,6 +116,7 @@ model User {
   organization                Organization?                @relation(fields: [organizationId], references: [id])
   organizationId              String?
   subscriptions               Subscription[]
+  businessDocuments           BusinessDocument[]          // Added relation to BusinessDocument
 }
 
 model Waitlist {

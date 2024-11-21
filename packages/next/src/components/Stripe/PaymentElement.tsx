@@ -3,6 +3,7 @@ import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { useRouter } from 'next/navigation'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PK!)
 
@@ -11,6 +12,7 @@ const PaymentForm = () => {
   const elements = useElements()
   const [error, setError] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
+  const router = useRouter()
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -24,17 +26,16 @@ const PaymentForm = () => {
     const { error } = await stripe.confirmSetup({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/dashboard/profile`,
+        return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard`,
       },
     })
 
     if (error) {
       setError(error.message ?? 'An unknown error occurred')
+      setProcessing(false)
     } else {
-      setError(null)
+      router.push('/dashboard')
     }
-
-    setProcessing(false)
   }
 
   return (
