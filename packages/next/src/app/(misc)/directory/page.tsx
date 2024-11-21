@@ -15,9 +15,6 @@ async function getPages() {
   const staticPages = [
     { title: 'Home', path: '/' },
     { title: 'Dashboard', path: '/dashboard' },
-    { title: 'Sign In', path: '/sign-in' },
-    { title: 'Sign Up', path: '/sign-up' },
-    { title: 'Onboarding', path: '/onboarding' },
     { title: 'Contact', path: '/contact' },
     { title: 'Changelog', path: '/changelog' },
     { title: 'Directory', path: '/directory' },
