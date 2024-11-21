@@ -12,6 +12,10 @@ const S3 = new S3Client({
   },
 })
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+export const maxDuration = 60
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData()
@@ -74,11 +78,4 @@ export async function POST(req: Request) {
       { status: 500 }
     )
   }
-}
-
-export const config = {
-  api: {
-    bodyParser: false,
-    maxDuration: 60,
-  },
 }
