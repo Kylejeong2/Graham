@@ -12,12 +12,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
+import Link from 'next/link';
 import type { User, Agent } from '@graham/db';
 import { BuyPhoneNumberModal, CalendarIntegrationModal, VoiceSelectionModal } from './setup/modals';
 import { handleVoiceSelect, handlePreviewVoice, handleGoogleAuth, handleFileUpload, fetchAgentData, createDebouncedMessageUpdate, handleCompleteSetup, fetchVoices, handleEnhanceInstructions, createDebouncedInstructionUpdate, handlePhoneNumberSelect, fetchUserPhoneNumbers } from './setup/setup-functions';
 import type { ConversationInitType } from './setup/types';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-
+import { BUSINESS_INFO_TEMPLATE } from '@/constants/business-info-template';
+import { jsPDF } from 'jspdf';
 export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isCompleting, setIsCompleting] = useState(false);
@@ -55,10 +57,40 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
         await handleFileUpload(file, agent.id, setUploadedFile);
     };
 
-    // const handleDownloadTemplate = () => {
-    //     // TODO: Implement template download
-    //     toast.info('Template download coming soon!');
-    // };
+    const handleDownloadTemplate = () => {
+        const doc = new jsPDF();
+        
+        doc.setFontSize(20);
+        doc.text('Business Information Template', 20, 20);
+        
+        let yPosition = 40;
+        doc.setFontSize(12);
+
+        BUSINESS_INFO_TEMPLATE.forEach(section => {
+            doc.setFont('helvetica', 'bold');
+            doc.text(section.title, 20, yPosition);
+            yPosition += 10;
+            
+            doc.setFont('helvetica', 'normal');
+            section.items.forEach(item => {
+                doc.text(item, 25, yPosition);
+                yPosition += 10;
+                
+                doc.setDrawColor(200);
+                doc.line(25, yPosition-2, 185, yPosition-2);
+                yPosition += 10;
+            });
+            
+            yPosition += 5;
+            
+            if (yPosition > 270) {
+                doc.addPage();
+                yPosition = 20;
+            }
+        });
+
+        doc.save('business_information_template.pdf');
+    };
 
     const handleCompleteSetupWrapper = () => handleCompleteSetup(setIsCompleting);
 
@@ -132,15 +164,15 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
+            <div className="flex items-center justify-center min-h-[400px] w-full px-8">
                 <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col min-h-full gap-6">
-            <div className="grid grid-cols-12 gap-6">
+        <div className="flex flex-col w-full gap-6">
+            <div className="grid grid-cols-12 gap-6 w-full">
                 {/* Left Half - Custom Instructions */}
                 <Card className="col-span-12 lg:col-span-6 bg-white shadow-lg">
                     <CardHeader className="border-b border-blue-100">
@@ -379,14 +411,16 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                 </Label>
                             </div>
                             <div className="flex gap-2">
-                                <Button variant="outline" className="flex-1 text-xs h-auto py-2">
+                                <Button variant="outline" className="flex-1 text-xs h-auto py-2" onClick={handleDownloadTemplate}>
                                     <Download className="w-3 h-3 mr-1" />
                                     Template
                                 </Button>
-                                <Button variant="outline" className="flex-1 text-xs h-auto py-2">
-                                    <ExternalLink className="w-3 h-3 mr-1" />
+                                <Link href="https://docs.google.com/document/d/1WcGjJawOhVAuSCyjTXwrUJ3tp-0Ce0QSTVddL2ynWLs/edit?usp=sharing" target="_blank">
+                                    <Button variant="outline" className="flex-1 text-xs h-auto py-2">
+                                        <ExternalLink className="w-3 h-3 mr-1" />
                                     Google Docs
                                 </Button>
+                                </Link>
                             </div>
                         </CardContent>
                     </Card>

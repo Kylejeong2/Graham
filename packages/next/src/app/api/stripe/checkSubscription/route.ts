@@ -19,8 +19,16 @@ export async function GET() {
         stripeSubscriptionId: { not: null }
       }
     });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if(!user?.hasPaymentSetup) {
+      return NextResponse.json({ hasSubscription: false, user });
+    }
     
-    return NextResponse.json({ hasSubscription: !!subscription });
+    return NextResponse.json({ hasSubscription: !!subscription, user });
 
   } catch (error) {
     console.error("Error checking subscription:", error);

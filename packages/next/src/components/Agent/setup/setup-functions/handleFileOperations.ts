@@ -1,4 +1,3 @@
-//TODO: make this work by upload to cloudflare and parsing info 
 import { toast } from "react-toastify";
 
 export const handleFileUpload = async (
@@ -6,8 +5,8 @@ export const handleFileUpload = async (
   agentId: string,
   setUploadedFile: (file: File | null) => void
 ) => {
-  if (!file.type.includes('pdf')) {
-    toast.error('Only PDF files are currently supported');
+  if (!file.type.includes('pdf') && !file.type.includes('docx')) {
+    toast.error('Only PDF and DOCX files are currently supported');
     return;
   }
 
@@ -23,7 +22,7 @@ export const handleFileUpload = async (
     formData.append('file', file);
     formData.append('agentId', agentId);
 
-    const response = await fetch('/api/agent/upload-document', {
+    const response = await fetch('/api/agent/information', {
       method: 'POST',
       body: formData,
     });
@@ -34,13 +33,13 @@ export const handleFileUpload = async (
 
     const data = await response.json();
     if (data.success) {
-      toast.success('File uploaded and processed successfully');
+      toast.success('File processed and knowledge base updated');
     } else {
-      throw new Error('Failed to upload file');
+      throw new Error('Failed to process file');
     }
   } catch (error) {
     console.error('Error uploading file:', error);
-    toast.error('Failed to upload file');
+    toast.error('Failed to process file');
     setUploadedFile(null);
   }
 }; 

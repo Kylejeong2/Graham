@@ -16,7 +16,7 @@ export const AgentTesting: React.FC<{ agent: Agent }> = ({ agent }) => {
 
     if (!agent.isSetupComplete) {
         return (
-            <div className="min-h-[400px] flex flex-col items-center justify-center p-4">
+            <div className="min-h-[400px] flex flex-col items-center justify-center p-4 w-full">
                 <AlertCircle className="h-12 w-12 text-orange-500 mb-4" />
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Agent Not Deployed</h2>
                 <p className="text-gray-600 mb-6">Please complete the agent setup before testing.</p>
@@ -68,7 +68,7 @@ export const AgentTesting: React.FC<{ agent: Agent }> = ({ agent }) => {
     };
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
             <Card className="bg-white shadow-lg">
                 <CardHeader className="border-b border-blue-100">
                     <CardTitle className="text-blue-600 flex items-center">

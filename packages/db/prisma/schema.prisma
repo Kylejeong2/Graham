@@ -8,6 +8,12 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum DocumentStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 model Agent {
   id                          String                      @id @default(uuid())
   name                        String
@@ -20,15 +26,30 @@ model Agent {
   minutesUsed                 Int                         @default(0)
   lastModificationTimestamp   String?
   areaCode                    String?
-  isSetupComplete            Boolean                     @default(false)
+  isSetupComplete             Boolean                     @default(false)
   voiceId                     String?
   voiceName                   String?
   initialMessage              String?
-  initiateConversation       Boolean                     @default(false)
+  initiateConversation        Boolean                     @default(false)
   user                        User                        @relation(fields: [userId], references: [id])
-  documentChunks              DocumentChunk[]
   usageRecords                UsageRecord[]
   googleCalendarIntegrations  GoogleCalendarIntegration[]
+  businessDocuments           BusinessDocument[]          // Added relation to BusinessDocument
+}
+
+model BusinessDocument {
+  id            String         @id @default(cuid())
+  agentId       String
+  agent         Agent          @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  fileName      String
+  fileType      String
+  fileSize      Int
+  uploadedAt    DateTime       @default(now())
+  status        DocumentStatus  @default(PROCESSING)
+  indexPath     String          // Path to LlamaIndex storage
+  metadata      Json?           // Store any additional metadata
+
+  @@index([agentId])
 }
 
 model UsageRecord {
@@ -58,7 +79,7 @@ model CallLog {
   callData      Json
 }
 
-model Subscription {
+model Subscription { // If the user setup payment intent then they have a subscription
   id                          String                      @id @default(cuid())
   userId                      String                      @unique
   status                      String
@@ -116,20 +137,6 @@ model UserSettings {
   user           User     @relation(fields: [userId], references: [id])
 }
 
-model DocumentChunk {
-  id        String   @id @default(uuid())
-  agentId   String
-  content   String
-  embedding Float[]
-  metadata  Json
-  fileUrl   String
-  createdAt DateTime @default(now())
-  agent     Agent    @relation(fields: [agentId], references: [id])
-
-  @@index([agentId])
-  @@index([embedding])
-}
-
 model EnterpriseContact {
   id          String   @id @default(uuid())
   name        String
@@ -175,6 +182,6 @@ model Organization {
   stripeSubscriptionStatus          String?
   stripeSubscriptionCurrentPeriodEnd BigInt?
   createdAt                         DateTime @default(now())
-  updatedAt                         DateTime @updatedAt
+  updatedAt                         DateTime @default(now())
   users                             User[]
 }

@@ -27,21 +27,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <Analytics />
-      <ClerkProvider afterSignOutUrl="/">
-        <html lang="en" className="light">
-        <body className={`${inter.className}`}>
-          <Provider>
-            <NavbarWrapper />
-            <MainLayout>
-              {children}
-              <SpeedInsights />
-            </MainLayout>
-          </Provider>
-        </body>
-      </html>
-      </ClerkProvider>
-    </>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <Analytics />
+        <ClerkProvider afterSignOutUrl="/">
+          <body className={`${inter.className}`}>
+            <Provider>
+              <NavbarWrapper />
+              <MainLayout>
+                {children}
+                <SpeedInsights />
+              </MainLayout>
+            </Provider>
+          </body>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }

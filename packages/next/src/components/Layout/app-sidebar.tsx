@@ -2,10 +2,9 @@
 
 import { Calendar, ChevronDown, CreditCard, Home, Inbox, Plus, Search, Settings, User2 } from "lucide-react"
 import { UserButton, useAuth, useUser } from "@clerk/nextjs"
-import { useRouter, usePathname } from "next/navigation"
+import { useRouter, usePathname, useSearchParams } from "next/navigation"
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, } from "@/components/ui/sidebar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 // Menu items.
@@ -55,28 +54,26 @@ export function AppSidebar() {
   const router = useRouter()
   const pathname = usePathname()
   const isAgentPage = pathname?.includes('/dashboard/agent/')
+  const searchParams = useSearchParams()
+  const currentTab = searchParams.get('tab') || 'setup'
+
+  const handleTabClick = (tabValue: string) => {
+    const params = new URLSearchParams(searchParams)
+    params.set('tab', tabValue)
+    router.push(`${pathname}?${params.toString()}`)
+  }
 
   return (
     <Sidebar>
         <SidebarHeader>
             <SidebarMenu>
             <SidebarMenuItem>
-                <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton>
-                    Select Workspace
-                    <ChevronDown className="ml-auto" />
-                    </SidebarMenuButton>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-[--radix-popper-anchor-width]">
-                    <DropdownMenuItem>
-                    <span>Acme Inc</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                    <span>Acme Corp.</span>
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-                </DropdownMenu>
+              <SidebarMenuButton asChild>
+                <a href="/dashboard">
+                  <Home />
+                  <span>{pathname === '/dashboard' ? 'Dashboard' : 'Back to Dashboard'}</span>
+                </a>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
@@ -90,13 +87,8 @@ export function AppSidebar() {
                     <SidebarMenuItem key={tab.value}>
                       <SidebarMenuButton
                         asChild
-                        className="group"
-                        onClick={() => {
-                          const tabElement = document.querySelector(`[data-state][value="${tab.value}"]`)
-                          if (tabElement) {
-                            (tabElement as HTMLElement).click()
-                          }
-                        }}
+                        className={`group ${currentTab === tab.value ? 'bg-accent' : ''}`}
+                        onClick={() => handleTabClick(tab.value)}
                       >
                         <div>
                           <tab.icon className="w-4 h-4" />
@@ -141,7 +133,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
-                      <a href="mailto:support@yourdomain.com">Contact Support</a>
+                      <a href="mailto:support@usegraham.com">Contact Support</a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
@@ -159,15 +151,7 @@ export function AppSidebar() {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/dashboard">
-                  <Home />
-                  <span>Back to Dashboard</span>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild onClick={() => router.push('/billing')}>
+              <SidebarMenuButton asChild onClick={() => router.push('/dashboard/profile/${userId}')}>
                 <a>
                   <CreditCard />
                   <span>Billing</span>

@@ -20,7 +20,7 @@ export const AgentTitleBar: React.FC<Props> = ({ agent }) => {
   }, [agent]);
 
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-white shadow-sm w-full">
       <CardContent className="p-2">
         <div className='flex items-center justify-between'>
           <div className="flex items-center space-x-2">

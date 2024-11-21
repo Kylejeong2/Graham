@@ -1,12 +1,8 @@
 import { prisma } from "@graham/db";
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import React from 'react'
 import { AgentTitleBar } from '@/components/Agent/components/AgentTitleBar';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { AgentSetup } from '@/components/Agent/AgentSetup';
-import { AgentTesting } from "@/components/Agent/AgentTesting";
-import { AgentAnalytics } from '@/components/Agent/AgentAnalytics';
+import { AgentTabs } from '@/components/Agent/AgentTabs';
 
 type Props = {
     params: {
@@ -27,27 +23,12 @@ const AgentPage = async ({params: { agentId }}: Props) => {
     if (!user || !agent) return redirect('/dashboard')
 
     return (
-        <div className='h-full bg-white px-10 overflow-y-auto'>
-            <div className='max-w-8xl mx-auto h-full bg-white'>
+        <div className='w-full h-full bg-white'>
+            <div className='w-full h-full bg-white px-6'>
                 <AgentTitleBar 
                     agent={agent}
                 />
-                <Tabs defaultValue={agent.isSetupComplete ? "editing" : "setup"} className="bg-white h-full rounded-lg pt-2">
-                    <TabsList className="hidden">
-                        <TabsTrigger value="setup">Setup</TabsTrigger>
-                        <TabsTrigger value="testing">Testing</TabsTrigger>
-                        <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="setup">
-                        <AgentSetup agent={agent} user={user} />
-                    </TabsContent>
-                    <TabsContent value="testing">
-                        <AgentTesting agent={agent} />
-                    </TabsContent>
-                    <TabsContent value="analytics">
-                        <AgentAnalytics agent={agent} />
-                    </TabsContent>
-                </Tabs>
+                <AgentTabs agent={agent} user={user} />
             </div>
         </div>
     );

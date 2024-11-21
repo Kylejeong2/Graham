@@ -7,7 +7,7 @@ import type { Agent } from "@graham/db";
 
 export const AgentAnalytics: React.FC<{ agent: Agent }> = ({ agent }) => {
   return (
-    <div className="space-y-6">
+    <div className="w-full space-y-6 px-2">
       <Tabs defaultValue="dashboard" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="dashboard">Overview</TabsTrigger>
