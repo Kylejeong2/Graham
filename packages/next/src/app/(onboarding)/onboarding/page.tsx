@@ -31,6 +31,13 @@ export default function OnboardingPage() {
   const [formData, setFormData] = useState({
     fullName: '',
     businessName: '',
+    businessAddress: {
+      street: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: 'US'
+    },
     phoneNumber: '',
     email: '',
     hasPaymentSetup: false
@@ -133,6 +140,66 @@ export default function OnboardingPage() {
               className="mt-1"
             />
           </div>
+          <div className="space-y-2">
+            <Label>Street Address</Label>
+            <Input
+              placeholder="123 Main St"
+              value={formData.businessAddress.street}
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                businessAddress: {
+                  ...prev.businessAddress,
+                  street: e.target.value
+                }
+              }))}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>City</Label>
+              <Input
+                placeholder="City"
+                value={formData.businessAddress.city}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  businessAddress: {
+                    ...prev.businessAddress,
+                    city: e.target.value
+                  }
+                }))}
+              />
+            </div>
+            <div>
+              <Label>State</Label>
+              <Input
+                placeholder="CA"
+                maxLength={2}
+                value={formData.businessAddress.state}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  businessAddress: {
+                    ...prev.businessAddress,
+                    state: e.target.value.toUpperCase()
+                  }
+                }))}
+              />
+            </div>
+          </div>
+          <div>
+            <Label>ZIP Code</Label>
+            <Input
+              placeholder="12345"
+              maxLength={5}
+              value={formData.businessAddress.postalCode}
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                businessAddress: {
+                  ...prev.businessAddress,
+                  postalCode: e.target.value.replace(/\D/g, '')
+                }
+              }))}
+            />
+          </div>
           <div>
             <Label htmlFor="phoneNumber">Business phone</Label>
             <Input
@@ -177,9 +244,12 @@ export default function OnboardingPage() {
         return formData.fullName.trim().length > 0
       case 2:
         return formData.businessName.trim().length > 0 &&
+               formData.businessAddress.street.trim().length > 0 &&
+               formData.businessAddress.city.trim().length > 0 &&
+               formData.businessAddress.state.length === 2 &&
+               formData.businessAddress.postalCode.length === 5 &&
                formData.phoneNumber.trim().length > 0 &&
-               formData.email.trim().length > 0 &&
-               formData.email.includes('@') // Basic email validation
+               formData.email.includes('@')
       case 3:
         return formData.hasPaymentSetup
       default:

@@ -22,15 +22,38 @@ export async function POST(req: NextRequest) {
 
   switch (event.type) {
     case 'checkout.session.completed': {
-      await prisma.subscription.create({
-        data: {
+      const isPhoneNumberSubscription = session.metadata?.phoneNumber;
+
+      await prisma.subscription.upsert({
+        where: {
+          userId: session.client_reference_id!
+        },
+        create: {
           userId: session.client_reference_id!,
           status: 'active',
           stripeCustomerId: session.customer as string,
           stripePriceId: session.subscription as string,
           stripeSubscriptionId: session.subscription as string,
           subscriptionStatus: 'active',
-          stripeCurrentPeriodEnd: new Date(session.expires_at! * 1000)
+          stripeCurrentPeriodEnd: new Date(session.expires_at! * 1000),
+          phoneNumberSubscriptionData: isPhoneNumberSubscription ? {
+            phoneNumber: session.metadata?.phoneNumber,
+            active: true,
+            createdAt: new Date()
+          } : {}
+        },
+        update: {
+          status: 'active',
+          stripeCustomerId: session.customer as string,
+          stripePriceId: session.subscription as string,
+          stripeSubscriptionId: session.subscription as string,
+          subscriptionStatus: 'active',
+          stripeCurrentPeriodEnd: new Date(session.expires_at! * 1000),
+          phoneNumberSubscriptionData: isPhoneNumberSubscription ? {
+            phoneNumber: session.metadata?.phoneNumber,
+            active: true,
+            createdAt: new Date()
+          } : {}
         }
       });
       break;
@@ -55,7 +78,11 @@ export async function POST(req: NextRequest) {
         data: {
           status: 'inactive',
           stripePriceId: null,
-          stripeSubscriptionId: null
+          stripeSubscriptionId: null,
+          phoneNumberSubscriptionData: {
+            active: false,
+            canceledAt: new Date()
+          }
         }
       });
       break;

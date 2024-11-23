@@ -9,3 +9,4 @@ export { handleEnhanceInstructions, createDebouncedInstructionUpdate } from './h
 export { handlePhoneNumberSelect } from './handlePhoneNumberOperations';
 export { fetchUserPhoneNumbers } from './handleUserPhoneNumbers';
 export { handleDocumentSelect } from './document-functions';
+export { fetchUserData } from './fetchUserData';

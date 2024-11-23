@@ -8,7 +8,8 @@ export const fetchAgentData = async (
   setSelectedVoice: (value: string | null) => void,
   setSelectedVoiceName: (value: string) => void,
   setConversationType: (value: 'user' | 'ai-default' | 'ai-custom') => void,
-  setInitialMessage: (value: string) => void
+  setInitialMessage: (value: string) => void,
+  setSelectedPhoneNumber: (value: string) => void
 ) => {
   if (!agentId) {
     setIsLoading(false);
@@ -46,6 +47,9 @@ export const fetchAgentData = async (
     }
     if (agent.initialMessage) {
       setInitialMessage(agent.initialMessage);
+    }
+    if (agent.phoneNumber) {
+      setSelectedPhoneNumber(agent.phoneNumber);
     }
   } catch (error) {
     console.error('Error fetching agent data:', error);

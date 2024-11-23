@@ -20,21 +20,29 @@ model Agent {
   createdAt                   DateTime                    @default(now())
   userId                      String
   phoneNumber                 String?
-  systemPrompt                String?
-  callHistory                 Json?
-  customResponses             Json                        @default("{}")
-  minutesUsed                 Int                         @default(0)
   lastModificationTimestamp   String?
   areaCode                    String?
-  isSetupComplete             Boolean                     @default(false)
+  minutesUsed                 Int                         @default(0)
+  // Deployment info 
+  deployed                    Boolean                     @default(false)
+  roomName                    String?
+  roomSid                     String?
+  lastDeployedAt              DateTime?
+  containerId                 String?
+  sipTrunkId                  String?
+  // Agent Customization
   voiceId                     String?
   voiceName                   String?
+  systemPrompt                String?
   initialMessage              String?
+  customResponses             Json                        @default("{}")
   initiateConversation        Boolean                     @default(false)
+  ragDocumentId               String? // id of document used for phone rag
+  // Relations
   user                        User                        @relation(fields: [userId], references: [id])
   usageRecords                UsageRecord[]
   googleCalendarIntegrations  GoogleCalendarIntegration[]
-  ragDocumentId               String?
+  callLogs                    CallLog[]
 }
 
 model BusinessDocument {
@@ -78,6 +86,8 @@ model CallLog {
   secondsUsed   Int
   minutesUsed   Int
   callData      Json
+  agent         Agent     @relation(fields: [agentId], references: [id])
+  user          User      @relation(fields: [userId], references: [id])
 }
 
 model Subscription { // If the user setup payment intent then they have a subscription
@@ -106,6 +116,7 @@ model User {
   image                       String?
   phoneNumbers                Json                        @default("[]") // Array of phone numbers "+15103401579"
   businessName                String?
+  businessAddress             BusinessAddress?
   fullName                    String?
   user_phoneNumber            String?
   hasPaymentSetup             Boolean                     @default(false)
@@ -117,6 +128,7 @@ model User {
   organizationId              String?
   subscriptions               Subscription[]
   businessDocuments           BusinessDocument[]          // Added relation to BusinessDocument
+  callLogs                    CallLog[]
 }
 
 model Waitlist {
@@ -186,4 +198,16 @@ model Organization {
   createdAt                         DateTime @default(now())
   updatedAt                         DateTime @default(now())
   users                             User[]
+}
+
+model BusinessAddress {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  street      String
+  city        String
+  state       String
+  postalCode  String
+  country     String   @default("US")
+  verified    Boolean  @default(false)
+  user        User     @relation(fields: [userId], references: [id])
 }

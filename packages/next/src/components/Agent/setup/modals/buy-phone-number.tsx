@@ -1,24 +1,36 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+'use client';
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createPhoneNumberSubscription } from '../setup-functions/createPhoneNumberSubscription';
-import type { User } from '@graham/db';
+import type { User, BusinessAddress } from '@graham/db';
+import { fetchUserData } from '../setup-functions/fetchUserData';
 
 interface BuyPhoneNumberModalProps {
     isOpen: boolean;
     onClose: () => void;
     userPhoneNumbers: string[];
     setUserPhoneNumbers: (numbers: string[]) => void;
-    user: User;
+    user: User & { businessAddress: BusinessAddress | null };
     agentId: string;
 }
 
-export const BuyPhoneNumberModal = ({ isOpen, onClose, userPhoneNumbers, setUserPhoneNumbers, user, agentId }: BuyPhoneNumberModalProps) => {
+interface BusinessAddressForm {
+  street: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+}
+
+export const BuyPhoneNumberModal = ({ isOpen, onClose, userPhoneNumbers, setUserPhoneNumbers, user: initialUser, agentId }: BuyPhoneNumberModalProps) => {
+    const [user, setUser] = useState(initialUser);
     const [availableNumbers, setAvailableNumbers] = useState([]);
     const [selectedAreaCode, setSelectedAreaCode] = useState('');
     const [isLoadingNumbers, setIsLoadingNumbers] = useState(false);
@@ -26,6 +38,36 @@ export const BuyPhoneNumberModal = ({ isOpen, onClose, userPhoneNumbers, setUser
     const [countryCode, setCountryCode] = useState('US');
     const [searchError, setSearchError] = useState('');
     const [isPurchasing, setIsPurchasing] = useState<string | null>(null);
+    const [showAddressPrompt, setShowAddressPrompt] = useState(false);
+    const [businessAddress, setBusinessAddress] = useState<BusinessAddressForm>({
+        street: user.businessAddress?.street || '',
+        city: user.businessAddress?.city || '',
+        state: user.businessAddress?.state || '',
+        postalCode: user.businessAddress?.postalCode || '',
+        country: user.businessAddress?.country || 'US'
+    });
+    const [addressError, setAddressError] = useState('');
+
+    useEffect(() => {
+        const loadUserData = async () => {
+            const userData = await fetchUserData(initialUser.id);
+            if (userData) {
+                setUser(userData);
+                setShowAddressPrompt(!userData.businessAddress);
+                if (userData.businessAddress) {
+                    setBusinessAddress({
+                        street: userData.businessAddress.street,
+                        city: userData.businessAddress.city,
+                        state: userData.businessAddress.state,
+                        postalCode: userData.businessAddress.postalCode,
+                        country: userData.businessAddress.country
+                    });
+                }
+            }
+        };
+        
+        loadUserData();
+    }, [initialUser.id]);
 
     const handleSearchNumbers = async () => {
         setIsLoadingNumbers(true);
@@ -81,6 +123,15 @@ export const BuyPhoneNumberModal = ({ isOpen, onClose, userPhoneNumbers, setUser
 
             if (payment?.number) {
                 toast.success('Phone number purchased successfully');
+                await fetch('/api/twilio/buy-phone-number', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: user.id,
+                        agentId,
+                        phoneNumber: payment.number
+                    })
+                });
                 onClose();
                 setUserPhoneNumbers([...userPhoneNumbers, payment.number]);
             }
@@ -91,6 +142,104 @@ export const BuyPhoneNumberModal = ({ isOpen, onClose, userPhoneNumbers, setUser
             setIsPurchasing(null);
         }
     };
+
+    const handleAddressSubmit = async () => {
+        try {
+            if (!businessAddress.street || !businessAddress.city || !businessAddress.state || !businessAddress.postalCode || !businessAddress.country) {
+                setAddressError('Please enter a valid address');
+                return;
+            }
+
+            const response = await fetch('/api/user/edit-profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    businessAddress: businessAddress
+                })
+            });
+
+            if (!response.ok) throw new Error('Failed to update address');
+            
+            setShowAddressPrompt(false);
+        } catch (error: any) {
+            toast.error(error.message);
+        }
+    };
+
+    if (showAddressPrompt) {
+        return (
+            <Dialog open={isOpen} onOpenChange={onClose}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Business Address Required</DialogTitle>
+                        <DialogDescription>
+                            Please enter your business address to purchase a phone number
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Street Address</Label>
+                            <Input
+                                placeholder="123 Main St"
+                                value={businessAddress.street}
+                                onChange={(e) => setBusinessAddress(prev => ({
+                                    ...prev,
+                                    street: e.target.value
+                                }))}
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>City</Label>
+                                <Input
+                                    placeholder="City"
+                                    value={businessAddress.city}
+                                    onChange={(e) => setBusinessAddress(prev => ({
+                                        ...prev,
+                                        city: e.target.value
+                                    }))}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>State</Label>
+                                <Input
+                                    placeholder="CA"
+                                    maxLength={2}
+                                    value={businessAddress.state}
+                                    onChange={(e) => setBusinessAddress(prev => ({
+                                        ...prev,
+                                        state: e.target.value.toUpperCase()
+                                    }))}
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>ZIP Code</Label>
+                            <Input
+                                placeholder="12345"
+                                maxLength={5}
+                                value={businessAddress.postalCode}
+                                onChange={(e) => setBusinessAddress(prev => ({
+                                    ...prev,
+                                    postalCode: e.target.value.replace(/\D/g, '')
+                                }))}
+                            />
+                        </div>
+                        {addressError && (
+                            <p className="text-sm text-red-500 mt-2">{addressError}</p>
+                        )}
+                        <Button 
+                            onClick={handleAddressSubmit}
+                            className="w-full"
+                            disabled={!businessAddress.street || !businessAddress.city || !businessAddress.state || !businessAddress.postalCode || !businessAddress.country}
+                        >
+                            Continue
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        );
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>

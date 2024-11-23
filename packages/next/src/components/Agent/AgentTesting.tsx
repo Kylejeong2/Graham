@@ -14,7 +14,7 @@ export const AgentTesting: React.FC<{ agent: Agent }> = ({ agent }) => {
     const [testPhoneNumber, setTestPhoneNumber] = useState('');
     const [isCallInProgress, setIsCallInProgress] = useState(false);
 
-    if (!agent.isSetupComplete) {
+    if (!agent.deployed) {
         return (
             <div className="min-h-[400px] flex flex-col items-center justify-center p-4 w-full">
                 <AlertCircle className="h-12 w-12 text-orange-500 mb-4" />

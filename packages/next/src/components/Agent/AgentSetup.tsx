@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import Link from 'next/link';
-import type { User, Agent } from '@graham/db';
+import type { User, Agent, BusinessAddress } from '@graham/db';
 import { BuyPhoneNumberModal, CalendarIntegrationModal, VoiceSelectionModal } from './setup/modals';
 import { handleDocumentSelect, handleVoiceSelect, handlePreviewVoice, handleGoogleAuth, handleFileUpload, fetchAgentData, createDebouncedMessageUpdate, handleCompleteSetup, fetchVoices, handleEnhanceInstructions, createDebouncedInstructionUpdate, handlePhoneNumberSelect, fetchUserPhoneNumbers } from './setup/setup-functions';
 import type { ConversationInitType } from './setup/types';
@@ -132,15 +132,22 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
 
     useEffect(() => {
         fetchAgentData(
-            agent.id, setIsLoading, setCustomInstructions, setSelectedVoice, setSelectedVoiceName, setConversationType, setInitialMessage
+            agent.id, 
+            setIsLoading, 
+            setCustomInstructions, 
+            setSelectedVoice, 
+            setSelectedVoiceName, 
+            setConversationType, 
+            setInitialMessage,
+            setSelectedPhoneNumber
         );
     }, [agent.id]);
 
     useEffect(() => {
         if (user?.id) {
-            fetchUserPhoneNumbers(user.id, setUserPhoneNumbers);
+            fetchUserPhoneNumbers(user.id, setUserPhoneNumbers, agent.phoneNumber || '');
         }
-    }, [user?.id]);
+    }, [user?.id, agent.phoneNumber]);
 
     const handleEnhanceInstructionsWrapper = () => handleEnhanceInstructions(
         customInstructions,
@@ -267,11 +274,10 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                             <div className="space-y-6">
                                 <div className="space-y-2">
                                     <Label className="text-blue-900">Who starts the conversation?</Label>
-                                    <select
+                                    <Select
                                         value={conversationType}
-                                        onChange={async (e) => {
-                                            const newType = e.target.value as ConversationInitType;
-                                            setConversationType(newType);
+                                        onValueChange={async (newType) => {
+                                            setConversationType(newType as ConversationInitType);
                                             try {
                                                 await fetch(`/api/agent/updateAgent`, {
                                                     method: 'PATCH',
@@ -288,12 +294,16 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                                 toast.error('Failed to update conversation preference');
                                             }
                                         }}
-                                        className="w-full p-2 border rounded-md"
                                     >
-                                        <option value="user">User speaks first</option>
-                                        <option value="ai-default">AI speaks first (default greeting "Hello! How can I assist you today?")</option>
-                                        <option value="ai-custom">AI speaks first (custom message)</option>
-                                    </select>
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select who starts" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="user">User speaks first</SelectItem>
+                                            <SelectItem value="ai-default">AI speaks first (default greeting)</SelectItem>
+                                            <SelectItem value="ai-custom">AI speaks first (custom message)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
                                 <AnimatePresence>
@@ -583,7 +593,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                 onClose={() => setIsPhoneModalOpen(false)}
                 userPhoneNumbers={userPhoneNumbers}
                 setUserPhoneNumbers={setUserPhoneNumbers}
-                user={user}
+                user={user as User & { businessAddress: BusinessAddress | null }}
                 agentId={agent.id}
             />
 
