@@ -3,18 +3,18 @@ import { Pinecone } from '@pinecone-database/pinecone';
 import OpenAI from 'openai';
 import { prisma } from '@graham/db';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
-const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY!
-});
-
 export async function POST(req: Request) {
   try {
     const { agentId, documentId } = await req.json();
 
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    });
+    
+    const pinecone = new Pinecone({
+      apiKey: process.env.PINECONE_API_KEY!
+    });
+    
     const document = await prisma.businessDocument.findUnique({
       where: { id: documentId }
     });
