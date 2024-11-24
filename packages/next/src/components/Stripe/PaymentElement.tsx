@@ -4,8 +4,7 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useRouter, usePathname } from 'next/navigation'
-import { prisma } from '@graham/db'
-import { auth } from '@clerk/nextjs/server'
+import { useAuth } from '@clerk/nextjs'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PK!)
 
@@ -16,7 +15,8 @@ const PaymentForm = () => {
   const [processing, setProcessing] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
-  const { userId } = auth();
+  const { userId } = useAuth()
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
 
@@ -38,11 +38,17 @@ const PaymentForm = () => {
       setProcessing(false)
     } else {
       if (userId) {
-        await prisma.user.update({
-          where: { id: userId },
-          data: { hasPaymentSetup: true },
-        })
+        const response = await fetch('/api/stripe/setup-payment', {
+          method: 'POST',
+        });
+        
+        if (!response.ok) {
+          setError('Failed to update payment status');
+          setProcessing(false);
+          return;
+        }
       }
+      
       if (pathname === '/onboarding') {
         router.push('/dashboard')
       } else {
