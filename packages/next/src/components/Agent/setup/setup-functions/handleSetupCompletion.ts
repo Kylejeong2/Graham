@@ -1,17 +1,44 @@
 import { toast } from "react-toastify";
 
 export const handleCompleteSetup = async (
-  setIsCompleting: (value: boolean) => void
+  agentId: string,
+  selectedDocument: string,
+  setIsCompleting: (val: boolean) => void
 ) => {
-  setIsCompleting(true);
   try {
-    // TODO: Add actual setup completion logic here
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated delay
-    toast.success('Setup completed successfully!');
+    setIsCompleting(true);
+
+    if (selectedDocument) {
+      const embedRes = await fetch('/api/agent/information/embed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          agentId, 
+          documentId: selectedDocument 
+        })
+      });
+
+      if (!embedRes.ok) {
+        throw new Error('Failed to create embeddings');
+      }
+    }
+
+    // Deploy agent
+    const deployRes = await fetch('/api/agent/deploy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agentId })
+    });
+
+    if (!deployRes.ok) {
+      throw new Error('Failed to deploy agent');
+    }
+
+    toast.success('Agent deployed successfully!');
   } catch (error) {
-    console.error('Error completing setup:', error);
-    toast.error('Failed to complete setup');
+    toast.error('Failed to deploy agent');
+    console.error(error);
   } finally {
     setIsCompleting(false);
   }
-}; 
+};

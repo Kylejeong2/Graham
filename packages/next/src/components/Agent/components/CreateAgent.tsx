@@ -27,7 +27,7 @@ export const CreateAgent: React.FC<Props> = ({ children }) => {
             setIsSubscribed(data.hasSubscription);
         };
         const checkAgentCount = async () => {
-            const res = await fetch('/api/agent/getAgentCount');
+            const res = await fetch('/api/agent/fetch/getAgentCount');
             const data = await res.json();
             setAgentCount(data.count);
         }

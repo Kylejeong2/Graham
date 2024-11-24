@@ -21,7 +21,6 @@ export async function POST(req: Request) {
                 fileName: true,
                 fileType: true,
                 fileSize: true,
-                status: true,
                 uploadedAt: true
             },
             orderBy: {

@@ -6,14 +6,18 @@ export const handleDocumentSelect = async (
     setSelectedDocument: (id: string) => void
 ) => {
     try {
-        await fetch('/api/agent/updateAgent', {
+        const response = await fetch('/api/agent/updateAgent', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 agentId,
-                documentId
+                ragDocumentId: documentId
             })
         });
+
+        if (!response.ok) {
+            throw new Error('Failed to update agent');
+        }
         
         setSelectedDocument(documentId);
         toast.success('Document selected successfully');

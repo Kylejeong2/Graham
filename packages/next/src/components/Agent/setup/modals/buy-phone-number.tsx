@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { createPhoneNumberSubscription } from '../setup-functions/createPhoneNumberSubscription';
 import type { User, BusinessAddress } from '@graham/db';
 import { fetchUserData } from '../setup-functions/fetchUserData';
+import { Select, SelectContent, SelectValue, SelectItem, SelectTrigger } from "@/components/ui/select";
 
 interface BuyPhoneNumberModalProps {
     isOpen: boolean;
@@ -261,14 +262,18 @@ export const BuyPhoneNumberModal = ({ isOpen, onClose, userPhoneNumbers, setUser
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <Label>Country</Label>
-                            <select 
+                            <Select
                                 value={countryCode}
-                                onChange={(e) => setCountryCode(e.target.value)}
-                                className="w-full p-2 border rounded-md"
+                                onValueChange={(value) => setCountryCode(value)}
                             >
-                                <option value="US">United States (+1)</option>
-                                <option value="CA">Canada (+1)</option>
-                            </select>
+                                <SelectTrigger className="w-full p-2 border rounded-md">
+                                    <SelectValue placeholder="Select a country" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="US">United States (+1)</SelectItem>
+                                    <SelectItem value="CA">Canada (+1)</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="space-y-2">

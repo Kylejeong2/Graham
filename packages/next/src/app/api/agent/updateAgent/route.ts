@@ -12,7 +12,7 @@ export async function PATCH(request: Request) {
             phoneNumber,
             initiateConversation,
             initialMessage,
-            documentId
+            ragDocumentId
         } = body;
 
         if (!agentId) {
@@ -42,14 +42,13 @@ export async function PATCH(request: Request) {
         if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
         if (initiateConversation !== undefined) updateData.initiateConversation = initiateConversation;
         if (initialMessage !== undefined) updateData.initialMessage = initialMessage;
-        if (documentId !== undefined) updateData.ragDocumentId = documentId;
+        if (ragDocumentId !== undefined) updateData.ragDocumentId = ragDocumentId;
 
         const updatedAgent = await prisma.agent.update({
             where: { id: agentId },
             data: updateData
         });
 
-        // console.log('Agent updated successfully:', updatedAgent);
         return NextResponse.json(updatedAgent);
     } catch (error) {
         console.error('Error updating agent:', error);

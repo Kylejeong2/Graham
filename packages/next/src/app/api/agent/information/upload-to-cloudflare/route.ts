@@ -65,7 +65,6 @@ export async function POST(req: Request) {
         fileType: file.type,
         fileSize: file.size,
         indexPath: uniqueFilename,
-        status: 'PROCESSING',
       },
     })
 

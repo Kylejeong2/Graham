@@ -2,7 +2,7 @@ import json
 import logging
 import os
 
-from livekit.agents import AutoSubscribe, JobContext, WorkerOptions, cli, llm
+from livekit.agents import AutoSubscribe, JobContext, WorkerOptions, WorkerType, cli, llm
 from livekit.agents.pipeline import VoicePipelineAgent
 from livekit.plugins import deepgram, openai, silero
 from pinecone import Pinecone
@@ -91,4 +91,7 @@ async def entrypoint(ctx: JobContext):
         await agent.say(initial_message, allow_interruptions=True)
 
 if __name__ == "__main__":
-    cli.run(entrypoint, WorkerOptions(room_name="test-room"))
+    cli.run(entrypoint, WorkerOptions(
+        entrypoint_fnc=entrypoint,
+        worker_type=WorkerType.ROOM,
+    ))

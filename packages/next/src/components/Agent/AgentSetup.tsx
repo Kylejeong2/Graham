@@ -15,12 +15,14 @@ import { Badge } from "@/components/ui/badge"
 import Link from 'next/link';
 import type { User, Agent, BusinessAddress } from '@graham/db';
 import { BuyPhoneNumberModal, CalendarIntegrationModal, VoiceSelectionModal } from './setup/modals';
-import { handleDocumentSelect, handleVoiceSelect, handlePreviewVoice, handleGoogleAuth, handleFileUpload, fetchAgentData, createDebouncedMessageUpdate, handleCompleteSetup, fetchVoices, handleEnhanceInstructions, createDebouncedInstructionUpdate, handlePhoneNumberSelect, fetchUserPhoneNumbers } from './setup/setup-functions';
+import { handleDocumentSelect, handleVoiceSelect, handlePreviewVoice, handleGoogleAuth, handleFileUpload, 
+    fetchAgentData, createDebouncedMessageUpdate, handleCompleteSetup, fetchVoices, handleEnhanceInstructions, 
+    createDebouncedInstructionUpdate, handlePhoneNumberSelect, fetchUserPhoneNumbers, handleDownloadTemplate, formatPhoneNumber
+} from './setup/setup-functions';
 import type { ConversationInitType } from './setup/types';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { BUSINESS_INFO_TEMPLATE } from '@/constants/business-info-template';
-import { jsPDF } from 'jspdf';
 import type { BusinessDocument } from './setup/types/business';
+
 
 export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user }) => {
     const [isLoading, setIsLoading] = useState(true);
@@ -54,70 +56,10 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
 
     const openVoiceModal = () => setIsVoiceModalOpen(true);
     const closeVoiceModal = () => setIsVoiceModalOpen(false);
-    
-    const handleFileUploadWrapper = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        await handleFileUpload(file, agent.id, setUploadedFile, user.id);
-    };
-
-    const handleDownloadTemplate = () => {
-        const doc = new jsPDF();
-        
-        doc.setFontSize(20);
-        doc.text('Business Information Template', 20, 20);
-        
-        let yPosition = 40;
-        doc.setFontSize(12);
-
-        BUSINESS_INFO_TEMPLATE.forEach(section => {
-            doc.setFont('helvetica', 'bold');
-            doc.text(section.title, 20, yPosition);
-            yPosition += 10;
-            
-            doc.setFont('helvetica', 'normal');
-            section.items.forEach(item => {
-                doc.text(item, 25, yPosition);
-                yPosition += 10;
-                
-                doc.setDrawColor(200);
-                doc.line(25, yPosition-2, 185, yPosition-2);
-                yPosition += 10;
-            });
-            
-            yPosition += 5;
-            
-            if (yPosition > 270) {
-                doc.addPage();
-                yPosition = 20;
-            }
-        });
-
-        doc.save('business_information_template.pdf');
-    };
-
-    const handleCompleteSetupWrapper = () => handleCompleteSetup(setIsCompleting);
 
     useEffect(() => {
         fetchVoices(setIsLoadingVoices, setVoices);
     }, []);
-
-    const handleVoiceSelectWrapper = (voice: any) => handleVoiceSelect({
-        voice,
-        agentId: agent.id,
-        systemPrompt: customInstructions,
-        setSelectedVoice,
-        setSelectedVoiceName,
-        onClose: closeVoiceModal
-    });
-
-    const handlePreviewVoiceWrapper = (voice: any, e: React.MouseEvent) => handlePreviewVoice({
-        voice,
-        e,
-        audioRef,
-        playingVoiceId,
-        setPlayingVoiceId
-    });
 
     const debouncedInstructionUpdate = useCallback(
         createDebouncedInstructionUpdate(agent.id, setIsSaving),
@@ -154,12 +96,6 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
         agent.id,
         setCustomInstructions,
         setIsEnrichingInstructions
-    );
-
-    const handlePhoneNumberSelectWrapper = (phoneNumber: string) => handlePhoneNumberSelect(
-        phoneNumber,
-        agent.id,
-        setSelectedPhoneNumber
     );
 
     const EnhancingAnimation = () => (
@@ -379,15 +315,19 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                         <CardContent className="pt-4 space-y-4">
                             <Select
                                 value={selectedPhoneNumber}
-                                onValueChange={handlePhoneNumberSelectWrapper}
+                                onValueChange={(phoneNumber) => handlePhoneNumberSelect(
+                                    phoneNumber,
+                                    agent.id,
+                                    setSelectedPhoneNumber
+                                )}
                             >
                                 <SelectTrigger className="w-full border-blue-200">
                                     <SelectValue placeholder="Select existing number" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {userPhoneNumbers.map((number) => (
-                                        <SelectItem key={number} value={number.toString()}>
-                                            {number}
+                                        <SelectItem key={number} value={number}>
+                                            {formatPhoneNumber(number)}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -424,7 +364,12 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                             <div className="border-2 border-dashed border-blue-200 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
                                 <Input
                                     type="file"
-                                    onChange={handleFileUploadWrapper}
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        await handleFileUpload(file, agent.id, setUploadedFile, user.id);
+                                        window.location.reload();
+                                    }}
                                     className="hidden"
                                     id="file-upload"
                                     accept=".pdf,.doc,.docx"
@@ -455,21 +400,18 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                         <SelectValue placeholder="Select a document" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {businessDocuments.map((doc) => (
-                                            <SelectItem 
-                                                key={doc.id} 
-                                                value={doc.id}
-                                                disabled={doc.status !== 'COMPLETED'}
-                                            >
-                                                <div className="flex items-center justify-between w-full">
-                                                    <span className="truncate">{doc.fileName}</span>
-                                                    <Badge variant={doc.status === 'COMPLETED' ? 'default' : 'secondary'}>
-                                                        {doc.status}
-                                                    </Badge>
-                                                </div>
-                                            </SelectItem>
-                                        ))}
-                                        {businessDocuments.length === 0 && (
+                                        {Array.isArray(businessDocuments) && businessDocuments.length > 0 ? (
+                                            businessDocuments.map((doc) => (
+                                                <SelectItem 
+                                                    key={doc.id} 
+                                                    value={doc.id}
+                                                >
+                                                    <div className="flex items-center justify-between w-full">
+                                                        <span className="truncate">{doc.fileName}</span>
+                                                    </div>
+                                                </SelectItem>
+                                            ))
+                                        ) : (
                                             <SelectItem value="none" disabled>
                                                 No documents uploaded yet
                                             </SelectItem>
@@ -512,7 +454,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                     <div className="space-y-2">
                                         {[
                                             { icon: Calendar, label: 'Appointment Booking', desc: 'Schedule meetings' },
-                                            { icon: CreditCard, label: 'Payment Processing', desc: 'Handle transactions' },
+                                            { icon: CreditCard, label: 'Payment Processing', desc: 'Handle transactions', disabled: true },
                                         ].map((feature, index) => (
                                             <div key={index} className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50">
                                                 <div className="flex items-center gap-2">
@@ -531,7 +473,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                                         Connect
                                                     </Button>
                                                 ) : (
-                                                    <Switch className="scale-75" />
+                                                    <Switch className="scale-75" disabled={feature.disabled} />
                                                 )}
                                             </div>
                                         ))}
@@ -543,8 +485,8 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                     <h4 className="text-xs font-medium text-blue-900">Integrations</h4>
                                     <div className="space-y-2">
                                         {[
-                                            { icon: BrainCircuit, label: 'CRM Integration', desc: 'Connect your CRM' },
-                                            { icon: Mail, label: 'Email Notifications', desc: 'Auto-send updates' },
+                                            { icon: BrainCircuit, label: 'CRM Integration', desc: 'Connect your CRM', disabled: true },
+                                            { icon: Mail, label: 'Email Notifications', desc: 'Auto-send updates', disabled: true },
                                         ].map((feature, index) => (
                                             <div key={index} className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50">
                                                 <div className="flex items-center gap-2">
@@ -554,7 +496,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                                         <p className="text-xs text-gray-500">{feature.desc}</p>
                                                     </div>
                                                 </div>
-                                                <Switch className="scale-75" />
+                                                <Switch className="scale-75" disabled={feature.disabled} />
                                             </div>
                                         ))}
                                     </div>
@@ -568,7 +510,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
             {/* Complete Setup Button */}
             <div className="mt-auto pt-6">
                 <Button 
-                    onClick={() => handleCompleteSetupWrapper()}
+                    onClick={() => handleCompleteSetup(agent.id, selectedDocument, setIsCompleting)}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                     disabled={isCompleting}
                 >
@@ -584,8 +526,21 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                 isLoadingVoices={isLoadingVoices}
                 selectedVoice={selectedVoice}
                 playingVoiceId={playingVoiceId}
-                handleVoiceSelect={handleVoiceSelectWrapper}
-                handlePreviewVoice={handlePreviewVoiceWrapper}
+                handleVoiceSelect={(voice: any) => handleVoiceSelect({
+                    voice,
+                    agentId: agent.id,
+                    systemPrompt: customInstructions,
+                    setSelectedVoice,
+                    setSelectedVoiceName,
+                    onClose: () => setIsVoiceModalOpen(false)
+                })}
+                handlePreviewVoice={(voice: any, e: any) => handlePreviewVoice({
+                    voice,
+                    e,
+                    audioRef,
+                    playingVoiceId,
+                    setPlayingVoiceId
+                })}
             />
 
             <BuyPhoneNumberModal 

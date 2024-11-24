@@ -19,7 +19,7 @@ export const fetchAgentData = async (
 
   setIsLoading(true);
   try {
-    const response = await fetch(`/api/agent/getAgentData/${agentId}`);
+    const response = await fetch(`/api/agent/fetch/getAgentData/${agentId}`);
     if (!response.ok) {
       throw new Error('Failed to fetch agent data');
     }

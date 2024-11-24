@@ -6,8 +6,8 @@ export const fetchVoices = async (
 ) => {
   setIsLoadingVoices(true);
   try {
-    // const response = await fetch('/api/agent/getVoices-cartesia'); waiting for api update
-    const response = await fetch('/api/agent/getVoices-eleven');
+    // const response = await fetch('/api/agent/fetch/getVoices-cartesia'); waiting for api update
+    const response = await fetch('/api/agent/fetch/getVoices-eleven');
     if (!response.ok) throw new Error('Failed to fetch voices');
     const data = await response.json();
     setVoices(data.voices);

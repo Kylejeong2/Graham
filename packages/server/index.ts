@@ -1,9 +1,7 @@
 import cors from '@fastify/cors';
 import Fastify from "fastify";
-import { AccessToken, RoomServiceClient, SipClient } from 'livekit-server-sdk';
+import { AccessToken, SipClient } from 'livekit-server-sdk';
 import { prisma } from '@graham/db';
-import { Pinecone } from '@pinecone-database/pinecone';
-import OpenAI from 'openai';
 import { Twilio } from 'twilio';
 // import { serverLogger } from '@graham/server/src/lib/winston';
 import dotenv from 'dotenv';
@@ -15,20 +13,6 @@ const server = Fastify({
   logger: true,
   keepAliveTimeout: 60000,
 });
-
-const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY!,
-});
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
-
-const livekitClient = new RoomServiceClient(
-  process.env.LIVEKIT_URL!,
-  process.env.LIVEKIT_API_KEY!,
-  process.env.LIVEKIT_API_SECRET!
-);
 
 const sipClient = new SipClient(
   process.env.LIVEKIT_URL!,
@@ -49,16 +33,14 @@ server.get('/health', async () => {
   return { status: 'ok' };
 });
 
-async function createSipTrunk(agentId: string, roomName: string, phoneNumber: string) {
+async function createSipTrunk(agentId: string, phoneNumber: string) {
   server.log.info('Starting SIP trunk creation', {
     context: 'createSipTrunk',
     agentId,
-    roomName,
     phoneNumber
   });
 
   try {
-    // Step 1: Verify phone number exists in Twilio
     server.log.info('Looking up Twilio phone number', {
       context: 'twilioPhoneNumberLookup',
       phoneNumber
@@ -102,7 +84,11 @@ async function createSipTrunk(agentId: string, roomName: string, phoneNumber: st
 
       livekitTrunk = await sipClient.createSipInboundTrunk(
         trunkName,
-        [phoneNumber]
+        [phoneNumber],
+        {
+          allowed_addresses: ['*'],
+          allowed_numbers: ['*'],
+        }
       );
 
       server.log.info('LiveKit trunk created successfully', {
@@ -113,7 +99,6 @@ async function createSipTrunk(agentId: string, roomName: string, phoneNumber: st
       });
 
     } catch (error) {
-      // Enhanced error logging
       server.log.error('Failed to create LiveKit trunk', {
         context: 'livekitTrunkCreation',
         error: {
@@ -153,7 +138,6 @@ async function createSipTrunk(agentId: string, roomName: string, phoneNumber: st
       throw error;
     }
 
-    // Step 4: Add origination URL
     try {
       server.log.info('Configuring Twilio trunk origination', {
         context: 'twilioTrunkConfig',
@@ -163,7 +147,7 @@ async function createSipTrunk(agentId: string, roomName: string, phoneNumber: st
       await twilioClient.trunking.v1.trunks(twilioTrunk.sid)
         .originationUrls.create({
           friendlyName: "LiveKit SIP URI",
-          sipUrl: `sip:${process.env.LIVEKIT_SIP_URI}`,
+          sipUrl: `${process.env.LIVEKIT_SIP_URI}`,
           weight: 1,
           priority: 1,
           enabled: true
@@ -177,7 +161,6 @@ async function createSipTrunk(agentId: string, roomName: string, phoneNumber: st
       throw error;
     }
 
-    // Step 5: Associate phone number
     try {
       server.log.info('Associating phone number with trunk', {
         context: 'twilioPhoneNumberAssociation',
@@ -214,7 +197,6 @@ async function createSipTrunk(agentId: string, roomName: string, phoneNumber: st
           trunkIds: [livekitTrunk.sipTrunkId],
           metadata: JSON.stringify({
             agentId,
-            roomName,
           })
         }
       );
@@ -252,7 +234,6 @@ async function createSipTrunk(agentId: string, roomName: string, phoneNumber: st
   }
 }
 
-// Deploy agent route with enhanced logging
 server.post('/deploy-agent', async (request: any, reply: any) => {
   const startTime = Date.now();
   server.log.info('Starting agent deployment', {
@@ -263,60 +244,14 @@ server.post('/deploy-agent', async (request: any, reply: any) => {
   const { 
     agentId, 
     businessName,
-    businessInfo,
     customInstructions,
     initiateConversation,
     initialMessage,
-    phoneNumber
+    phoneNumber,
+    documentNamespace
   } = request.body;
 
   try {
-    const sanitizedBizName = businessName
-      .toLowerCase()
-      .replace(/[^a-z0-9-]/g, '-') // Replace invalid chars with hyphens
-      .slice(0, 10);
-
-    const shortTimestamp = Date.now().toString().slice(-8);
-    const indexName = `ag-${agentId}-${sanitizedBizName}-${shortTimestamp}`;
-
-    const index = pinecone.index('graham');
-    const namespace = `${agentId}-${Date.now()}`; // Unique namespace per deployment
-
-    // Generate embeddings for business info
-    const embedding = await openai.embeddings.create({
-      model: "text-embedding-3-small",
-      input: businessInfo,
-      dimensions: 1536
-    });
-
-    await index.namespace(namespace).upsert(
-    [{
-      id: `info-${Date.now()}`,
-      values: embedding.data[0]?.embedding ?? [],
-      metadata: {
-          text: businessInfo,
-          businessName,
-          agentId
-        }
-      }]
-    );
-
-    const roomName = `agent-roomName-${agentId}-${businessName}-${Date.now()}`;
-    const room = await livekitClient.createRoom({
-      name: roomName,
-      emptyTimeout: 60 * 60,
-      maxParticipants: 10,
-      metadata: JSON.stringify({
-        agentId,
-        businessName,
-        type: 'graham-agent',
-        pineconeIndex: indexName,
-        pineconeNamespace: namespace, 
-        initiateConversation,
-        initialMessage
-      }),
-    });
-
     const workerToken = new AccessToken(
       process.env.LIVEKIT_API_KEY!,
       process.env.LIVEKIT_API_SECRET!,
@@ -327,8 +262,7 @@ server.post('/deploy-agent', async (request: any, reply: any) => {
           type: 'worker',
           agentId,
           businessName,
-          pineconeIndex: indexName,
-          pineconeNamespace: namespace,
+          documentNamespace,
           customInstructions,
           initiateConversation,
           initialMessage
@@ -339,7 +273,7 @@ server.post('/deploy-agent', async (request: any, reply: any) => {
     // Create SIP trunk if phone number exists
     let trunkInfo;
     if (phoneNumber) {
-      trunkInfo = await createSipTrunk(agentId, roomName, phoneNumber);
+      trunkInfo = await createSipTrunk(agentId, phoneNumber);
     }
 
     // Update agent status in database
@@ -347,24 +281,21 @@ server.post('/deploy-agent', async (request: any, reply: any) => {
       where: { id: agentId },
       data: {
         deployed: true,
-        roomName,
-        roomSid: room.sid,
         lastDeployedAt: new Date().toISOString(),
         sipTrunkId: trunkInfo?.trunkId,
       },
     });
 
+    // pass the information into something that spins up and hosts the worker.
+
     server.log.info('Agent deployment completed', {
       context: 'deployAgent',
       agentId,
-      roomName,
       duration: Date.now() - startTime
     });
 
     return {
-      roomName,
       workerToken: await workerToken.toJwt(),
-      roomSid: room.sid,
       sipTrunkId: trunkInfo?.trunkId,
     };
 
@@ -391,10 +322,7 @@ server.post('/cleanup-agent/:agentId', async (request: any, reply: any) => {
     if (!agent) {
       return reply.code(404).send({ error: 'Agent not found' });
     }
-
-    if (agent.roomName) {
-      await livekitClient.deleteRoom(agent.roomName);
-    }
+    
 
     // Cleanup SIP trunk if exists
     if (agent.sipTrunkId) {
@@ -406,8 +334,6 @@ server.post('/cleanup-agent/:agentId', async (request: any, reply: any) => {
       where: { id: agentId },
       data: {
         deployed: false,
-        roomName: null,
-        roomSid: null,
         sipTrunkId: null,
       },
     });

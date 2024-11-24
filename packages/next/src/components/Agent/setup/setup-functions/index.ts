@@ -10,3 +10,5 @@ export { handlePhoneNumberSelect } from './handlePhoneNumberOperations';
 export { fetchUserPhoneNumbers } from './handleUserPhoneNumbers';
 export { handleDocumentSelect } from './document-functions';
 export { fetchUserData } from './fetchUserData';
+export { handleDownloadTemplate } from './handleDownloadTemplate';
+export { formatPhoneNumber } from './formatPhoneNumber';
