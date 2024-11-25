@@ -73,14 +73,23 @@ model UsageRecord {
   user        User      @relation(fields: [userId], references: [id])
 }
 
+enum DisconnectionReason {
+  USER_DISCONNECTED
+  SERVER_DISCONNECTED
+  ERROR_NO_AUDIO
+  OTHER
+}
+
 model CallLog {
   id            String    @id @default(uuid())
   userId        String
   agentId       String
-  timestamp     String
+  timestamp     DateTime
   duration      Int
-  summary       String?
+  summary       String? 
   outcome       String?
+  cost          String?
+  disconnectionReason DisconnectionReason?
   transcription String?
   callerNumber  String
   secondsUsed   Int
