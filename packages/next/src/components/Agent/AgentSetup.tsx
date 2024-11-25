@@ -91,13 +91,6 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
         }
     }, [user?.id, agent.phoneNumber]);
 
-    const handleEnhanceInstructionsWrapper = () => handleEnhanceInstructions(
-        customInstructions,
-        agent.id,
-        setCustomInstructions,
-        setIsEnrichingInstructions
-    );
-
     const EnhancingAnimation = () => (
         <motion.div 
             className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-orange-500/10"
@@ -178,7 +171,12 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                     )}
                                 </div>
                                 <Button
-                                    onClick={handleEnhanceInstructionsWrapper}
+                                    onClick={() => handleEnhanceInstructions(
+                                        customInstructions,
+                                        agent.id,
+                                        setCustomInstructions,
+                                        setIsEnrichingInstructions
+                                    )}
                                     disabled={isEnrichingInstructions || !customInstructions.trim()}
                                     className={cn(
                                         "relative overflow-hidden",
