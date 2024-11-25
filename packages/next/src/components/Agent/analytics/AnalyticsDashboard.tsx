@@ -22,13 +22,12 @@ export const AnalyticsDashboard: React.FC<{ agent: Agent }> = ({ agent }) => {
   });
 
   if (isLoading || !analytics) {
-    return <div>Loading analytics...</div>;
+    return <div className="w-full min-w-full h-[600px] flex items-center justify-center">Loading analytics...</div>;
   }
 
   return (
-    <div className="space-y-6">
-      {/* Top Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="w-full min-w-full space-y-6">
+      <div className="w-full min-w-full grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatsCard
           title="Total Calls"
           value={analytics.totalCalls.toString()}
@@ -49,8 +48,7 @@ export const AnalyticsDashboard: React.FC<{ agent: Agent }> = ({ agent }) => {
         />
       </div>
 
-      {/* Call Distribution */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="w-full min-w-full grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg font-medium">Call Distribution</CardTitle>

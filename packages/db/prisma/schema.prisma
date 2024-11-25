@@ -36,6 +36,7 @@ model Agent {
   customResponses             Json                        @default("{}")
   initiateConversation        Boolean                     @default(false)
   ragDocumentId               String? // id of document used for phone rag
+  namespace                   String? // namespace for phone rag
   // Relations
   user                        User                        @relation(fields: [userId], references: [id])
   usageRecords                UsageRecord[]

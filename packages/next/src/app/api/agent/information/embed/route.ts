@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     const pinecone = new Pinecone({
       apiKey: process.env.PINECONE_API_KEY!
     });
-    
+
     const document = await prisma.businessDocument.findUnique({
       where: { id: documentId }
     });
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     });
 
     const chunkData = await chunkrResponse.json();
-    const namespace = `${agentId}-${Date.now()}`;
+    const namespace = `${agentId}-${documentId}-${Date.now()}`;
     const index = pinecone.index('graham');
 
     // Create embeddings for each segment
@@ -66,7 +66,6 @@ export async function POST(req: Request) {
 
     await Promise.all(embedPromises);
 
-    // Update document with namespace and chunks
     await prisma.businessDocument.update({
       where: { id: documentId },
       data: {

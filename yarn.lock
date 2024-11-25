@@ -2214,6 +2214,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@floating-ui/dom@npm:1.6.11":
+  version: 1.6.11
+  resolution: "@floating-ui/dom@npm:1.6.11"
+  dependencies:
+    "@floating-ui/core": "npm:^1.6.0"
+    "@floating-ui/utils": "npm:^0.2.8"
+  checksum: 10c0/02ef34a75a515543c772880338eea7b66724997bd5ec7cd58d26b50325709d46d480a306b84e7d5509d734434411a4bcf23af5680c2e461e6e6a8bf45d751df8
+  languageName: node
+  linkType: hard
+
 "@floating-ui/dom@npm:^1.0.0":
   version: 1.6.12
   resolution: "@floating-ui/dom@npm:1.6.12"
@@ -2285,6 +2295,8 @@ __metadata:
     "@graham/db": "workspace:^"
     "@graham/server": "workspace:^"
     "@graham/shared": "workspace:^"
+    "@livekit/components-react": "npm:^2.6.9"
+    "@livekit/components-styles": "npm:^1.1.4"
     "@motionone/utils": "npm:^10.16.3"
     "@radix-ui/react-accordion": "npm:^1.2.1"
     "@radix-ui/react-alert-dialog": "npm:^1.1.1"
@@ -2351,6 +2363,7 @@ __metadata:
     install: "npm:^0.13.0"
     jsonwebtoken: "npm:^9.0.2"
     jspdf: "npm:^2.5.2"
+    livekit-client: "npm:^2.6.3"
     livekit-server-sdk: "npm:^2.8.1"
     llamaindex: "npm:^0.8.21"
     lodash: "npm:^4.17.21"
@@ -2368,6 +2381,7 @@ __metadata:
     nodemailer: "npm:^6.9.5"
     npm: "npm:^10.8.2"
     openai: "npm:^4.56.0"
+    openai-edge: "npm:^1.2.2"
     path-to-regexp: "npm:6.3.0"
     pdf-parse: "npm:^1.1.1"
     pdf2json: "npm:^3.1.4"
@@ -2788,6 +2802,63 @@ __metadata:
   version: 4.4.2
   resolution: "@js-sdsl/ordered-map@npm:4.4.2"
   checksum: 10c0/cc7e15dc4acf6d9ef663757279600bab70533d847dcc1ab01332e9e680bd30b77cdf9ad885cc774276f51d98b05a013571c940e5b360985af5eb798dc1a2ee2b
+  languageName: node
+  linkType: hard
+
+"@livekit/components-core@npm:0.11.10":
+  version: 0.11.10
+  resolution: "@livekit/components-core@npm:0.11.10"
+  dependencies:
+    "@floating-ui/dom": "npm:1.6.11"
+    loglevel: "npm:1.9.1"
+    rxjs: "npm:7.8.1"
+  peerDependencies:
+    livekit-client: ^2.5.7
+    tslib: ^2.6.2
+  checksum: 10c0/3c3fe2712dce88e1e3f0429d3b178536125acd206bfbd808962d5d115ac8fb5fcd89a5f722fcf01d4330fa41b32bb42fab1ba6a7535a5f3cb03fd77cf812764a
+  languageName: node
+  linkType: hard
+
+"@livekit/components-react@npm:^2.6.9":
+  version: 2.6.9
+  resolution: "@livekit/components-react@npm:2.6.9"
+  dependencies:
+    "@livekit/components-core": "npm:0.11.10"
+    clsx: "npm:2.1.1"
+    usehooks-ts: "npm:3.1.0"
+  peerDependencies:
+    "@livekit/krisp-noise-filter": ^0.2.12
+    livekit-client: ^2.5.7
+    react: ">=18"
+    react-dom: ">=18"
+    tslib: ^2.6.2
+  peerDependenciesMeta:
+    "@livekit/krisp-noise-filter":
+      optional: true
+  checksum: 10c0/88435badc7577ca73fd864241555d9f07bc1214d775fb20598746ef1c27b0740d59a0ad6cc2c805412bf95f91a7becad9a5dd745f9483e494a5fc4f90c0b76b8
+  languageName: node
+  linkType: hard
+
+"@livekit/components-styles@npm:^1.1.4":
+  version: 1.1.4
+  resolution: "@livekit/components-styles@npm:1.1.4"
+  checksum: 10c0/51fbd8d6011d1698283eb7f5b8dcdbbcb495efd52115bc26fe7422adbd9a2280ca932eb5a030eb9e0d13882860e7238e6cd2b885420c85b19a5b3ddd28594446
+  languageName: node
+  linkType: hard
+
+"@livekit/mutex@npm:1.0.0":
+  version: 1.0.0
+  resolution: "@livekit/mutex@npm:1.0.0"
+  checksum: 10c0/8cb918a05d4cb2533e31b921557f95fd50881da80c4a2d1ccc108743f1726954e97633965355aac4d7a1d01b8144dceb72e4504c3ff3d7dcce5e8e5f5978640c
+  languageName: node
+  linkType: hard
+
+"@livekit/protocol@npm:1.24.0":
+  version: 1.24.0
+  resolution: "@livekit/protocol@npm:1.24.0"
+  dependencies:
+    "@bufbuild/protobuf": "npm:^1.10.0"
+  checksum: 10c0/4bc60d99f066270267126c8e24518c87485d8a69ef138b41b025508702ee12071d4d4497b03844d3479096daabff6fc75ae422696d49301eb9999b080c392b92
   languageName: node
   linkType: hard
 
@@ -8034,7 +8105,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"clsx@npm:^2.0.0, clsx@npm:^2.1.0, clsx@npm:^2.1.1":
+"clsx@npm:2.1.1, clsx@npm:^2.0.0, clsx@npm:^2.1.0, clsx@npm:^2.1.1":
   version: 2.1.1
   resolution: "clsx@npm:2.1.1"
   checksum: 10c0/c4c8eb865f8c82baab07e71bfa8897c73454881c4f99d6bc81585aecd7c441746c1399d08363dc096c550cceaf97bd4ce1e8854e1771e9998d9f94c4fe075839
@@ -12336,6 +12407,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"livekit-client@npm:^2.6.3":
+  version: 2.6.3
+  resolution: "livekit-client@npm:2.6.3"
+  dependencies:
+    "@livekit/mutex": "npm:1.0.0"
+    "@livekit/protocol": "npm:1.24.0"
+    events: "npm:^3.3.0"
+    loglevel: "npm:^1.8.0"
+    sdp-transform: "npm:^2.14.1"
+    ts-debounce: "npm:^4.0.0"
+    tslib: "npm:2.7.0"
+    typed-emitter: "npm:^2.1.0"
+    webrtc-adapter: "npm:^9.0.0"
+  checksum: 10c0/99602820c439366ba42bc42e80d85db67a7adf330d2dd970372ec7414d83e2afdfdc8572c74b2375a2c3a458eda94f54ea0bc1b5aa8123aa6d97a62ecf226edb
+  languageName: node
+  linkType: hard
+
 "livekit-server-sdk@npm:^2.8.1":
   version: 2.8.1
   resolution: "livekit-server-sdk@npm:2.8.1"
@@ -12445,7 +12533,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.debounce@npm:4.0.8":
+"lodash.debounce@npm:4.0.8, lodash.debounce@npm:^4.0.8":
   version: 4.0.8
   resolution: "lodash.debounce@npm:4.0.8"
   checksum: 10c0/762998a63e095412b6099b8290903e0a8ddcb353ac6e2e0f2d7e7d03abd4275fe3c689d88960eb90b0dde4f177554d51a690f22a343932ecbc50a5d111849987
@@ -12553,6 +12641,20 @@ __metadata:
     safe-stable-stringify: "npm:^2.3.1"
     triple-beam: "npm:^1.3.0"
   checksum: 10c0/4789b4b37413c731d1835734cb799240d31b865afde6b7b3e06051d6a4127bfda9e88c99cfbf296d084a315ccbed2647796e6a56b66e725bcb268c586f57558f
+  languageName: node
+  linkType: hard
+
+"loglevel@npm:1.9.1":
+  version: 1.9.1
+  resolution: "loglevel@npm:1.9.1"
+  checksum: 10c0/152f0501cea367cf998c844a38b19f0b5af555756ad7d8650214a1f8c6a5b045e31b8cf5dae27d28339a061624ce3f618aadb333aed386cac041d6ddc5101a39
+  languageName: node
+  linkType: hard
+
+"loglevel@npm:^1.8.0":
+  version: 1.9.2
+  resolution: "loglevel@npm:1.9.2"
+  checksum: 10c0/1e317fa4648fe0b4a4cffef6de037340592cee8547b07d4ce97a487abe9153e704b98451100c799b032c72bb89c9366d71c9fb8192ada8703269263ae77acdc7
   languageName: node
   linkType: hard
 
@@ -14201,6 +14303,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"openai-edge@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "openai-edge@npm:1.2.2"
+  checksum: 10c0/ff8d6fe10ddb489a42d04cae5fc02c7261d9a9cc477be9bc4effd40552edbc442c2608c0d98c49f40467791d0369db37df2e63d14d88047fa7862dd0cc452b89
+  languageName: node
+  linkType: hard
+
 "openai@npm:^4.56.0":
   version: 4.71.1
   resolution: "openai@npm:4.71.1"
@@ -15832,7 +15941,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:*":
+"rxjs@npm:*, rxjs@npm:7.8.1":
   version: 7.8.1
   resolution: "rxjs@npm:7.8.1"
   dependencies:
@@ -15921,6 +16030,22 @@ __metadata:
   version: 2.1.0
   resolution: "scmp@npm:2.1.0"
   checksum: 10c0/2128efa993cd2e3e10e3ab6d574cc9993ac7aa30430527e5da830ab509ba15eae49d8ca918d6aa934915bbd5b863778b04178227be005b49d801c0ca6063d2e4
+  languageName: node
+  linkType: hard
+
+"sdp-transform@npm:^2.14.1":
+  version: 2.14.2
+  resolution: "sdp-transform@npm:2.14.2"
+  bin:
+    sdp-verify: checker.js
+  checksum: 10c0/d4b1f3086812652c08319c41d260d91852dd8067e5fd3fb514bbb257d9f2043cd6f8ebc5ae4d4cd9f54125049cafcc160f67711900a789ec66e716ce891fdf75
+  languageName: node
+  linkType: hard
+
+"sdp@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "sdp@npm:3.2.0"
+  checksum: 10c0/fa0146132b4c9185f276b80e09f52259b103e609565ac40c560250dbe7fc47723d30530c0db9cac6217c83153944a71af81fa70dc0367f195aabcf110f8185fd
   languageName: node
   linkType: hard
 
@@ -17295,6 +17420,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ts-debounce@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "ts-debounce@npm:4.0.0"
+  checksum: 10c0/1dfac630127d6982b4ad5114a12bd3e8febfd7a34615e6bf388eaf3a5c355f9ab2ef688688bb7e789bc9f0cabfd82e0a6b363efc451ee626b5722919f7f567cd
+  languageName: node
+  linkType: hard
+
 "ts-error@npm:^1.0.6":
   version: 1.0.6
   resolution: "ts-error@npm:1.0.6"
@@ -17370,6 +17502,13 @@ __metadata:
   version: 2.6.2
   resolution: "tslib@npm:2.6.2"
   checksum: 10c0/e03a8a4271152c8b26604ed45535954c0a45296e32445b4b87f8a5abdb2421f40b59b4ca437c4346af0f28179780d604094eb64546bee2019d903d01c6c19bdb
+  languageName: node
+  linkType: hard
+
+"tslib@npm:2.7.0":
+  version: 2.7.0
+  resolution: "tslib@npm:2.7.0"
+  checksum: 10c0/469e1d5bf1af585742128827000711efa61010b699cb040ab1800bcd3ccdd37f63ec30642c9e07c4439c1db6e46345582614275daca3e0f4abae29b0083f04a6
   languageName: node
   linkType: hard
 
@@ -17866,6 +18005,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"usehooks-ts@npm:3.1.0":
+  version: 3.1.0
+  resolution: "usehooks-ts@npm:3.1.0"
+  dependencies:
+    lodash.debounce: "npm:^4.0.8"
+  peerDependencies:
+    react: ^16.8.0  || ^17 || ^18
+  checksum: 10c0/2204d8c95109302bdaaa51a66bf216f3dba750f1d2795c20ecba75ba1c44a070a253935d537ef536514ab6e363bcc02ccc78b5ad63576ff8d880d577cf3fc48f
+  languageName: node
+  linkType: hard
+
 "utf-8-validate@npm:^6.0.4":
   version: 6.0.5
   resolution: "utf-8-validate@npm:6.0.5"
@@ -18000,6 +18150,15 @@ __metadata:
   version: 7.0.0
   resolution: "webidl-conversions@npm:7.0.0"
   checksum: 10c0/228d8cb6d270c23b0720cb2d95c579202db3aaf8f633b4e9dd94ec2000a04e7e6e43b76a94509cdb30479bd00ae253ab2371a2da9f81446cc313f89a4213a2c4
+  languageName: node
+  linkType: hard
+
+"webrtc-adapter@npm:^9.0.0":
+  version: 9.0.1
+  resolution: "webrtc-adapter@npm:9.0.1"
+  dependencies:
+    sdp: "npm:^3.2.0"
+  checksum: 10c0/09286adf351b3aff6eadf7942de7f153072a946fd815450e23505e39181c332d0552f4d27a99c5d7258efa3bd70a12949fe043fd8dc6acc03507b4448d7a597e
   languageName: node
   linkType: hard
 

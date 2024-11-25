@@ -47,7 +47,6 @@ const agentTabs: AgentTabs[] = [
   { value: "testing", label: "Testing", icon: Search },
   { value: "analytics", label: "Analytics", icon: Calendar }
 ]
-// TODO: remove stuff from main dashboard page
 export function AppSidebar() {
   const { userId } = useAuth()
   const { user } = useUser()

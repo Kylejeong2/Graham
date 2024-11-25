@@ -17,15 +17,21 @@ export function AgentTabs({ agent, user }: AgentTabsProps) {
   const currentTab = searchParams.get('tab') || 'setup'
 
   return (
-    <Tabs value={currentTab} className="w-full bg-white h-full">
-      <TabsContent value="setup" className="w-full">
-        <AgentSetup agent={agent} user={user} />
+    <Tabs value={currentTab} className="w-full min-w-full">
+      <TabsContent value="setup" className="w-full min-w-full">
+        <div className="w-full min-w-full">
+          <AgentSetup agent={agent} user={user} />
+        </div>
       </TabsContent>
-      <TabsContent value="testing" className="w-full">
-        <AgentTesting agent={agent} />
+      <TabsContent value="testing" className="w-full min-w-full">
+        <div className="w-full min-w-full">
+          <AgentTesting agent={agent} />
+        </div>
       </TabsContent>
-      <TabsContent value="analytics" className="w-full">
-        <AgentAnalytics agent={agent} />
+      <TabsContent value="analytics" className="w-full min-w-full">
+        <div className="w-full min-w-full">
+          <AgentAnalytics agent={agent} />
+        </div>
       </TabsContent>
     </Tabs>
   )

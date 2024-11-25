@@ -22,7 +22,7 @@ export const AgentTitleBar: React.FC<Props> = ({ agent }) => {
   return (
     <Card className="bg-white shadow-sm w-full">
       <CardContent className="p-2">
-        <div className='flex items-center justify-between'>
+        <div className='flex items-center justify-between w-full'>
           <div className="flex items-center space-x-2">
             <Link href="/dashboard" replace>
               <Button variant="outline" size="sm" className="border-blue-500 text-black hover:bg-orange-50">
@@ -30,6 +30,7 @@ export const AgentTitleBar: React.FC<Props> = ({ agent }) => {
               </Button>
             </Link>
           </div>
+          <div className="flex-grow w-full" /> 
           <DeleteButton agentId={agentState.id as string}/>
         </div>
       </CardContent>

@@ -1,3 +1,4 @@
+import { prisma } from "@graham/db";
 import { toast } from "react-toastify";
 
 export const handleCompleteSetup = async (
@@ -21,6 +22,16 @@ export const handleCompleteSetup = async (
       if (!embedRes.ok) {
         throw new Error('Failed to create embeddings');
       }
+
+      const embedResData = await embedRes.json();
+
+      await prisma.agent.update({
+        where: { id: agentId },
+        data: {
+          namespace: embedResData.namespace
+        }
+      })
+
     }
 
     // Deploy agent
