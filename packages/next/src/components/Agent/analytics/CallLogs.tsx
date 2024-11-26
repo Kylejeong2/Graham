@@ -1,76 +1,179 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/components/ui/table";
+import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Phone, Clock, Calendar, AlertCircle, Trash2 } from 'lucide-react';
-import { format } from 'date-fns';
-import { Card, CardContent } from '@/components/ui/card';
-import type { Agent } from '@graham/db';
-import type { CallLog } from './types/Analytics';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { DateRangePicker } from './components/DateRangePicker';
+import { formatDuration } from './utils/analytics-functions';
+import type { Agent } from "@graham/db";
+import type { DateRange } from "react-day-picker";
 
-export const CallLogs = ({ agent }: { agent: Agent }) => {
-  const [selectedCall, setSelectedCall] = useState<CallLog | null>(null);
-  const queryClient = useQueryClient();
+const CALL_TAGS = [
+  'SALES_OPPORTUNITY',
+  'SUPPORT_ISSUE',
+  'GENERAL_INQUIRY',
+  'COMPLAINT',
+  'FOLLOW_UP_REQUIRED',
+  'RESOLVED',
+  'HIGH_PRIORITY',
+] as const;
 
-  const { data: calls, isLoading } = useQuery({
-    queryKey: ['calls', agent.id],
+const SENTIMENTS = ['POSITIVE', 'NEUTRAL', 'NEGATIVE'] as const;
+
+interface CallLogsProps {
+  agent: Agent;
+}
+
+export const CallLogs: React.FC<CallLogsProps> = ({ agent }) => {
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [selectedSentiment, setSelectedSentiment] = useState<typeof SENTIMENTS[number] | 'ALL'>('ALL');
+  const [selectedTag, setSelectedTag] = useState<typeof CALL_TAGS[number] | 'ALL'>('ALL');
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['analytics', agent.id, dateRange?.from, dateRange?.to],
     queryFn: async () => {
-      const res = await fetch(`/api/agent/analytics/call-logs`, {
-        method: 'GET',
-        body: JSON.stringify({
-          agentId: agent.id,
-        }),
+      const params = new URLSearchParams({
+        agentId: agent.id,
+        ...(dateRange?.from && { startDate: dateRange.from.toISOString() }),
+        ...(dateRange?.to && { endDate: dateRange.to.toISOString() }),
       });
-      return res.json();
-    }
-  });
 
-  const deleteMutation = useMutation({
-    mutationFn: async (callId: string) => {
-      await fetch(`/api/agent/analytics/call-logs/${callId}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(`/api/agent/analytics?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch analytics');
+      return response.json();
     },
-    onSuccess: () => {
-      // Invalidate and refetch calls
-      queryClient.invalidateQueries({ queryKey: ['calls', agent.id] });
-    }
   });
 
-  if (isLoading) {
-    return <Loader2 className="w-8 h-8 animate-spin" />;
-  }
+  const filteredCalls = data?.calls?.filter((call: any) => {
+    if (selectedSentiment !== 'ALL' && call.sentiment !== selectedSentiment) return false;
+    if (selectedTag !== 'ALL' && !call.tags.includes(selectedTag)) return false;
+    return true;
+  }) || [];
+
+  const getSentimentColor = (sentiment: typeof SENTIMENTS[number]) => {
+    switch (sentiment) {
+      case 'POSITIVE':
+        return 'bg-green-100 text-green-800';
+      case 'NEGATIVE':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getTagColor = (tag: typeof CALL_TAGS[number]) => {
+    const colors: Record<typeof CALL_TAGS[number], string> = {
+      SALES_OPPORTUNITY: 'bg-blue-100 text-blue-800',
+      SUPPORT_ISSUE: 'bg-yellow-100 text-yellow-800',
+      GENERAL_INQUIRY: 'bg-purple-100 text-purple-800',
+      COMPLAINT: 'bg-red-100 text-red-800',
+      FOLLOW_UP_REQUIRED: 'bg-orange-100 text-orange-800',
+      RESOLVED: 'bg-green-100 text-green-800',
+      HIGH_PRIORITY: 'bg-pink-100 text-pink-800',
+    };
+    return colors[tag];
+  };
 
   return (
-    <>
-      <div className="space-y-4">
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
+        <div className="flex gap-4">
+          <Select onValueChange={(value) => setSelectedSentiment(value as typeof SENTIMENTS[number] | 'ALL')}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by sentiment" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Sentiments</SelectItem>
+              {SENTIMENTS.map((sentiment) => (
+                <SelectItem key={sentiment} value={sentiment}>
+                  {sentiment}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select onValueChange={(value) => setSelectedTag(value as typeof CALL_TAGS[number] | 'ALL')}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by tag" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Tags</SelectItem>
+              {CALL_TAGS.map((tag) => (
+                <SelectItem key={tag} value={tag}>
+                  {tag.replace(/_/g, ' ')}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <DateRangePicker 
+            dateRange={dateRange} 
+            onDateRangeChange={setDateRange} 
+          />
+        </div>
+
+        <Button onClick={() => {
+          setDateRange(undefined);
+          setSelectedSentiment('ALL');
+          setSelectedTag('ALL');
+        }}>
+          Reset Filters
+        </Button>
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Date & Time</TableHead>
+              <TableHead>Duration</TableHead>
+              <TableHead>Caller</TableHead>
+              <TableHead>Sentiment</TableHead>
+              <TableHead>Tags</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
               <TableRow>
-                <TableHead>Date/Time</TableHead>
-                <TableHead>Caller</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Outcome</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableCell colSpan={7} className="text-center py-8">
+                  Loading...
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {calls?.map((call: CallLog) => (
-                <TableRow 
-                  key={call.id}
-                  className="cursor-pointer hover:bg-gray-50"
-                  onClick={() => setSelectedCall(call)}
-                >
+            ) : filteredCalls.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8">
+                  No calls found for the selected filters
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredCalls.map((call: any) => (
+                <TableRow key={call.id}>
                   <TableCell>
                     <div className="flex flex-col">
                       <span>{format(new Date(call.timestamp), 'MMM d, yyyy')}</span>
@@ -79,109 +182,67 @@ export const CallLogs = ({ agent }: { agent: Agent }) => {
                       </span>
                     </div>
                   </TableCell>
+                  <TableCell>{formatDuration(call.duration)}</TableCell>
                   <TableCell>{call.callerNumber}</TableCell>
-                  <TableCell>{Math.round(call.duration / 60)}m {call.duration % 60}s</TableCell>
                   <TableCell>
-                    <Badge variant={getOutcomeBadgeVariant(call.outcome)}>
-                      {call.outcome || 'Unknown'}
+                    {call.sentiment && (
+                      <Badge className={getSentimentColor(call.sentiment)}>
+                        {call.sentiment}
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {call.tags.map((tag: typeof CALL_TAGS[number]) => (
+                        <Badge key={tag} className={getTagColor(tag)}>
+                          {tag.replace(/_/g, ' ')}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={call.tags.includes('RESOLVED') ? 'default' : 'secondary'}>
+                      {call.tags.includes('RESOLVED') ? 'Resolved' : 'Open'}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteMutation.mutate(call.id);
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">View Details</Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Call Details</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <h4 className="font-medium">Summary</h4>
+                              <p className="text-sm">{call.summary}</p>
+                            </div>
+                            <div className="space-y-2">
+                              <h4 className="font-medium">Call Data</h4>
+                              <pre className="text-sm bg-gray-50 p-2 rounded">
+                                {JSON.stringify(call.callData, null, 2)}
+                              </pre>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <h4 className="font-medium">Transcription</h4>
+                            <div className="max-h-[300px] overflow-y-auto bg-gray-50 p-4 rounded">
+                              <p className="text-sm whitespace-pre-wrap">{call.transcription}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
-
-      <Dialog open={!!selectedCall} onOpenChange={() => setSelectedCall(null)}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Call Details</DialogTitle>
-          </DialogHeader>
-          
-          {selectedCall && (
-            <div className="grid gap-6">
-              <div className="grid grid-cols-2 gap-4">
-                <InfoCard
-                  icon={<Phone className="w-4 h-4" />}
-                  label="Caller"
-                  value={selectedCall.callerNumber}
-                />
-                <InfoCard
-                  icon={<Clock className="w-4 h-4" />}
-                  label="Duration"
-                  value={`${Math.round(selectedCall.duration / 60)}m ${selectedCall.duration % 60}s`}
-                />
-                <InfoCard
-                  icon={<Calendar className="w-4 h-4" />}
-                  label="Date & Time"
-                  value={format(new Date(selectedCall.timestamp), 'PPpp')}
-                />
-                <InfoCard
-                  icon={<AlertCircle className="w-4 h-4" />}
-                  label="Outcome"
-                  value={selectedCall.outcome || 'Unknown'}
-                />
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="font-semibold">Call Summary</h3>
-                <p className="text-sm text-gray-600">{selectedCall.summary}</p>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="font-semibold">Transcription</h3>
-                <div className="max-h-48 overflow-y-auto rounded-lg border p-4">
-                  <p className="text-sm text-gray-600 whitespace-pre-wrap">
-                    {selectedCall.transcription}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+    </div>
   );
-};
-
-const InfoCard = ({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) => (
-  <Card>
-    <CardContent className="flex items-center space-x-4 pt-6">
-      {icon}
-      <div>
-        <p className="text-sm text-gray-500">{label}</p>
-        <p className="font-medium">{value}</p>
-      </div>
-    </CardContent>
-  </Card>
-);
-
-const getOutcomeBadgeVariant = (outcome: string | undefined): "default" | "secondary" | "destructive" | "outline" => {
-  if (!outcome) return "default";
-  
-  switch (outcome.toLowerCase()) {
-    case 'appointment booked':
-      return "default";
-    case 'order placed':
-      return "default"; 
-    case 'callback requested':
-      return "secondary";
-    case 'no action':
-      return "destructive";
-    default:
-      return "default";
-  }
 };

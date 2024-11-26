@@ -1,40 +1,24 @@
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CallLogs } from "./analytics/CallLogs";
 import { AnalyticsDashboard } from "./analytics/AnalyticsDashboard";
 import { Insights } from "./analytics/Insights";
+import { AgentTitleBar } from "./components/AgentTitleBar";
 import type { Agent } from "@graham/db";
+import { useSearchParams } from 'next/navigation';
 
 export const AgentAnalytics: React.FC<{ agent: Agent }> = ({ agent }) => {
+  const searchParams = useSearchParams();
+  const currentSubTab = searchParams.get('subtab') || 'dashboard';
+
   return (
-    <div className="w-full min-w-full space-y-6 px-2">
-      <div className="w-full min-w-full bg-white">
-        <Tabs defaultValue="dashboard" className="w-full min-w-full">
-          <TabsList className="grid w-full min-w-full grid-cols-3">
-            <TabsTrigger value="dashboard">Overview</TabsTrigger>
-            <TabsTrigger value="calls">Call Logs</TabsTrigger>
-            <TabsTrigger value="insights">Insights</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="dashboard" className="w-full min-w-full">
-            <div className="w-full min-w-full">
-              <AnalyticsDashboard agent={agent} />
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="calls" className="w-full min-w-full">
-            <div className="w-full min-w-full">
-              <CallLogs agent={agent} />
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="insights" className="w-full min-w-full">
-            <div className="w-full min-w-full">
-              <Insights agent={agent} />
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+    <div className="w-full h-full p-6">
+      {currentSubTab === 'dashboard' && <AnalyticsDashboard agentId={agent.id} />}
+      {currentSubTab === 'calls' && <CallLogs agent={agent} />}
+      {currentSubTab === 'insights' && <Insights agent={agent} />}
     </div>
   );
+};
+
+export const AgentAnalyticsTitleBar: React.FC<{ agent: Agent }> = ({ agent }) => {
+  return <AgentTitleBar agent={agent} />;
 };

@@ -80,6 +80,22 @@ enum DisconnectionReason {
   OTHER
 }
 
+enum CallSentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+enum CallTag {
+  SALES_OPPORTUNITY
+  SUPPORT_ISSUE
+  GENERAL_INQUIRY
+  COMPLAINT
+  FOLLOW_UP_REQUIRED
+  RESOLVED
+  HIGH_PRIORITY
+}
+
 model CallLog {
   id            String    @id @default(uuid())
   userId        String
@@ -95,8 +111,17 @@ model CallLog {
   secondsUsed   Int
   minutesUsed   Int
   callData      Json
+  sentiment     CallSentiment?
+  tags          CallTag[]
+  notes         String?
+  followUpDate  DateTime?
+  isResolved    Boolean   @default(false)
   agent         Agent     @relation(fields: [agentId], references: [id])
   user          User      @relation(fields: [userId], references: [id])
+
+  @@index([timestamp])
+  @@index([agentId, timestamp])
+  @@index([userId, timestamp])
 }
 
 model Subscription { // If the user setup payment intent then they have a subscription

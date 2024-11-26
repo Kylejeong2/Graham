@@ -1,76 +1,284 @@
-import { prisma } from "@graham/db";
 import { NextResponse } from "next/server";
+import { prisma } from "@graham/db";
+import { auth } from "@clerk/nextjs/server";
+import type { CallSentiment, CallTag } from "@graham/db";
+import { startOfDay, endOfDay, eachDayOfInterval, format } from "date-fns";
 
-export async function GET( req: Request ) {
+export async function GET(req: Request) {
   try {
-    const { agentId } = await req.json();
-
-    const agent = await prisma.agent.findUnique({
-      where: {
-        id: agentId,
-      },
-      include: {
-        usageRecords: {
-          orderBy: {
-            timestamp: 'desc'
-          },
-          take: 100 // Last 100 calls for analysis
-        }
-      }
-    });
-
-    if (!agent) {
-      return new NextResponse("Agent not found", { status: 404 });
+    const { userId } = auth();
+    if (!userId) {
+      return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // Calculate analytics from usage records
-    const records = agent.usageRecords;
-    const totalCalls = records.length;
-    const averageDuration = records.reduce((acc, curr) => acc + Number(curr.secondsUsed), 0) / totalCalls;
+    const { searchParams } = new URL(req.url);
+    const agentId = searchParams.get("agentId");
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
 
-    // Time distribution analysis
-    const timeDistribution = calculateTimeDistribution(records);
-    
-    // Mock some data for now - in production, this would come from actual call analysis
-    const analyticsData = {
+    if (!agentId || !startDate || !endDate) {
+      return new NextResponse("Missing required parameters", { status: 400 });
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const [
+      callLogs,
+      usageRecords,
       totalCalls,
-      averageDuration,
-      callsByTime: timeDistribution,
-      callOutcomes: {
-        appointmentsBooked: Math.floor(totalCalls * 0.3),
-        ordersPlaced: Math.floor(totalCalls * 0.2),
-        questionsAnswered: Math.floor(totalCalls * 0.4),
-        noAction: Math.floor(totalCalls * 0.1)
+      sentimentDistribution,
+      tagDistribution,
+      avgCallDuration,
+      dailyCallStats,
+      resolvedCalls,
+      agent,
+    ] = await Promise.all([
+      // Get detailed call logs with transcription for context
+      prisma.callLog.findMany({
+        where: {
+          agentId,
+          userId,
+          timestamp: {
+            gte: start,
+            lte: end,
+          },
+        },
+        orderBy: {
+          timestamp: "desc",
+        },
+        select: {
+          id: true,
+          timestamp: true,
+          duration: true,
+          sentiment: true,
+          tags: true,
+          summary: true,
+          outcome: true,
+          isResolved: true,
+          callerNumber: true,
+          secondsUsed: true,
+          minutesUsed: true,
+        },
+      }),
+
+      // Get usage records
+      prisma.usageRecord.findMany({
+        where: {
+          agentId,
+          userId,
+          timestamp: {
+            gte: start,
+            lte: end,
+          },
+        },
+        select: {
+          minutesUsed: true,
+          secondsUsed: true,
+          timestamp: true,
+          voiceType: true,
+        },
+      }),
+
+      // Get total calls count
+      prisma.callLog.count({
+        where: {
+          agentId,
+          userId,
+          timestamp: {
+            gte: start,
+            lte: end,
+          },
+        },
+      }),
+
+      // Get sentiment distribution
+      prisma.callLog.groupBy({
+        by: ["sentiment"],
+        where: {
+          agentId,
+          userId,
+          timestamp: {
+            gte: start,
+            lte: end,
+          },
+          sentiment: {
+            not: null,
+          },
+        },
+        _count: true,
+      }),
+
+      // Get tag distribution
+      prisma.callLog.findMany({
+        where: {
+          agentId,
+          userId,
+          timestamp: {
+            gte: start,
+            lte: end,
+          },
+          tags: {
+            isEmpty: false,
+          },
+        },
+        select: {
+          tags: true,
+        },
+      }),
+
+      // Get average call duration and usage
+      prisma.callLog.aggregate({
+        where: {
+          agentId,
+          userId,
+          timestamp: {
+            gte: start,
+            lte: end,
+          },
+        },
+        _avg: {
+          duration: true,
+          secondsUsed: true,
+          minutesUsed: true,
+        },
+      }),
+
+      // Get daily call stats
+      Promise.all(
+        eachDayOfInterval({ start, end }).map(async (date) => {
+          const dayStart = startOfDay(date);
+          const dayEnd = endOfDay(date);
+
+          const [calls, usage] = await Promise.all([
+            prisma.callLog.aggregate({
+              where: {
+                agentId,
+                userId,
+                timestamp: {
+                  gte: dayStart,
+                  lte: dayEnd,
+                },
+              },
+              _count: true,
+              _avg: {
+                duration: true,
+                secondsUsed: true,
+              },
+              _sum: {
+                minutesUsed: true,
+              },
+            }),
+            prisma.usageRecord.aggregate({
+              where: {
+                agentId,
+                userId,
+                timestamp: {
+                  gte: dayStart,
+                  lte: dayEnd,
+                },
+              },
+              _sum: {
+                minutesUsed: true,
+                secondsUsed: true,
+              },
+            }),
+          ]);
+
+          return {
+            date: format(date, 'yyyy-MM-dd'),
+            calls: calls._count,
+            avgDuration: calls._avg.duration || 0,
+            avgSecondsUsed: calls._avg.secondsUsed || 0,
+            totalMinutes: Number(calls._sum.minutesUsed || 0),
+            totalUsageMinutes: Number(usage._sum.minutesUsed || 0),
+            totalUsageSeconds: Number(usage._sum.secondsUsed || 0),
+          };
+        })
+      ),
+
+      // Get resolved calls count
+      prisma.callLog.count({
+        where: {
+          agentId,
+          userId,
+          timestamp: {
+            gte: start,
+            lte: end,
+          },
+          isResolved: true,
+        },
+      }),
+
+      // Get agent info
+      prisma.agent.findUnique({
+        where: { id: agentId },
+        select: {
+          name: true,
+          minutesUsed: true,
+          voiceName: true,
+        },
+      }),
+    ]);
+
+    // Process tag distribution
+    const tagCounts: Record<CallTag, number> = {} as Record<CallTag, number>;
+    tagDistribution.forEach((call) => {
+      call.tags.forEach((tag: CallTag) => {
+        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+      });
+    });
+
+    // Calculate total minutes and seconds used
+    const totalMinutesUsed = usageRecords.reduce(
+      (acc, record) => acc + Number(record.minutesUsed),
+      0
+    );
+
+    const totalSecondsUsed = usageRecords.reduce(
+      (acc, record) => acc + Number(record.secondsUsed),
+      0
+    );
+
+    // Format sentiment distribution
+    const formattedSentimentDistribution = sentimentDistribution.reduce(
+      (acc, curr) => {
+        acc[curr.sentiment as CallSentiment] = curr._count;
+        return acc;
       },
-      recentTrends: {
-        callVolume: totalCalls,
-        successRate: 85
-      }
-    };
+      {} as Record<CallSentiment, number>
+    );
 
-    return NextResponse.json(analyticsData);
+    // Calculate resolution rate
+    const resolutionRate = totalCalls > 0 ? (resolvedCalls / totalCalls) * 100 : 0;
+
+    // Calculate customer satisfaction based on sentiment
+    const totalSentimentCalls = Object.values(formattedSentimentDistribution).reduce((a, b) => a + b, 0);
+    const satisfactionScore = totalSentimentCalls > 0
+      ? ((formattedSentimentDistribution.POSITIVE || 0) * 5 + 
+         (formattedSentimentDistribution.NEUTRAL || 0) * 3 + 
+         (formattedSentimentDistribution.NEGATIVE || 0) * 1) / totalSentimentCalls
+      : 0;
+
+    return NextResponse.json({
+      callLogs,
+      totalCalls,
+      sentimentDistribution: formattedSentimentDistribution,
+      tagDistribution: tagCounts,
+      averageCallDuration: avgCallDuration._avg.duration || 0,
+      averageSecondsUsed: avgCallDuration._avg.secondsUsed || 0,
+      averageMinutesUsed: avgCallDuration._avg.minutesUsed || 0,
+      totalMinutesUsed,
+      totalSecondsUsed,
+      usageRecords,
+      dailyCallStats,
+      resolutionRate,
+      resolvedCalls,
+      customerSatisfaction: satisfactionScore,
+      agent,
+    });
   } catch (error) {
-    console.error("[ANALYTICS_GET]", error);
-    return new NextResponse("Internal error", { status: 500 });
+    console.error("Analytics API Error:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
   }
-}
-
-function calculateTimeDistribution(records: any[]) {
-  const hourCounts = new Array(24).fill(0);
-  records.forEach(record => {
-    const hour = new Date(record.timestamp).getHours();
-    hourCounts[hour]++;
-  });
-
-  const morning = hourCounts.slice(5, 12).reduce((a, b) => a + b, 0);
-  const afternoon = hourCounts.slice(12, 17).reduce((a, b) => a + b, 0);
-  const evening = hourCounts.slice(17, 22).reduce((a, b) => a + b, 0);
-  
-  const total = morning + afternoon + evening;
-  
-  return {
-    morning: Math.round((morning / total) * 100),
-    afternoon: Math.round((afternoon / total) * 100),
-    evening: Math.round((evening / total) * 100)
-  };
 }
