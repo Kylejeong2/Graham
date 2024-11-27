@@ -62,15 +62,20 @@ model BusinessDocument {
 }
 
 model UsageRecord {
-  id          String    @id @default(uuid())
-  userId      String
-  agentId     String
-  minutesUsed Decimal
-  secondsUsed Decimal
-  voiceType   String
-  timestamp   DateTime  @default(now())
-  agent       Agent     @relation(fields: [agentId], references: [id])
-  user        User      @relation(fields: [userId], references: [id])
+  id              String         @id @default(cuid())
+  userId          String
+  agentId         String
+  minutes         Int
+  seconds         Int
+  recordedAt      DateTime       @default(now())
+  billed          Boolean        @default(false)
+  billingRecordId String?
+  agent           Agent          @relation(fields: [agentId], references: [id])
+  user            User           @relation(fields: [userId], references: [id])
+  billingRecord   BillingRecord? @relation(fields: [billingRecordId], references: [id])
+
+  @@index([userId])
+  @@index([billed])
 }
 
 enum DisconnectionReason {
@@ -97,27 +102,27 @@ enum CallTag {
 }
 
 model CallLog {
-  id            String    @id @default(uuid())
-  userId        String
-  agentId       String
-  timestamp     DateTime
-  duration      Int
-  summary       String? 
-  outcome       String?
-  cost          String?
-  disconnectionReason DisconnectionReason?
-  transcription String?
-  callerNumber  String
-  secondsUsed   Int
-  minutesUsed   Int
-  callData      Json
-  sentiment     CallSentiment?
-  tags          CallTag[]
-  notes         String?
-  followUpDate  DateTime?
-  isResolved    Boolean   @default(false)
-  agent         Agent     @relation(fields: [agentId], references: [id])
-  user          User      @relation(fields: [userId], references: [id])
+  id                      String    @id @default(uuid())
+  userId                  String
+  agentId                 String
+  timestamp               DateTime
+  duration                Int
+  summary                 String? 
+  outcome                 String?
+  cost                    String?
+  disconnectionReason     DisconnectionReason?
+  transcription           String?
+  callerNumber            String
+  secondsUsed             Int
+  minutesUsed             Int
+  callData                Json
+  sentiment               CallSentiment?
+  tags                    CallTag[]
+  notes                   String?
+  followUpDate            DateTime?
+  isResolved              Boolean   @default(false)
+  agent                   Agent     @relation(fields: [agentId], references: [id])
+  user                    User      @relation(fields: [userId], references: [id])
 
   @@index([timestamp])
   @@index([agentId, timestamp])
@@ -159,11 +164,10 @@ model User {
   usageRecords                UsageRecord[]
   userSettings                UserSettings?
   googleCalendarIntegrations  GoogleCalendarIntegration[]
-  organization                Organization?                @relation(fields: [organizationId], references: [id])
-  organizationId              String?
   subscriptions               Subscription[]
   businessDocuments           BusinessDocument[]          // Added relation to BusinessDocument
   callLogs                    CallLog[]
+  billingRecords              BillingRecord[]
 }
 
 model Waitlist {
@@ -222,19 +226,6 @@ model GoogleCalendarIntegration {
   @@unique([userId, agentId])
 }
 
-model Organization {
-  id                                String   @id @default(uuid())
-  name                              String
-  stripeCustomerId                  String?  @unique
-  stripeSubscriptionId              String?
-  stripeSubscriptionPriceId         String?
-  stripeSubscriptionStatus          String?
-  stripeSubscriptionCurrentPeriodEnd BigInt?
-  createdAt                         DateTime @default(now())
-  updatedAt                         DateTime @default(now())
-  users                             User[]
-}
-
 model BusinessAddress {
   id          String   @id @default(cuid())
   userId      String   @unique
@@ -245,4 +236,26 @@ model BusinessAddress {
   country     String   @default("US")
   verified    Boolean  @default(false)
   user        User     @relation(fields: [userId], references: [id])
+}
+
+model BillingRecord {
+  id                  String   @id @default(cuid())
+  userId              String
+  stripeCustomerId    String?
+  stripeInvoiceId     String?
+  amountCents         Int
+  status              BillingStatus
+  billingPeriodStart  DateTime
+  billingPeriodEnd    DateTime
+  createdAt           DateTime @default(now())
+  user                User     @relation(fields: [userId], references: [id])
+  usageRecords        UsageRecord[]
+
+  @@index([userId])
+}
+
+enum BillingStatus {
+  PENDING
+  PAID
+  FAILED
 }

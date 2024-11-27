@@ -3,5 +3,11 @@
       "src/app/api/**/*": {
         "maxDuration": 60
       }
-    }
+    },
+    "crons": [
+      {
+        "path": "/api/billing/process-monthly",
+        "schedule": "0 0 1 * *"
+      }
+    ]
   }

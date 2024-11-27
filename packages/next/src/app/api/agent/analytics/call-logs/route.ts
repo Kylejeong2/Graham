@@ -20,7 +20,7 @@ export async function GET( req: Request ) {
         agentId,
       },
       orderBy: {
-        timestamp: 'desc',
+        recordedAt: 'desc',
       },
     });
 

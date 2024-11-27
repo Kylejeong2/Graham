@@ -67,16 +67,15 @@ export async function GET(req: Request) {
         where: {
           agentId,
           userId,
-          timestamp: {
+          recordedAt: {
             gte: start,
             lte: end,
           },
         },
         select: {
-          minutesUsed: true,
-          secondsUsed: true,
-          timestamp: true,
-          voiceType: true,
+          minutes: true,
+          seconds: true,
+          recordedAt: true,
         },
       }),
 
@@ -173,14 +172,14 @@ export async function GET(req: Request) {
               where: {
                 agentId,
                 userId,
-                timestamp: {
+                recordedAt: {
                   gte: dayStart,
                   lte: dayEnd,
                 },
               },
               _sum: {
-                minutesUsed: true,
-                secondsUsed: true,
+                minutes: true,
+                seconds: true,
               },
             }),
           ]);
@@ -191,8 +190,8 @@ export async function GET(req: Request) {
             avgDuration: calls._avg.duration || 0,
             avgSecondsUsed: calls._avg.secondsUsed || 0,
             totalMinutes: Number(calls._sum.minutesUsed || 0),
-            totalUsageMinutes: Number(usage._sum.minutesUsed || 0),
-            totalUsageSeconds: Number(usage._sum.secondsUsed || 0),
+            totalUsageMinutes: Number(usage._sum.minutes || 0),
+            totalUsageSeconds: Number(usage._sum.seconds || 0),
           };
         })
       ),
@@ -231,12 +230,12 @@ export async function GET(req: Request) {
 
     // Calculate total minutes and seconds used
     const totalMinutesUsed = usageRecords.reduce(
-      (acc, record) => acc + Number(record.minutesUsed),
+      (acc, record) => acc + Number(record.minutes),
       0
     );
 
     const totalSecondsUsed = usageRecords.reduce(
-      (acc, record) => acc + Number(record.secondsUsed),
+      (acc, record) => acc + Number(record.seconds),
       0
     );
 
