@@ -17,9 +17,8 @@ export async function POST(req: NextRequest) {
       data: {
         userId,
         agentId,
-        minutesUsed: minutes.toString(),
-        secondsUsed: (minutes * 60).toString(),
-        voiceType: 'text-to-speech',
+        minutes,
+        seconds: minutes * 60,
       }
     });
 

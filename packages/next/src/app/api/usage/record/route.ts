@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { agentId, seconds, voiceType } = await req.json();
+  const { agentId, seconds } = await req.json();
 
   try {
     const subscription = await prisma.subscription.findFirst({
@@ -37,9 +37,8 @@ export async function POST(req: NextRequest) {
       data: {
         userId,
         agentId,
-        secondsUsed: seconds.toString(),
-        minutesUsed: roundedMinutes.toString(),
-        voiceType,
+        seconds,
+        minutes: roundedMinutes,
       }
     });
 
