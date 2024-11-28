@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 // import { Progress } from "@/components/ui/progress"
 import useSubscriptions from "@/hooks/getSubscriptionData"
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'react-toastify'
 import { Loader2, User, Mail, CreditCard, AlertTriangle, LogOut, Package, Phone, Eye, EyeOff } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
@@ -21,7 +21,8 @@ const ProfilePage = () => {
   const { signOut } = useClerk()
   const { subscription, loading, error } = useSubscriptions()
   const router = useRouter()
-
+  const searchParams = useSearchParams()
+  
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
   const [newFirstName, setNewFirstName] = useState(user?.firstName || '')
@@ -33,12 +34,34 @@ const ProfilePage = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false)
+  const [showPaymentSetup, setShowPaymentSetup] = useState(false)
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
       router.push('/sign-in')
     } 
   }, [isLoaded, isSignedIn, router])
+
+  useEffect(() => {
+    const checkPaymentSetup = async () => {
+      if (searchParams.get('setup') === 'payment') {
+        setShowPaymentSetup(true);
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/stripe/check-payment-setup');
+        const data = await res.json();
+        setShowPaymentSetup(!data.hasPaymentSetup);
+      } catch (error) {
+        console.error('Failed to check payment setup:', error);
+      }
+    };
+
+    if (isLoaded && isSignedIn) {
+      checkPaymentSetup();
+    }
+  }, [isLoaded, isSignedIn, searchParams]);
 
   const handleManageSubscription = async () => {
     try {
@@ -143,6 +166,18 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen bg-gray-100 text-black py-6">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {showPaymentSetup && (
+          <Card className="bg-white shadow-xl rounded-lg overflow-hidden mb-8">
+            <CardHeader className="bg-blue-600 text-white p-4">
+              <CardTitle className="text-xl font-semibold">Payment Setup Required</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <p className="text-gray-600 mb-4">Please set up your payment method to continue creating agents.</p>
+              <PaymentElementWrapper />
+            </CardContent>
+          </Card>
+        )}
+
         <Card className="bg-white shadow-xl rounded-lg overflow-hidden mb-8">
           <CardHeader className="bg-blue-600 text-white p-4">
             <div className="flex items-center space-x-4">

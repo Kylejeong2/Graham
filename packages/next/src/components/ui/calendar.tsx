@@ -1,5 +1,5 @@
 "use client"
-//TODO: fix this somehow in the analytics page
+
 import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { DayPicker } from "react-day-picker"

@@ -39,6 +39,7 @@ const DashboardPage = async () => {
     });
 
     const isSubscribed = subscription?.status === 'active';
+    const isEnterprise = subscription?.status === 'enterprise';
 
     return (
         <div className='h-full bg-white text-blue-900'>
@@ -70,13 +71,13 @@ const DashboardPage = async () => {
                 ) : (
                     <div className='space-y-6'>
                         <div className='grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
-                            {(agents.length < 1 && isSubscribed) && (
+                            {(agents.length == 0 && isSubscribed) || isEnterprise && (
                                 <Card className='bg-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center h-[200px]'>
                                     <CardContent>
                                         <CreateAgent>
                                             <Button variant="ghost" className='w-full h-full flex flex-col items-center justify-center text-blue-600 hover:bg-blue-50'>
                                                 <Plus className='w-12 h-12 mb-2' />
-                                                <span>Create New Agent</span>
+                                                <span className='text-center'>Create New Agent</span>
                                             </Button>
                                         </CreateAgent>
                                     </CardContent>
@@ -84,7 +85,7 @@ const DashboardPage = async () => {
                             )}
                             {agents.map(agent => (
                                 <Link href={`/dashboard/agent/${agent.id}`} key={agent.id}>
-                                    <Card className='bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1'>
+                                    <Card className='bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between'>
                                         <CardHeader className='pb-2'>
                                             <Avatar className='w-16 h-16 mx-auto'>
                                                 <AvatarFallback className='bg-blue-100 text-blakc-600'>
@@ -92,7 +93,7 @@ const DashboardPage = async () => {
                                                 </AvatarFallback>
                                             </Avatar>
                                         </CardHeader>
-                                        <CardContent className='text-center'>
+                                        <CardContent className='text-center flex-grow'>
                                             <CardTitle className='text-xl font-semibold text-blue-900 mb-1'>{agent.name}</CardTitle>
                                             <p className='text-sm text-blue-700'>
                                                 Created on {new Date(agent.createdAt).toLocaleDateString()}
@@ -102,7 +103,7 @@ const DashboardPage = async () => {
                                 </Link>
                             ))}
                         </div>
-                        {(agents.length >= 1 || !isSubscribed) && (
+                        {(!isEnterprise) && (
                             <Card className='bg-blue-50 border-blue-200 shadow-lg max-w-2xl mx-auto'>
                                 <CardContent className='p-6'>
                                     <h3 className='text-2xl font-semibold text-blue-900 mb-2'>Unlock More Agents!</h3>

@@ -14,6 +14,11 @@ export async function POST() {
       where: { id: userId },
       data: { hasPaymentSetup: true },
     });
+
+    await prisma.subscription.update({
+      where: { userId },
+      data: { status: 'active' },
+    });
     
     return NextResponse.json({ success: true });
   } catch (error) {

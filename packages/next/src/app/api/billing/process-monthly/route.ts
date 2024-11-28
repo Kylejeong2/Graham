@@ -91,7 +91,7 @@ export async function GET() {
         });
       } catch (error) {
         console.error(`Failed to bill user ${userId}:`, error);
-        // Continue with other users even if one fails
+        // Continue with other users even if one fails TODO: should add retries
       }
     }
 

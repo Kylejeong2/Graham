@@ -1,6 +1,6 @@
 'use client'
 
-import { Calendar, ChevronDown, CreditCard, Home, Search, Settings, User2, BarChart2, PhoneCall, LineChart } from "lucide-react"
+import { ChevronDown, CreditCard, Home, Search, Settings, User2, BarChart2, PhoneCall, LineChart } from "lucide-react"
 import { UserButton, useAuth, useUser } from "@clerk/nextjs"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
 
@@ -13,12 +13,7 @@ const items = [
     title: "Home",
     url: "/dashboard",
     icon: Home,
-  },
-  {
-    title: "Calendar",
-    url: "/calendar",
-    icon: Calendar,
-  },
+  }
 ]
 
 type AgentTabs = {

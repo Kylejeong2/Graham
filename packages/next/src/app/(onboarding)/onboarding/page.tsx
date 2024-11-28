@@ -11,7 +11,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'react-toastify'
-import { PaymentElementWrapper } from '@/components/Stripe/PaymentElement'
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -40,8 +39,17 @@ export default function OnboardingPage() {
     },
     phoneNumber: '',
     email: '',
-    hasPaymentSetup: false
   })
+
+  useEffect(() => {
+    if (isLoaded && !userId) {
+      router.push('/sign-in')
+    }
+  }, [isLoaded, userId, router])
+
+  if (!isLoaded || !userId) {
+    return null
+  }
 
   const handleBusinessDetailsSubmit = async () => {
     try {
@@ -50,37 +58,7 @@ export default function OnboardingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId,
-          ...formData,
-          hasPaymentSetup: false
-        })
-      })
-
-      if (!response.ok) throw new Error('Failed to update user')
-      
-      const setupResponse = await fetch('/api/stripe/create-setup-intent', {
-        method: 'POST'
-      })
-
-      if (!setupResponse.ok) throw new Error('Failed to create setup intent')
-      
-      setStep(3)
-    } catch (error: any) {
-      console.error('Business details update failed:', error)
-      toast.error(error.message)
-    }
-  }
-
-  const handleFinalSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    try {
-      const response = await fetch('/api/user/onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          ...formData,
-          hasPaymentSetup: true
+          ...formData
         })
       })
 
@@ -101,7 +79,7 @@ export default function OnboardingPage() {
       
       router.push('/creating-account')
     } catch (error: any) {
-      console.error('Final submission failed:', error)
+      console.error('Business details update failed:', error)
       toast.error(error.message)
     }
   }
@@ -227,17 +205,9 @@ export default function OnboardingPage() {
           </div>
         </div>
       )
-    },
-    {
-      title: "Payment Information",
-      description: "Set up your payment method to get started",
-      fields: (
-        <div className="space-y-4">
-          <PaymentElementWrapper />
-        </div>
-      )
     }
   ]
+
   const isStepValid = (stepNumber: number) => {
     switch (stepNumber) {
       case 1:
@@ -250,15 +220,13 @@ export default function OnboardingPage() {
                formData.businessAddress.postalCode.length === 5 &&
                formData.phoneNumber.trim().length > 0 &&
                formData.email.includes('@')
-      case 3:
-        return formData.hasPaymentSetup
       default:
         return false
     }
   }
 
   const handleContinue = () => {
-    if (step === 2 && isStepValid(step)) {
+    if (step === steps.length && isStepValid(step)) {
       handleBusinessDetailsSubmit()
     } else if (step < steps.length && isStepValid(step)) {
       setStep(step + 1)
@@ -274,7 +242,7 @@ export default function OnboardingPage() {
             <CardDescription>{steps[step - 1].description}</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={step === 3 ? handleFinalSubmit : handleBusinessDetailsSubmit} className="space-y-6">
+            <form onSubmit={(e) => { e.preventDefault(); handleBusinessDetailsSubmit(); }} className="space-y-6">
               {steps[step - 1].fields}
               
               <div className="flex justify-between pt-4">
@@ -290,10 +258,10 @@ export default function OnboardingPage() {
                 <Button 
                   type={step === steps.length ? "submit" : "button"}
                   className="ml-auto"
-                  onClick={handleContinue}
+                  onClick={step === steps.length ? undefined : handleContinue}
                   disabled={!isStepValid(step)}
                 >
-                  {step === steps.length ? 'Get Started' : 'Continue'}
+                  {step === steps.length ? 'Complete' : 'Continue'}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>

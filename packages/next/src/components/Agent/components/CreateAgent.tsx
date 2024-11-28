@@ -9,6 +9,7 @@ import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
+import { useAuth } from '@clerk/nextjs'
 
 type Props = {
     children?: React.ReactNode;
@@ -19,6 +20,8 @@ export const CreateAgent: React.FC<Props> = ({ children }) => {
     const [input, setInput] = React.useState('');
     const [isSubscribed, setIsSubscribed] = React.useState(false);
     const [agentCount, setAgentCount] = React.useState(0);
+    const [hasPaymentSetup, setHasPaymentSetup] = React.useState(false);
+    const { userId } = useAuth();
 
     React.useEffect(() => {
         const checkSubscription = async () => {
@@ -30,15 +33,25 @@ export const CreateAgent: React.FC<Props> = ({ children }) => {
             const res = await fetch('/api/agent/fetch/getAgentCount');
             const data = await res.json();
             setAgentCount(data.count);
-        }
+        };
+        const checkPaymentSetup = async () => {
+            const res = await fetch('/api/stripe/check-payment-setup');
+            const data = await res.json();
+            setHasPaymentSetup(data.hasPaymentSetup);
+        };
         checkSubscription();
         checkAgentCount();
+        checkPaymentSetup();
     }, []);
 
     const createAgent = useMutation({
         mutationFn: async () => {
+            if (!hasPaymentSetup) {
+                router.push(`/dashboard/profile/${userId}?setup=payment`);
+                return;
+            }
             if (agentCount >= 1 && !isSubscribed) {
-                router.push('/subscription');
+                router.push('/contact');
                 return;
             }
             const response = await axios.post('/api/agent/createAgent', {
@@ -59,7 +72,7 @@ export const CreateAgent: React.FC<Props> = ({ children }) => {
             onSuccess: (data) => {
                 if (data && data.agent_id) {
                     console.log("Agent Created", { agent_id: data.agent_id })
-                    router.push(`/dashboard/agent/${data.agent_id}`);
+                    router.push(`/dashboard/agent/${data.agent_id}/onboard`);
                 } else {
                     console.error("Agent created, but no ID returned")
                     window.alert("Agent created, but there was an issue. Please try again.")
@@ -94,7 +107,7 @@ export const CreateAgent: React.FC<Props> = ({ children }) => {
         </DialogTrigger>
         <DialogContent className="bg-blue-50 text-blue-900">
             <DialogHeader>
-                <DialogTitle className="text-2xl font-bold text-blue-900">
+                <DialogTitle className="text-2xl font-bold text-black">
                     Create a New Agent
                 </DialogTitle>
                 <DialogDescription className="text-blue-700">

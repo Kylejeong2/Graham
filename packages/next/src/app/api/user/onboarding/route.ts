@@ -10,7 +10,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { fullName, businessName, businessAddress, phoneNumber, email, hasPaymentSetup } = await request.json()
+    const { fullName, businessName, businessAddress, phoneNumber, email } = await request.json()
 
     // Check if user exists, if not create them
     let user = await prisma.user.findUnique({
@@ -69,7 +69,6 @@ export async function POST(request: Request) {
           },
           user_phoneNumber: phoneNumber,
           email,
-          hasPaymentSetup
         },
         include: { businessAddress: true }
       })
