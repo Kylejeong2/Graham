@@ -12,3 +12,4 @@ export { handleDocumentSelect } from './document-functions';
 export { fetchUserData } from './fetchUserData';
 export { handleDownloadTemplate } from './handleDownloadTemplate';
 export { formatPhoneNumber } from './formatPhoneNumber';
+export { fetchBusinessDocuments } from './fetchBusinessDocuments';

@@ -10,19 +10,22 @@ import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { useAuth } from '@clerk/nextjs'
+import { useToast } from "@/hooks/use-toast"
 
 type Props = {
     children?: React.ReactNode;
+    onCreateStart?: () => void;
+    onCreateEnd?: () => void;
 }
 
-export const CreateAgent: React.FC<Props> = ({ children }) => {
+export const CreateAgent: React.FC<Props> = ({ children, onCreateStart, onCreateEnd }) => {
     const router = useRouter()
     const [input, setInput] = React.useState('');
     const [isSubscribed, setIsSubscribed] = React.useState(false);
     const [agentCount, setAgentCount] = React.useState(0);
     const [hasPaymentSetup, setHasPaymentSetup] = React.useState(false);
     const { userId } = useAuth();
-
+    const { toast } = useToast();
     React.useEffect(() => {
         const checkSubscription = async () => {
             const res = await axios.get('/api/stripe/checkSubscription');
@@ -64,22 +67,33 @@ export const CreateAgent: React.FC<Props> = ({ children }) => {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (input == ''){
-            window.alert('Please enter a name for your agent.')
+            toast({
+                title: "Error",
+                description: "Please enter a name for your agent.",
+                variant: "destructive"
+            })
             return
         }
 
+        onCreateStart?.();
         createAgent.mutate(undefined, {
             onSuccess: (data) => {
                 if (data && data.agent_id) {
-                    console.log("Agent Created", { agent_id: data.agent_id })
+                    toast({
+                        title: "Success",
+                        description: "Agent created successfully!",
+                    })
                     router.push(`/dashboard/agent/${data.agent_id}/onboard`);
                 } else {
-                    console.error("Agent created, but no ID returned")
-                    window.alert("Agent created, but there was an issue. Please try again.")
+                    toast({
+                        variant: "destructive",
+                        title: "Error",
+                        description: "Agent created, but there was an issue. Please try again."
+                    })
                 }
+                onCreateEnd?.();
             },
             onError: (error: any) => {
-                console.error(error);
                 let errorMessage = "Failed to create new agent";
                 if (error.response) {
                     errorMessage += `: ${error.response.data.message || error.response.statusText}`;
@@ -88,7 +102,12 @@ export const CreateAgent: React.FC<Props> = ({ children }) => {
                 } else {
                     errorMessage += `: ${error.message}`;
                 }
-                window.alert(errorMessage);
+                toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: errorMessage
+                })
+                onCreateEnd?.();
             },
         })
     };

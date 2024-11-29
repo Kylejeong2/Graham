@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Loader2 } from 'lucide-react'
 import { useAuth } from '@clerk/nextjs'
 import { useEffect } from 'react'
 
@@ -15,6 +15,7 @@ import { toast } from 'react-toastify'
 export default function OnboardingPage() {
   const router = useRouter()
   const { userId, isLoaded } = useAuth()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (isLoaded && !userId) {
@@ -53,6 +54,7 @@ export default function OnboardingPage() {
 
   const handleBusinessDetailsSubmit = async () => {
     try {
+      setIsSubmitting(true)
       const response = await fetch('/api/user/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -81,6 +83,8 @@ export default function OnboardingPage() {
     } catch (error: any) {
       console.error('Business details update failed:', error)
       toast.error(error.message)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -225,13 +229,14 @@ export default function OnboardingPage() {
     }
   }
 
-  const handleContinue = () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (step === steps.length && isStepValid(step)) {
-      handleBusinessDetailsSubmit()
+      await handleBusinessDetailsSubmit();
     } else if (step < steps.length && isStepValid(step)) {
-      setStep(step + 1)
+      setStep(step + 1);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 justify-center items-center to-white p-6">
@@ -242,7 +247,7 @@ export default function OnboardingPage() {
             <CardDescription>{steps[step - 1].description}</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={(e) => { e.preventDefault(); handleBusinessDetailsSubmit(); }} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {steps[step - 1].fields}
               
               <div className="flex justify-between pt-4">
@@ -251,18 +256,24 @@ export default function OnboardingPage() {
                     type="button"
                     variant="outline"
                     onClick={() => setStep(step - 1)}
+                    disabled={isSubmitting}
                   >
                     Back
                   </Button>
                 )}
                 <Button 
-                  type={step === steps.length ? "submit" : "button"}
+                  type="submit"
                   className="ml-auto"
-                  onClick={step === steps.length ? undefined : handleContinue}
-                  disabled={!isStepValid(step)}
+                  disabled={!isStepValid(step) || isSubmitting}
                 >
-                  {step === steps.length ? 'Complete' : 'Continue'}
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  {isSubmitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      {step === steps.length ? 'Complete' : 'Continue'}
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </>
+                  )}
                 </Button>
               </div>
             </form>

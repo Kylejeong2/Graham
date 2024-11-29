@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import DeleteButton from '@/components/Common/DeleteButton';
+import DeleteButton from '@/components/dashboard/DeleteButton';
 import { ArrowLeft } from 'lucide-react';
 import type { Agent } from '@graham/db';
 

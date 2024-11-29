@@ -17,7 +17,8 @@ import type { User, Agent, BusinessAddress } from '@graham/db';
 import { BuyPhoneNumberModal, CalendarIntegrationModal, VoiceSelectionModal } from './setup/modals';
 import { handleDocumentSelect, handleVoiceSelect, handlePreviewVoice, handleGoogleAuth, handleFileUpload, 
     fetchAgentData, createDebouncedMessageUpdate, handleCompleteSetup, fetchVoices, handleEnhanceInstructions, 
-    createDebouncedInstructionUpdate, handlePhoneNumberSelect, fetchUserPhoneNumbers, handleDownloadTemplate, formatPhoneNumber
+    createDebouncedInstructionUpdate, handlePhoneNumberSelect, fetchUserPhoneNumbers, handleDownloadTemplate, 
+    formatPhoneNumber, fetchBusinessDocuments
 } from './setup/setup-functions';
 import type { ConversationInitType } from './setup/types';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
@@ -58,8 +59,48 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
     const closeVoiceModal = () => setIsVoiceModalOpen(false);
 
     useEffect(() => {
-        fetchVoices(setIsLoadingVoices, setVoices);
-    }, []);
+        const controller = new AbortController();
+        
+        const loadInitialData = async () => {
+            try {
+                setIsLoading(true);
+                setIsLoadingVoices(true);
+
+                await Promise.all([
+                    // Load agent data
+                    fetchAgentData(
+                        agent.id, 
+                        setIsLoading, 
+                        setCustomInstructions, 
+                        setSelectedVoice, 
+                        setSelectedVoiceName, 
+                        setConversationType, 
+                        setInitialMessage,
+                        setSelectedPhoneNumber
+                    ),
+                    // Load voices
+                    fetchVoices(setIsLoadingVoices, setVoices),
+                    // Load phone numbers
+                    user?.id ? fetchUserPhoneNumbers(user.id, setUserPhoneNumbers, agent.phoneNumber || '') : Promise.resolve(),
+                    // Load business documents
+                    user?.id ? fetchBusinessDocuments(user.id, setBusinessDocuments, controller.signal) : Promise.resolve()
+                ]);
+            } catch (error) {
+                if (!controller.signal.aborted) {
+                    console.error('Error loading initial data:', error);
+                }
+            } finally {
+                setIsLoading(false);
+                setIsLoadingVoices(false);
+            }
+        };
+
+        loadInitialData();
+
+        return () => {
+            controller.abort();
+        };
+    }, [agent.id, user?.id, agent.phoneNumber]);
 
     const debouncedInstructionUpdate = useCallback(
         createDebouncedInstructionUpdate(agent.id, setIsSaving),
@@ -72,25 +113,6 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
         debouncedInstructionUpdate(newInstructions);
     };
 
-    useEffect(() => {
-        fetchAgentData(
-            agent.id, 
-            setIsLoading, 
-            setCustomInstructions, 
-            setSelectedVoice, 
-            setSelectedVoiceName, 
-            setConversationType, 
-            setInitialMessage,
-            setSelectedPhoneNumber
-        );
-    }, [agent.id]);
-
-    useEffect(() => {
-        if (user?.id) {
-            fetchUserPhoneNumbers(user.id, setUserPhoneNumbers, agent.phoneNumber || '');
-        }
-    }, [user?.id, agent.phoneNumber]);
-
     const EnhancingAnimation = () => (
         <motion.div 
             className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-orange-500/10"
@@ -101,26 +123,6 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
             }}
         />
     );
-
-    useEffect(() => {
-        const fetchBusinessDocs = async () => {
-            try {
-                const response = await fetch(`/api/agent/information/get-documents`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: user.id })
-                });
-                const data = await response.json();
-                setBusinessDocuments(data);
-            } catch (error) {
-                toast.error('Failed to fetch business documents');
-            }
-        };
-        
-        if (user?.id) {
-            fetchBusinessDocs();
-        }
-    }, [user?.id]);
 
     if (isLoading) {
         return (
