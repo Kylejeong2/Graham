@@ -15,8 +15,7 @@ export async function GET() {
         user: {
           id: userId
         },
-        status: { in: ['active', 'enterprise'] },
-        stripeSubscriptionId: { not: null }
+        // status: { in: ['active', 'enterprise'] },
       }
     });
 
@@ -25,10 +24,10 @@ export async function GET() {
     });
 
     if(!user?.hasPaymentSetup) {
-      return NextResponse.json({ hasSubscription: false, user });
+      return NextResponse.json({ hasSubscription: false, user, subscriptionStatus: subscription?.status });
     }
-    
-    return NextResponse.json({ hasSubscription: subscription, user });
+
+    return NextResponse.json({ hasSubscription: true, user, subscriptionStatus: subscription?.status });
 
   } catch (error) {
     console.error("Error checking subscription:", error);

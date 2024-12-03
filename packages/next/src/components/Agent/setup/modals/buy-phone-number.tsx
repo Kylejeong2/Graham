@@ -41,16 +41,17 @@ export const BuyPhoneNumberModal = ({ isOpen, onClose, userPhoneNumbers, setUser
     const [isPurchasing, setIsPurchasing] = useState<string | null>(null);
     const [showAddressPrompt, setShowAddressPrompt] = useState(false);
     const [businessAddress, setBusinessAddress] = useState<BusinessAddressForm>({
-        street: user.businessAddress?.street || '',
-        city: user.businessAddress?.city || '',
-        state: user.businessAddress?.state || '',
-        postalCode: user.businessAddress?.postalCode || '',
-        country: user.businessAddress?.country || 'US'
+        street: initialUser?.businessAddress?.street ?? '',
+        city: initialUser?.businessAddress?.city ?? '',
+        state: initialUser?.businessAddress?.state ?? '',
+        postalCode: initialUser?.businessAddress?.postalCode ?? '',
+        country: initialUser?.businessAddress?.country ?? 'US'
     });
     const [addressError, setAddressError] = useState('');
 
     useEffect(() => {
         const loadUserData = async () => {
+            if (!initialUser?.id) return;
             const userData = await fetchUserData(initialUser.id);
             if (userData) {
                 setUser(userData);
@@ -68,7 +69,7 @@ export const BuyPhoneNumberModal = ({ isOpen, onClose, userPhoneNumbers, setUser
         };
         
         loadUserData();
-    }, [initialUser.id]);
+    }, [initialUser?.id]);
 
     const handleSearchNumbers = async () => {
         setIsLoadingNumbers(true);

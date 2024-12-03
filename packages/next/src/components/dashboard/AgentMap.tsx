@@ -6,8 +6,9 @@ import { Loader2, Plus } from "lucide-react"
 import Link from "next/link"
 import { CreateAgent } from "@/components/Agent/components/CreateAgent"
 import { Button } from "@/components/ui/button"
+import type { User } from '@graham/db'
 
-export default function AgentMap({ agents, isSubscribed, isEnterprise }: { agents: any[], isSubscribed: boolean, isEnterprise: boolean }){
+export default function AgentMap({ agents, isSubscribed, isEnterprise, user }: { agents: any[], isSubscribed: boolean, isEnterprise: boolean, user: User }){
     const [loadingAgentId, setLoadingAgentId] = useState<string | null>(null);
     const [isCreatingAgent, setIsCreatingAgent] = useState(false);
 
@@ -17,7 +18,7 @@ export default function AgentMap({ agents, isSubscribed, isEnterprise }: { agent
                 {(agents.length == 0 && isSubscribed) || isEnterprise && (
                     <Card className='bg-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center h-[200px] relative'>
                         <CardContent>
-                            <CreateAgent onCreateStart={() => setIsCreatingAgent(true)} onCreateEnd={() => setIsCreatingAgent(false)}>
+                            <CreateAgent user={user} onCreateStart={() => setIsCreatingAgent(true)} onCreateEnd={() => setIsCreatingAgent(false)}>
                                 <Button 
                                     variant="ghost" 
                                     className='w-full h-full flex flex-col items-center justify-center text-blue-600 hover:bg-blue-50'

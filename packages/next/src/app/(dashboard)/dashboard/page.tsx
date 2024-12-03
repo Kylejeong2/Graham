@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { redirect } from 'next/navigation';
 import AgentMap from '@/components/dashboard/AgentMap';
-
+import type { User } from '@graham/db';
 const DashboardPage = async () => {
     const { userId } = auth();
 
@@ -57,7 +57,7 @@ const DashboardPage = async () => {
 
                 <Separator className='bg-blue-500 my-6' />
                 
-                <AgentMap agents={agents} isSubscribed={isSubscribed} isEnterprise={isEnterprise} />
+                <AgentMap agents={agents} isSubscribed={isSubscribed} isEnterprise={isEnterprise} user={user as User} />
             </div>
         </div>
     );

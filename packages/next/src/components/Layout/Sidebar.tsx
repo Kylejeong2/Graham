@@ -1,4 +1,4 @@
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/Layout/app-sidebar";
 import { cookies } from "next/headers"
 
@@ -10,6 +10,7 @@ export default async function SidebarLayout({ children }: { children: React.Reac
         <SidebarProvider defaultOpen={defaultOpen}>
             <AppSidebar />
             <main className="h-full w-full py-2 overflow-y-auto">
+                <SidebarTrigger />
                 {children}
             </main>
         </SidebarProvider>

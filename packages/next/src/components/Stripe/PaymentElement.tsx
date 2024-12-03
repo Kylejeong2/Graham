@@ -3,8 +3,9 @@ import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useAuth } from '@clerk/nextjs'
+import { toast } from 'react-toastify'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PK!)
 
@@ -15,7 +16,48 @@ const PaymentForm = () => {
   const [processing, setProcessing] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { userId } = useAuth()
+
+  // Handle redirect result
+  useEffect(() => {
+    if (!stripe) return;
+
+    const redirectStatus = searchParams?.get('redirect_status');
+    const setupIntent = searchParams?.get('setup_intent');
+
+    if (redirectStatus === 'succeeded' && setupIntent && userId) {
+      const updatePaymentStatus = async () => {
+        try {
+          const response = await fetch('/api/stripe/setup-payment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to update payment status');
+          }
+
+          const data = await response.json();
+          if (data.success) {
+            toast.success('Payment method setup successfully!');
+            if (pathname === '/onboarding') {
+              router.push('/dashboard');
+            } else {
+              router.push(`/dashboard/profile/${userId}`);
+            }
+          }
+        } catch (err) {
+          toast.error('Failed to complete payment setup');
+          console.error('Payment setup error:', err);
+        }
+      };
+
+      updatePaymentStatus();
+    }
+  }, [stripe, searchParams, userId, pathname, router]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -25,35 +67,25 @@ const PaymentForm = () => {
     }
 
     setProcessing(true)
+    setError(null)
 
-    const { error } = await stripe.confirmSetup({
-      elements,
-      confirmParams: {
-        return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard`,
-      },
-    })
+    try {
+      const { error: stripeError } = await stripe.confirmSetup({
+        elements,
+        confirmParams: {
+          return_url: `${process.env.NEXT_PUBLIC_BASE_URL}${pathname}`,
+        },
+      })
 
-    if (error) {
-      setError(error.message ?? 'An unknown error occurred')
+      if (stripeError) {
+        throw new Error(stripeError.message ?? 'Failed to setup payment method')
+      }
+
+    } catch (err: any) {
+      setError(err.message ?? 'An unknown error occurred')
+      toast.error(err.message ?? 'Failed to setup payment method')
+    } finally {
       setProcessing(false)
-    } else {
-      if (userId) {
-        const response = await fetch('/api/stripe/setup-payment', {
-          method: 'POST',
-        });
-        
-        if (!response.ok) {
-          setError('Failed to update payment status');
-          setProcessing(false);
-          return;
-        }
-      }
-      
-      if (pathname === '/onboarding') {
-        router.push('/dashboard')
-      } else {
-        router.push(`/dashboard/profile/${userId}`)
-      }
     }
   }
 
@@ -92,14 +124,23 @@ export const PaymentElementWrapper = () => {
 
   useEffect(() => {
     const fetchSetupIntent = async () => {
-      const response = await fetch('/api/stripe/create-setup-intent', { 
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      const data = await response.json()
-      setClientSecret(data.clientSecret)
+      try {
+        const response = await fetch('/api/stripe/create-setup-intent', { 
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        
+        if (!response.ok) {
+          throw new Error('Failed to create setup intent')
+        }
+        
+        const data = await response.json()
+        setClientSecret(data.clientSecret)
+      } catch (err) {
+        toast.error('Failed to initialize payment setup')
+      }
     }
 
     fetchSetupIntent()
