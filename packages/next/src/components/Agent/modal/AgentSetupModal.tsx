@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { MessageSquare, Upload, Volume2, UploadCloud, Download, Loader2, Phone, Settings, Calendar, CreditCard, ExternalLink, Mail, BrainCircuit } from 'lucide-react'
+import { MessageSquare, Upload, Volume2, UploadCloud, Download, Loader2, Phone, Settings, Calendar, CreditCard, ExternalLink, Mail, BrainCircuit, AlertTriangle } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch"
@@ -93,6 +93,7 @@ export const AgentSetupModal: React.FC<AgentSetupModalProps> = ({ isOpen, onClos
     const [isConnectingCalendar, setIsConnectingCalendar] = useState(false);
     const [businessDocuments, setBusinessDocuments] = useState<BusinessDocument[]>([]);
     const [selectedDocument, setSelectedDocument] = useState<string>('');
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
     useEffect(() => {
         const initializeSetup = async () => {
@@ -229,6 +230,49 @@ export const AgentSetupModal: React.FC<AgentSetupModalProps> = ({ isOpen, onClos
     //         setIsConnectingCalendar(false);
     //     }
     // };
+
+    const validateSetup = () => {
+        const errors: string[] = [];
+        
+        if (!customInstructions?.trim()) {
+            errors.push("Instructions are required");
+        }
+        if (!selectedVoice) {
+            errors.push("Voice selection is required");
+        }
+        if (!selectedPhoneNumber) {
+            errors.push("Phone number is required");
+        }
+        if (!businessDocuments.length) {
+            errors.push("At least one business document is required");
+        }
+        if (conversationType === 'ai-custom' && !initialMessage?.trim()) {
+            errors.push("Custom initial message is required");
+        }
+
+        setValidationErrors(errors);
+        return errors.length === 0;
+    };
+
+    const handleDeploy = async () => {
+        if (!validateSetup()) {
+            toast.error("Please complete all required fields before deploying");
+            return;
+        }
+
+        try {
+            setIsCompleting(true);
+            await handleCompleteSetup(agentId, selectedDocument, setIsCompleting);
+            toast.success("Agent deployed successfully!");
+            onClose();
+            // Redirect to agent page
+            window.location.href = `/agent/${agentId}`;
+        } catch (error) {
+            console.error('Error deploying agent:', error);
+            toast.error("Failed to deploy agent");
+            setIsCompleting(false);
+        }
+    };
 
     if (isLoading) {
         return (
@@ -675,20 +719,50 @@ export const AgentSetupModal: React.FC<AgentSetupModalProps> = ({ isOpen, onClos
                                 </div>
                             </div>
 
+                            {validationErrors.length > 0 && (
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                                    <h4 className="text-sm font-medium text-red-800 mb-2">Please fix the following issues:</h4>
+                                    <ul className="list-disc list-inside space-y-1">
+                                        {validationErrors.map((error, index) => (
+                                            <li key={index} className="text-sm text-red-600">{error}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
                             <Button
-                                onClick={() => handleCompleteSetup(agentId, selectedDocument, setIsCompleting)}
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                                disabled={isCompleting}
+                                onClick={handleDeploy}
+                                className={cn(
+                                    "w-full relative",
+                                    validationErrors.length > 0 
+                                        ? "bg-gray-400 hover:bg-gray-400 cursor-not-allowed"
+                                        : "bg-blue-600 hover:bg-blue-700",
+                                    "text-white transition-all duration-200"
+                                )}
+                                disabled={isCompleting || validationErrors.length > 0}
                             >
                                 {isCompleting ? (
-                                    <>
+                                    <div className="flex items-center justify-center">
                                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                         Deploying...
-                                    </>
+                                    </div>
                                 ) : (
-                                    'Deploy Agent'
+                                    <div className="flex items-center justify-center">
+                                        {validationErrors.length > 0 ? (
+                                            <>
+                                                <AlertTriangle className="w-4 h-4 mr-2" />
+                                                Complete Required Fields
+                                            </>
+                                        ) : (
+                                            'Deploy Agent'
+                                        )}
+                                    </div>
                                 )}
                             </Button>
+
+                            <p className="text-xs text-gray-500 text-center">
+                                After deployment, you'll be redirected to your agent's dashboard
+                            </p>
                         </CardContent>
                     </Card>
                 );
