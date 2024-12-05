@@ -86,7 +86,6 @@
     "mem0ai": "^1.0.4",
     "micromatch": "4.0.8",
     "mongodb": "^6.0.0",
-    "mongoose": "^7.5.0",
     "next": "^14.2.7",
     "next-auth": "^4.23.1",
     "next-sitemap": "^4.2.3",
