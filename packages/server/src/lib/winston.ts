@@ -24,8 +24,7 @@ const consoleTransport = new winston.transports.Console({
 
 const axiomTransport = new WinstonTransport({
   dataset: process.env.AXIOM_DATASET!,
-  // token: process.env.AXIOM_TOKEN!,
-  token: "xaat-ff391492-8ca2-4c8d-ab1e-fe6ff7f6a7c8",
+  token: process.env.AXIOM_TOKEN!,
 });
 
 const transports =
