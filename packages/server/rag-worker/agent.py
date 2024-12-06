@@ -4,9 +4,14 @@ import os
 
 from livekit.agents import AutoSubscribe, JobContext, WorkerOptions, WorkerType, cli, llm
 from livekit.agents.pipeline import VoicePipelineAgent
-from livekit.plugins import deepgram, openai, silero
-from pinecone import Pinecone
+from livekit.plugins import deepgram, openai, silero, elevenlabs
+from livekit.plugins.turn_detector import SimpleEOU  # Add simple end-of-utterance detector
 
+from pinecone import Pinecone
+from custom_plugins import cerebras
+
+# Set up debug logging
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("rag-worker")
 
 class PineconeRagAgent:
@@ -74,21 +79,49 @@ async def entrypoint(ctx: JobContext):
         logger.info(f"Knowledge query result: {result}")
         return result
 
-    agent = VoicePipelineAgent(
-        vad=silero.VAD.load(),
-        stt=deepgram.STT(),
-        llm=openai.LLM(),
-        tts=openai.TTS(),
-        chat_ctx=initial_ctx,
-        fnc_ctx=fnc_ctx
-    )
-    
-    await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
-    participant = await ctx.wait_for_participant()
-    
-    agent.start(ctx.room, participant)
-    if initiate_conversation:
-        await agent.say(initial_message, allow_interruptions=True)
+    try:
+        # Initialize components with debug logging
+        logger.debug("Loading VAD model...")
+        vad = silero.VAD.load()
+        logger.debug("VAD model loaded successfully")
+
+        logger.debug("Initializing STT...")
+        stt = deepgram.STT()
+        logger.debug("STT initialized successfully")
+
+        logger.debug("Initializing LLM...")
+        llm_model = cerebras.LLM()
+        logger.debug("LLM initialized successfully")
+
+        logger.debug("Initializing TTS...")
+        tts = elevenlabs.TTS()
+        logger.debug("TTS initialized successfully")
+
+        # Use SimpleEOU instead of the default turn detector
+        logger.debug("Creating VoicePipelineAgent...")
+        agent = VoicePipelineAgent(
+            vad=vad,
+            stt=stt,
+            llm=llm_model,
+            tts=tts,
+            chat_ctx=initial_ctx,
+            fnc_ctx=fnc_ctx,
+            turn_detector=SimpleEOU(),  # Use simple end-of-utterance detector
+        )
+        logger.debug("VoicePipelineAgent created successfully")
+
+        logger.info("Connecting to room...")
+        await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
+        participant = await ctx.wait_for_participant()
+        logger.info("Participant joined")
+
+        agent.start(ctx.room, participant)
+        if initiate_conversation:
+            await agent.say(initial_message, allow_interruptions=True)
+
+    except Exception as e:
+        logger.error(f"Error during agent initialization: {str(e)}", exc_info=True)
+        raise
 
 if __name__ == "__main__":
     cli.run(entrypoint, WorkerOptions(
