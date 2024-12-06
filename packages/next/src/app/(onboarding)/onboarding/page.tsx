@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Loader2 } from 'lucide-react'
 import { useAuth } from '@clerk/nextjs'
 import { useEffect } from 'react'
 
@@ -11,11 +11,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'react-toastify'
-import { PaymentElementWrapper } from '@/components/Stripe/PaymentElement'
 
 export default function OnboardingPage() {
   const router = useRouter()
   const { userId, isLoaded } = useAuth()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (isLoaded && !userId) {
@@ -31,49 +31,36 @@ export default function OnboardingPage() {
   const [formData, setFormData] = useState({
     fullName: '',
     businessName: '',
+    businessAddress: {
+      street: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: 'US'
+    },
     phoneNumber: '',
     email: '',
-    hasPaymentSetup: false
   })
+
+  useEffect(() => {
+    if (isLoaded && !userId) {
+      router.push('/sign-in')
+    }
+  }, [isLoaded, userId, router])
+
+  if (!isLoaded || !userId) {
+    return null
+  }
 
   const handleBusinessDetailsSubmit = async () => {
     try {
+      setIsSubmitting(true)
       const response = await fetch('/api/user/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId,
-          ...formData,
-          hasPaymentSetup: false
-        })
-      })
-
-      if (!response.ok) throw new Error('Failed to update user')
-      
-      const setupResponse = await fetch('/api/stripe/create-setup-intent', {
-        method: 'POST'
-      })
-
-      if (!setupResponse.ok) throw new Error('Failed to create setup intent')
-      
-      setStep(3)
-    } catch (error: any) {
-      console.error('Business details update failed:', error)
-      toast.error(error.message)
-    }
-  }
-
-  const handleFinalSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    try {
-      const response = await fetch('/api/user/onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          ...formData,
-          hasPaymentSetup: true
+          ...formData
         })
       })
 
@@ -94,8 +81,10 @@ export default function OnboardingPage() {
       
       router.push('/creating-account')
     } catch (error: any) {
-      console.error('Final submission failed:', error)
+      console.error('Business details update failed:', error)
       toast.error(error.message)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -133,6 +122,66 @@ export default function OnboardingPage() {
               className="mt-1"
             />
           </div>
+          <div className="space-y-2">
+            <Label>Street Address</Label>
+            <Input
+              placeholder="123 Main St"
+              value={formData.businessAddress.street}
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                businessAddress: {
+                  ...prev.businessAddress,
+                  street: e.target.value
+                }
+              }))}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>City</Label>
+              <Input
+                placeholder="City"
+                value={formData.businessAddress.city}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  businessAddress: {
+                    ...prev.businessAddress,
+                    city: e.target.value
+                  }
+                }))}
+              />
+            </div>
+            <div>
+              <Label>State</Label>
+              <Input
+                placeholder="CA"
+                maxLength={2}
+                value={formData.businessAddress.state}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  businessAddress: {
+                    ...prev.businessAddress,
+                    state: e.target.value.toUpperCase()
+                  }
+                }))}
+              />
+            </div>
+          </div>
+          <div>
+            <Label>ZIP Code</Label>
+            <Input
+              placeholder="12345"
+              maxLength={5}
+              value={formData.businessAddress.postalCode}
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                businessAddress: {
+                  ...prev.businessAddress,
+                  postalCode: e.target.value.replace(/\D/g, '')
+                }
+              }))}
+            />
+          </div>
           <div>
             <Label htmlFor="phoneNumber">Business phone</Label>
             <Input
@@ -160,40 +209,34 @@ export default function OnboardingPage() {
           </div>
         </div>
       )
-    },
-    {
-      title: "Payment Information",
-      description: "Set up your payment method to get started",
-      fields: (
-        <div className="space-y-4">
-          <PaymentElementWrapper />
-        </div>
-      )
     }
   ]
+
   const isStepValid = (stepNumber: number) => {
     switch (stepNumber) {
       case 1:
         return formData.fullName.trim().length > 0
       case 2:
         return formData.businessName.trim().length > 0 &&
+               formData.businessAddress.street.trim().length > 0 &&
+               formData.businessAddress.city.trim().length > 0 &&
+               formData.businessAddress.state.length === 2 &&
+               formData.businessAddress.postalCode.length === 5 &&
                formData.phoneNumber.trim().length > 0 &&
-               formData.email.trim().length > 0 &&
-               formData.email.includes('@') // Basic email validation
-      case 3:
-        return formData.hasPaymentSetup
+               formData.email.includes('@')
       default:
         return false
     }
   }
 
-  const handleContinue = () => {
-    if (step === 2 && isStepValid(step)) {
-      handleBusinessDetailsSubmit()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (step === steps.length && isStepValid(step)) {
+      await handleBusinessDetailsSubmit();
     } else if (step < steps.length && isStepValid(step)) {
-      setStep(step + 1)
+      setStep(step + 1);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 justify-center items-center to-white p-6">
@@ -204,7 +247,7 @@ export default function OnboardingPage() {
             <CardDescription>{steps[step - 1].description}</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={step === 3 ? handleFinalSubmit : handleBusinessDetailsSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {steps[step - 1].fields}
               
               <div className="flex justify-between pt-4">
@@ -213,18 +256,24 @@ export default function OnboardingPage() {
                     type="button"
                     variant="outline"
                     onClick={() => setStep(step - 1)}
+                    disabled={isSubmitting}
                   >
                     Back
                   </Button>
                 )}
                 <Button 
-                  type={step === steps.length ? "submit" : "button"}
+                  type="submit"
                   className="ml-auto"
-                  onClick={handleContinue}
-                  disabled={!isStepValid(step)}
+                  disabled={!isStepValid(step) || isSubmitting}
                 >
-                  {step === steps.length ? 'Get Started' : 'Continue'}
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  {isSubmitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      {step === steps.length ? 'Complete' : 'Continue'}
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </>
+                  )}
                 </Button>
               </div>
             </form>

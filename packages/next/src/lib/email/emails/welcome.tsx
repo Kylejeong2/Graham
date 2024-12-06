@@ -5,7 +5,6 @@ import {
     Heading,
     Hr,
     Html,
-    Link,
     Preview,
     Section,
     Tailwind,
@@ -25,7 +24,7 @@ import {
         <Tailwind>
           <Body className="my-auto mx-auto font-sans">
             <Container className="border-transparent my-[40px] mx-auto max-w-[600px]">
-              <Logo baseUrl={baseUrl} />
+              <Logo />
               <Heading className="font-normal text-center p-0 my-[30px] mx-0">
                 Welcome to Graham
               </Heading>
@@ -39,11 +38,12 @@ import {
                 To get started, click the button below to access your dashboard and begin configuring your AI agent.
               </Section>
               <Section className="mb-6">
-                <Link href={`${baseUrl}/dashboard`}>
-                  <Button className="bg-black text-white p-4 text-center">
-                    Set up your agent
-                  </Button>
-                </Link>
+                <Button
+                  href={`${baseUrl}/dashboard`}
+                  className="bg-black text-white p-4 text-center"
+                >
+                  Set up your agent
+                </Button>
               </Section>
               <Hr />
               <Section className="text-sm text-gray-500 mt-4">

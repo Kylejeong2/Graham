@@ -1,9 +1,9 @@
 import { Img } from "@react-email/components";
 
-export function Logo({ baseUrl }: { baseUrl: string }) {
+export function Logo() {
   return (
     <Img
-      src={`${baseUrl}/logo.png`}
+      src={`/logo/graham-logo.png`}
       alt="Logo"
       className="my-0 mx-auto text-center"
       width={70}

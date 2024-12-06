@@ -95,7 +95,7 @@ export default function Hero() {
                       document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' });
                     }}
                   >
-                    Start Making More Money
+                    Start Answering Every Call
                   </Link>
                 </Button>
               </motion.div>

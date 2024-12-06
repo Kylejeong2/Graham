@@ -1,0 +1,8 @@
+{
+    "sip_trunk_id": "ST_JFgkChVKLfeJ",
+    "sip_call_to": "+15103401579",
+    "room_name": "demo-worker",
+    "participant_identity": "sip-test",
+    "participant_name": "Test Caller",
+    "play_ringtone": true
+  }

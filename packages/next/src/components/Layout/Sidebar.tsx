@@ -9,7 +9,7 @@ export default async function SidebarLayout({ children }: { children: React.Reac
     return (
         <SidebarProvider defaultOpen={defaultOpen}>
             <AppSidebar />
-            <main>
+            <main className="h-full w-full py-2 overflow-y-auto">
                 <SidebarTrigger />
                 {children}
             </main>

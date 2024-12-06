@@ -10,18 +10,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { fullName, businessName, phoneNumber, email, hasPaymentSetup } = await request.json()
+    const { fullName, businessName, businessAddress, phoneNumber, email } = await request.json()
 
     // Check if user exists, if not create them
     let user = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: userId },
+      include: { businessAddress: true }
     })
 
     if (!user) {
       // Get Clerk user data
       const clerkUser = await clerk.users.getUser(userId)
       
-      // Create new user
+      // Create new user with business address
       user = await prisma.user.create({
         data: {
           id: userId,
@@ -29,21 +30,49 @@ export async function POST(request: Request) {
           fullName: fullName || `${clerkUser.firstName} ${clerkUser.lastName}`,
           createdAt: new Date(),
           updatedAt: new Date(),
-        }
+          businessAddress: businessAddress ? {
+            create: {
+              street: businessAddress.street,
+              city: businessAddress.city,
+              state: businessAddress.state,
+              postalCode: businessAddress.postalCode,
+              verified: businessAddress.verified
+            }
+          } : undefined
+        },
+        include: { businessAddress: true }
+      })
+    } else {
+      // Update user with onboarding details
+      user = await prisma.user.update({
+        where: { id: userId },
+        data: {
+          fullName,
+          businessName,
+          businessAddress: {
+            upsert: {
+              create: {
+                street: businessAddress.street,
+                city: businessAddress.city,
+                state: businessAddress.state,
+                postalCode: businessAddress.postalCode,
+                verified: businessAddress.verified
+              },
+              update: {
+                street: businessAddress.street,
+                city: businessAddress.city,
+                state: businessAddress.state,
+                postalCode: businessAddress.postalCode,
+                verified: businessAddress.verified
+              }
+            }
+          },
+          user_phoneNumber: phoneNumber,
+          email,
+        },
+        include: { businessAddress: true }
       })
     }
-
-    // Update user with onboarding details
-    user = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        fullName,
-        businessName,
-        user_phoneNumber: phoneNumber,
-        email,
-        hasPaymentSetup
-      }
-    })
 
     return NextResponse.json({ user })
   } catch (error) {

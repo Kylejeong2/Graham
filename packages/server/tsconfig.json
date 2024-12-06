@@ -1,0 +1,29 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "compilerOptions": {
+      /* Base Options: */
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "target": "es2022",
+      "verbatimModuleSyntax": true,
+      "allowJs": true,
+      "resolveJsonModule": true,
+      "moduleDetection": "force",
+      /* Strictness */
+      "strict": true,
+      "noUncheckedIndexedAccess": true,
+      /* If NOT transpiling with TypeScript: */
+      "moduleResolution": "Bundler",
+      "module": "ESNext",
+      "noEmit": true,
+      /* If your code doesn't run in the DOM: */
+      "lib": [
+        "es2022",
+        /* DOM enabled for Puppeteer */
+        "dom"
+      ],
+      "baseUrl": "."
+    },
+    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+    "exclude": ["node_modules"]
+  }

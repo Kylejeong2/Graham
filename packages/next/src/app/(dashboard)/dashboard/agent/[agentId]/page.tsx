@@ -1,10 +1,8 @@
 import { prisma } from "@graham/db";
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import React from 'react'
-import { AgentTitleBar } from '@/components/Agent/AgentTitleBar';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { AgentSetup } from '@/components/Agent/AgentSetup';
+import { AgentTitleBar } from '@/components/Agent/components/AgentTitleBar';
+import { AgentTabs } from '@/components/Agent/AgentTabs';
 
 type Props = {
     params: {
@@ -23,29 +21,24 @@ const AgentPage = async ({params: { agentId }}: Props) => {
     ])
 
     if (!user || !agent) return redirect('/dashboard')
+    
+    // Redirect to setup if agent is not deployed or missing required fields
+    if (!agent.deployed) {
+        return redirect(`/dashboard?setup=${agentId}`)
+    }
+
+    // Ensure user owns this agent
+    if (agent.userId !== userId) {
+        return redirect('/dashboard')
+    }
 
     return (
-        <div className='h-full bg-white py-4 px-10'>
-            <div className='max-w-8xl mx-auto space-y-4 h-full bg-white'>
+        <div className='w-full h-full bg-white'>
+            <div className='w-full h-full bg-white px-6'>
                 <AgentTitleBar 
                     agent={agent}
                 />
-                <Tabs defaultValue={agent.isSetupComplete ? "editing" : "setup"} className="bg-white h-full rounded-lg p-4">
-                    <TabsList className="border-b border-blue-100">
-                        <TabsTrigger value="setup" className="text-blue-600">Setup</TabsTrigger>
-                        <TabsTrigger value="testing" className="text-blue-600">Testing</TabsTrigger>
-                        <TabsTrigger value="call-logs" className="text-blue-600">Call Logs</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="setup">
-                        <AgentSetup agentId={agentId} user={user} />
-                    </TabsContent>
-                    <TabsContent value="testing">
-                        {/* <AgentTesting agent={agent} /> */}
-                    </TabsContent>
-                    <TabsContent value="call-logs">
-                        {/* <AgentCallLogs agent={agent} /> */}
-                    </TabsContent>
-                </Tabs>
+                <AgentTabs agent={agent} user={user} />
             </div>
         </div>
     );

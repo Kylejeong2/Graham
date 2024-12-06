@@ -1,7 +1,5 @@
 import { toast } from "react-toastify";
-import { prisma } from "@graham/db";
-
-// TODO: doesn't buy twilio phone number / or run the route after the checkout session
+  
 export const createPhoneNumberSubscription = async (phoneNumber: string, userId: string, agentId: string) => {
     try {
       const response = await fetch('/api/stripe/create-checkout-session', {
@@ -22,40 +20,6 @@ export const createPhoneNumberSubscription = async (phoneNumber: string, userId:
       const { url } = await response.json();
 
       if (url) {
-        if(url.success) {
-            const response = await fetch('/api/twilio/buy-phone-number', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId,
-                    phoneNumber,
-                })
-            });
-            const data = await response.json();
-            if (!response.ok) {
-              throw new Error(data.error || 'Failed to purchase number');
-            }
-
-            await prisma.agent.update({
-                where: {
-                    id: agentId
-                },
-                data: {
-                    phoneNumber: data.phoneNumber
-                }
-            })
-
-            await prisma.user.update({
-                where: {
-                    id: userId
-                },
-                data: {
-                    phoneNumbers: {
-                        push: data.phoneNumber
-                    }
-                }
-            })
-        }
         window.location.href = url;
       } else {
         throw new Error('No checkout URL received');

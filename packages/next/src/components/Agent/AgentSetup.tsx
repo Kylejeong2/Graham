@@ -7,20 +7,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { MessageSquare, Upload, Volume2, UploadCloud, Download, Loader2, Play, Square, Phone, Settings, Calendar, CreditCard, ExternalLink, CalendarDays, ArrowRight } from 'lucide-react'
-import debounce from 'lodash/debounce';
-import type { Agent } from '@graham/db';
+import { MessageSquare, Upload, Volume2, UploadCloud, Download, Loader2, Phone, Settings, Calendar, CreditCard, ExternalLink, Mail, BrainCircuit } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Switch } from '@radix-ui/react-switch';
+import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
-import type { User } from '@graham/db';
-import { BuyPhoneNumberModal } from './setup/modals/buy-phone-number';
+import Link from 'next/link';
+import type { User, Agent, BusinessAddress } from '@graham/db';
+import { BuyPhoneNumberModal, CalendarIntegrationModal, VoiceSelectionModal } from './setup/modals';
+import { handleDocumentSelect, handleVoiceSelect, handlePreviewVoice, handleGoogleAuth, handleFileUpload, 
+    fetchAgentData, createDebouncedMessageUpdate, handleCompleteSetup, fetchVoices, handleEnhanceInstructions, 
+    createDebouncedInstructionUpdate, handlePhoneNumberSelect, fetchUserPhoneNumbers, handleDownloadTemplate, 
+    formatPhoneNumber, fetchBusinessDocuments
+} from './setup/setup-functions';
+import type { ConversationInitType } from './setup/types';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import type { BusinessDocument } from './setup/types/business';
 
-type ConversationInitType = 'user' | 'ai-default' | 'ai-custom';
 
-export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId, user }) => {
+export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isCompleting, setIsCompleting] = useState(false);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -42,320 +47,70 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
     const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
     const [calendarStep, setCalendarStep] = useState<'select' | 'google' | 'servicetitan'>('select');
     const [isConnectingCalendar, setIsConnectingCalendar] = useState(false);
+    const [businessDocuments, setBusinessDocuments] = useState<BusinessDocument[]>([]);
+    const [selectedDocument, setSelectedDocument] = useState<string>('');
 
     const debouncedMessageUpdate = useCallback(
-        debounce(async (newMessage: string) => {
-            try {
-                await fetch(`/api/agent/updateAgent`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        agentId,
-                        initialMessage: newMessage,
-                    }),
-                });
-            } catch (error) {
-                toast.error('Failed to update initial message');
-            }
-        }, 3000),
-        [agentId]
+        createDebouncedMessageUpdate(agent.id, setIsSaving),
+        [agent.id]
     );
 
     const openVoiceModal = () => setIsVoiceModalOpen(true);
     const closeVoiceModal = () => setIsVoiceModalOpen(false);
-    
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        if (!file.type.includes('pdf')) {
-            toast.error('Only PDF files are currently supported');
-            return;
-        }
-
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error('File size must be less than 5MB');
-            return;
-        }
-
-        setUploadedFile(file);
-        
-        try {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('agentId', agentId);
-
-            const response = await fetch('/api/agent/upload-document', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to upload file');
-            }
-
-            const data = await response.json();
-            if (data.success) {
-                toast.success('File uploaded and processed successfully');
-            } else {
-                throw new Error('Failed to upload file');
-            }
-        } catch (error) {
-            console.error('Error uploading file:', error);
-            toast.error('Failed to upload file');
-            setUploadedFile(null);
-        }
-    };
-
-    // const handleDownloadTemplate = () => {
-    //     // TODO: Implement template download
-    //     toast.info('Template download coming soon!');
-    // };
-
-    const handleCompleteSetup = async () => {
-        // TODO: Complete setup
-        setIsCompleting(true);
-        toast.info('Setup completed successfully!');
-    };
 
     useEffect(() => {
-        const fetchVoices = async () => {
-            setIsLoadingVoices(true);
+        const controller = new AbortController();
+        
+        const loadInitialData = async () => {
             try {
-                // const response = await fetch('/api/agent/getVoices-cartesia');
-                const response = await fetch('/api/agent/getVoices-eleven');
-                if (!response.ok) throw new Error('Failed to fetch voices');
-                const data = await response.json();
-                setVoices(data.voices);
+                setIsLoading(true);
+                setIsLoadingVoices(true);
+
+                await Promise.all([
+                    // Load agent data
+                    fetchAgentData(
+                        agent.id, 
+                        setIsLoading, 
+                        setCustomInstructions, 
+                        setSelectedVoice, 
+                        setSelectedVoiceName, 
+                        setConversationType, 
+                        setInitialMessage,
+                        setSelectedPhoneNumber
+                    ),
+                    // Load voices
+                    fetchVoices(setIsLoadingVoices, setVoices),
+                    // Load phone numbers
+                    user?.id ? fetchUserPhoneNumbers(user.id, setUserPhoneNumbers, agent.phoneNumber || '') : Promise.resolve(),
+                    // Load business documents
+                    user?.id ? fetchBusinessDocuments(user.id, setBusinessDocuments, controller.signal) : Promise.resolve()
+                ]);
             } catch (error) {
-                console.error('Error fetching voices:', error);
-                toast.error('Failed to load voices');
+                if (!controller.signal.aborted) {
+                    console.error('Error loading initial data:', error);
+                }
             } finally {
+                setIsLoading(false);
                 setIsLoadingVoices(false);
             }
         };
 
-        fetchVoices();
-    }, []);
+        loadInitialData();
 
-    const handleVoiceSelect = async (voice: any) => {
-        try {
-            setSelectedVoice(voice.voice_id);
-            setSelectedVoiceName(voice.name);
-            closeVoiceModal();
-
-            const updateData = {
-                agentId,
-                systemPrompt: customInstructions,
-                voiceId: voice.voice_id,  
-                voiceName: voice.name,    
-            };
-            
-            const response = await fetch(`/api/agent/updateAgent`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updateData),
-            });
-
-            const result = await response.json();
-            
-            if (response.ok) {
-                toast.success('Voice updated successfully');
-            } else {
-                throw new Error(result.error || 'Failed to update voice');
-            }
-        } catch (error) {
-            console.error('Error updating voice:', error);
-            toast.error('Failed to update voice selection');
-        }
-    };
+        return () => {
+            controller.abort();
+        };
+    }, [agent.id, user?.id, agent.phoneNumber]);
 
     const debouncedInstructionUpdate = useCallback(
-        debounce(async (newInstructions: string) => {
-            setIsSaving(true);
-            try {
-                const response = await fetch(`/api/agent/updateAgent`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        agentId,
-                        systemPrompt: newInstructions,
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to update instructions');
-                }
-    
-            } catch (error) {
-                console.error('Error updating instructions:', error);
-                toast.error('Failed to update instructions');
-            } finally {
-                setIsSaving(false);
-            }
-        }, 3000),
-        [agentId]
+        createDebouncedInstructionUpdate(agent.id, setIsSaving),
+        [agent.id]
     );
 
     const handleInstructionsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newInstructions = e.target.value;
         setCustomInstructions(newInstructions);
         debouncedInstructionUpdate(newInstructions);
-    };
-
-    const handlePreviewVoice = async (voice: any, e: React.MouseEvent) => {
-        e.stopPropagation();
-        
-        if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.currentTime = 0;
-        }
-
-        if (playingVoiceId === voice.voice_id) {
-            setPlayingVoiceId(null);
-            return;
-        }
-
-        if (voice.preview_url) {
-            const audio = new Audio(voice.preview_url);
-            audioRef.current = audio;
-            
-            try {
-                setPlayingVoiceId(voice.voice_id);
-                await audio.play();
-                
-                audio.onended = () => {
-                    setPlayingVoiceId(null);
-                };
-            } catch (error) {
-                console.error('Error playing audio:', error);
-                toast.error('Failed to play voice preview');
-                setPlayingVoiceId(null);
-            }
-        } else {
-            toast.error('No preview available for this voice');
-        }
-    };
-
-    useEffect(() => {
-        const fetchAgentData = async () => {
-            if (!agentId) {
-                setIsLoading(false);
-                toast.error('No agent ID provided');
-                return;
-            }
-
-            setIsLoading(true);
-            try {
-                const response = await fetch(`/api/agent/getAgentData/${agentId}`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch agent data');
-                }
-                const agent: Agent = await response.json();
-                
-                if (agent.systemPrompt) {
-                    setCustomInstructions(agent.systemPrompt);
-                }
-                if (agent.voiceId) {
-                    setSelectedVoice(agent.voiceId);
-                }
-                if (agent.voiceName) {
-                    setSelectedVoiceName(agent.voiceName);
-                }
-                if (agent.initiateConversation !== undefined) {
-                    if (!agent.initiateConversation) {
-                        setConversationType('user');
-                    } else {
-                        setConversationType(
-                            agent.initialMessage === "Hello! How can I assist you today?"
-                                ? 'ai-default'
-                                : 'ai-custom'
-                        );
-                    }
-                }
-                if (agent.initialMessage) {
-                    setInitialMessage(agent.initialMessage);
-                }
-            } catch (error) {
-                console.error('Error fetching agent data:', error);
-                toast.error('Failed to load agent data');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchAgentData();
-    }, [agentId]);
-
-    useEffect(() => {
-        const fetchUserPhoneNumbers = async () => {
-            try {
-                const response = await fetch('/api/user/getPhoneNumbers', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: user?.id })
-                });
-                if (!response.ok) throw new Error('Failed to fetch phone numbers');
-                const data = await response.json();
-                setUserPhoneNumbers(JSON.parse(data.phoneNumbers || '[]'));
-            } catch (error) {
-                console.error('Error fetching phone numbers:', error);
-                toast.error('Failed to load phone numbers');
-            }
-        };
-
-        fetchUserPhoneNumbers();
-    }, []);
-
-    const handleEnhanceInstructions = async () => {
-        if (!customInstructions) {
-            toast.warn('Please add some instructions first');
-            return;
-        }
-
-        setIsEnrichingInstructions(true);
-        try {
-            const response = await fetch('/api/agent/enrich-instructions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    instructions: customInstructions,
-                    agentId,
-                }),
-            });
-
-            if (!response.ok) throw new Error('Failed to enhance instructions');
-            
-            const data = await response.json();
-            setCustomInstructions(data.enhancedInstructions as string);
-            toast.success('Instructions enhanced successfully');
-        } catch (error) {
-            console.error('Error enhancing instructions:', error);
-            toast.error('Failed to enhance instructions');
-        } finally {
-            setIsEnrichingInstructions(false);
-        }
-    };
-
-    const handlePhoneNumberSelect = async (phoneNumber: string) => {
-        try {
-            setSelectedPhoneNumber(phoneNumber);
-            
-            const response = await fetch(`/api/agent/updateAgent`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    agentId,
-                    phoneNumber,
-                }),
-            });
-
-            if (!response.ok) throw new Error('Failed to update phone number');
-            toast.success('Phone number updated successfully');
-        } catch (error) {
-            console.error('Error updating phone number:', error);
-            toast.error('Failed to update phone number');
-        }
     };
 
     const EnhancingAnimation = () => (
@@ -371,32 +126,15 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
+            <div className="flex items-center justify-center min-h-[400px] w-full px-8">
                 <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
             </div>
         );
     }
 
-    const handleGoogleAuth = async () => {
-        setIsConnectingCalendar(true);
-        try {
-            const response = await fetch('/api/integrations/google-calendar');
-            const { url } = await response.json();
-            
-            if (url) {
-                window.location.href = url;
-            }
-        } catch (error) {
-            console.error('Failed to start Google Calendar auth:', error);
-            toast.error('Failed to connect to Google Calendar');
-        } finally {
-            setIsConnectingCalendar(false);
-        }
-    };
-
     return (
-        <div className="flex flex-col min-h-full gap-6">
-            <div className="grid grid-cols-12 gap-6">
+        <div className="flex flex-col w-full gap-6">
+            <div className="grid grid-cols-12 gap-6 w-full">
                 {/* Left Half - Custom Instructions */}
                 <Card className="col-span-12 lg:col-span-6 bg-white shadow-lg">
                     <CardHeader className="border-b border-blue-100">
@@ -435,7 +173,12 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                                     )}
                                 </div>
                                 <Button
-                                    onClick={handleEnhanceInstructions}
+                                    onClick={() => handleEnhanceInstructions(
+                                        customInstructions,
+                                        agent.id,
+                                        setCustomInstructions,
+                                        setIsEnrichingInstructions
+                                    )}
                                     disabled={isEnrichingInstructions || !customInstructions.trim()}
                                     className={cn(
                                         "relative overflow-hidden",
@@ -467,17 +210,16 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                             <div className="space-y-6">
                                 <div className="space-y-2">
                                     <Label className="text-blue-900">Who starts the conversation?</Label>
-                                    <select
+                                    <Select
                                         value={conversationType}
-                                        onChange={async (e) => {
-                                            const newType = e.target.value as ConversationInitType;
-                                            setConversationType(newType);
+                                        onValueChange={async (newType) => {
+                                            setConversationType(newType as ConversationInitType);
                                             try {
                                                 await fetch(`/api/agent/updateAgent`, {
                                                     method: 'PATCH',
                                                     headers: { 'Content-Type': 'application/json' },
                                                     body: JSON.stringify({
-                                                        agentId,
+                                                        agentId: agent.id,
                                                         initiateConversation: newType !== 'user',
                                                         initialMessage: newType === 'ai-default' 
                                                             ? "Hello! How can I assist you today?"
@@ -488,12 +230,16 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                                                 toast.error('Failed to update conversation preference');
                                             }
                                         }}
-                                        className="w-full p-2 border rounded-md"
                                     >
-                                        <option value="user">User speaks first</option>
-                                        <option value="ai-default">AI speaks first (default greeting "Hello! How can I assist you today?")</option>
-                                        <option value="ai-custom">AI speaks first (custom message)</option>
-                                    </select>
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select who starts" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="user">User speaks first</SelectItem>
+                                            <SelectItem value="ai-default">AI speaks first (default greeting)</SelectItem>
+                                            <SelectItem value="ai-custom">AI speaks first (custom message)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
                                 <AnimatePresence>
@@ -506,16 +252,21 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                                         >
                                             <div className="space-y-4">
                                                 <Label className="text-blue-900">Custom Initial Message</Label>
-                                                <Textarea
-                                                    placeholder="Enter your custom greeting message..."
-                                                    value={initialMessage}
-                                                    onChange={(e) => {
-                                                        const newMessage = e.target.value;
-                                                        setInitialMessage(newMessage);
-                                                        debouncedMessageUpdate(newMessage);
-                                                    }}
-                                                    className="min-h-[100px]"
-                                                />
+                                                <div className="relative">
+                                                    <Input
+                                                        value={initialMessage}
+                                                        onChange={(e) => {
+                                                            setInitialMessage(e.target.value);
+                                                            debouncedMessageUpdate(e.target.value);
+                                                        }}
+                                                        placeholder="Enter custom initial message..."
+                                                    />
+                                                    {isSaving && (
+                                                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                                            <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </motion.div>
                                     )}
@@ -562,16 +313,25 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                             <p className="text-sm text-gray-500">Connect or purchase a number</p>
                         </CardHeader>
                         <CardContent className="pt-4 space-y-4">
-                            <select
+                            <Select
                                 value={selectedPhoneNumber}
-                                onChange={(e) => handlePhoneNumberSelect(e.target.value)}
-                                className="w-full p-2 border border-blue-200 rounded-md text-sm"
+                                onValueChange={(phoneNumber) => handlePhoneNumberSelect(
+                                    phoneNumber,
+                                    agent.id,
+                                    setSelectedPhoneNumber
+                                )}
                             >
-                                <option value="">Select existing number</option>
-                                {userPhoneNumbers.map((number) => (
-                                    <option key={number} value={number}>{number}</option>
-                                ))}
-                            </select>
+                                <SelectTrigger className="w-full border-blue-200">
+                                    <SelectValue placeholder="Select existing number" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {userPhoneNumbers.map((number) => (
+                                        <SelectItem key={number} value={number}>
+                                            {formatPhoneNumber(number)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <div className="flex flex-col gap-2">
                                 <Button 
                                     className="w-full bg-blue-600 hover:bg-blue-700 text-white"
@@ -598,13 +358,18 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                                 <UploadCloud className="w-5 h-5 mr-2 text-orange-500" />
                                 Business Information
                             </CardTitle>
-                            <p className="text-sm text-gray-500">Upload documents & templates</p>
+                            <p className="text-sm text-gray-500">Upload & select documents</p>
                         </CardHeader>
                         <CardContent className="pt-4 space-y-4">
                             <div className="border-2 border-dashed border-blue-200 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
                                 <Input
                                     type="file"
-                                    onChange={handleFileUpload}
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        await handleFileUpload(file, agent.id, setUploadedFile, user.id);
+                                        window.location.reload();
+                                    }}
                                     className="hidden"
                                     id="file-upload"
                                     accept=".pdf,.doc,.docx"
@@ -624,15 +389,48 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                                     </span>
                                 </Label>
                             </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-sm font-medium">Available Documents</Label>
+                                <Select
+                                    value={selectedDocument}
+                                    onValueChange={(value) => handleDocumentSelect(value, agent.id, setSelectedDocument)}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Select a document" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Array.isArray(businessDocuments) && businessDocuments.length > 0 ? (
+                                            businessDocuments.map((doc) => (
+                                                <SelectItem 
+                                                    key={doc.id} 
+                                                    value={doc.id}
+                                                >
+                                                    <div className="flex items-center justify-between w-full">
+                                                        <span className="truncate">{doc.fileName}</span>
+                                                    </div>
+                                                </SelectItem>
+                                            ))
+                                        ) : (
+                                            <SelectItem value="none" disabled>
+                                                No documents uploaded yet
+                                            </SelectItem>
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
                             <div className="flex gap-2">
-                                <Button variant="outline" className="flex-1 text-xs h-auto py-2">
+                                <Button variant="outline" className="flex-1 text-xs h-auto py-2" onClick={handleDownloadTemplate}>
                                     <Download className="w-3 h-3 mr-1" />
                                     Template
                                 </Button>
-                                <Button variant="outline" className="flex-1 text-xs h-auto py-2">
-                                    <ExternalLink className="w-3 h-3 mr-1" />
-                                    Google Docs
-                                </Button>
+                                <Link href="https://docs.google.com/document/d/1WcGjJawOhVAuSCyjTXwrUJ3tp-0Ce0QSTVddL2ynWLs/edit?usp=sharing" target="_blank">
+                                    <Button variant="outline" className="flex-1 text-xs h-auto py-2">
+                                        <ExternalLink className="w-3 h-3 mr-1" />
+                                        Google Docs
+                                    </Button>
+                                </Link>
                             </div>
                         </CardContent>
                     </Card>
@@ -656,7 +454,7 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                                     <div className="space-y-2">
                                         {[
                                             { icon: Calendar, label: 'Appointment Booking', desc: 'Schedule meetings' },
-                                            { icon: CreditCard, label: 'Payment Processing', desc: 'Handle transactions' },
+                                            { icon: CreditCard, label: 'Payment Processing', desc: 'Handle transactions', disabled: true },
                                         ].map((feature, index) => (
                                             <div key={index} className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50">
                                                 <div className="flex items-center gap-2">
@@ -675,7 +473,7 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                                                         Connect
                                                     </Button>
                                                 ) : (
-                                                    <Switch className="scale-75" />
+                                                    <Switch className="scale-75" disabled={feature.disabled} />
                                                 )}
                                             </div>
                                         ))}
@@ -683,12 +481,12 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                                 </div>
 
                                 {/* Integrations */}
-                                {/* <div className="space-y-3">
+                                <div className="space-y-3">
                                     <h4 className="text-xs font-medium text-blue-900">Integrations</h4>
                                     <div className="space-y-2">
                                         {[
-                                            { icon: BrainCircuit, label: 'CRM Integration', desc: 'Connect your CRM' },
-                                            { icon: Mail, label: 'Email Notifications', desc: 'Auto-send updates' },
+                                            { icon: BrainCircuit, label: 'CRM Integration', desc: 'Connect your CRM', disabled: true },
+                                            { icon: Mail, label: 'Email Notifications', desc: 'Auto-send updates', disabled: true },
                                         ].map((feature, index) => (
                                             <div key={index} className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50">
                                                 <div className="flex items-center gap-2">
@@ -698,11 +496,11 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
                                                         <p className="text-xs text-gray-500">{feature.desc}</p>
                                                     </div>
                                                 </div>
-                                                <Switch className="scale-75" />
+                                                <Switch className="scale-75" disabled={feature.disabled} />
                                             </div>
                                         ))}
                                     </div>
-                                </div> */}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -712,7 +510,7 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
             {/* Complete Setup Button */}
             <div className="mt-auto pt-6">
                 <Button 
-                    onClick={handleCompleteSetup}
+                    onClick={() => handleCompleteSetup(agent.id, selectedDocument, setIsCompleting)}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                     disabled={isCompleting}
                 >
@@ -721,147 +519,47 @@ export const AgentSetup: React.FC<{ agentId: string; user: User }> = ({ agentId,
             </div>
 
             {/* Voice Selection Modal */}
-            <Dialog open={isVoiceModalOpen} onOpenChange={setIsVoiceModalOpen}>
-                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle className="text-blue-900">Select a Voice</DialogTitle>
-                    </DialogHeader>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {isLoadingVoices ? (
-                            <div className="col-span-full flex justify-center py-8">
-                                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                            </div>
-                        ) : voices.length > 0 ? (
-                            voices.map((voice) => (
-                                <Card 
-                                    key={voice.voice_id} 
-                                    className={`p-4 cursor-pointer hover:border-blue-500 transition-all ${
-                                        selectedVoice === voice.voice_id ? 'border-2 border-blue-500' : ''
-                                    }`}
-                                    onClick={() => handleVoiceSelect(voice)}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <h3 className="font-medium text-blue-900">{voice.name}</h3>
-                                            <p className="text-sm text-blue-600">
-                                                {voice.labels?.accent || 'English'}
-                                            </p>
-                                        </div>
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className={`text-orange-500 ${playingVoiceId === voice.voice_id ? 'bg-orange-50' : ''}`}
-                                            onClick={(e) => handlePreviewVoice(voice, e)}
-                                        >
-                                            {playingVoiceId === voice.voice_id ? (
-                                                <Square className="w-4 h-4" />
-                                            ) : (
-                                                <Play className="w-4 h-4" />
-                                            )}
-                                        </Button>
-                                    </div>
-                                </Card>
-                            ))
-                        ) : (
-                            <div className="col-span-full text-center py-8 text-blue-900">
-                                No voices available
-                            </div>
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
+            <VoiceSelectionModal 
+                isOpen={isVoiceModalOpen}
+                onClose={closeVoiceModal}
+                voices={voices}
+                isLoadingVoices={isLoadingVoices}
+                selectedVoice={selectedVoice}
+                playingVoiceId={playingVoiceId}
+                handleVoiceSelect={(voice: any) => handleVoiceSelect({
+                    voice,
+                    agentId: agent.id,
+                    systemPrompt: customInstructions,
+                    setSelectedVoice,
+                    setSelectedVoiceName,
+                    onClose: () => setIsVoiceModalOpen(false)
+                })}
+                handlePreviewVoice={(voice: any, e: any) => handlePreviewVoice({
+                    voice,
+                    e,
+                    audioRef,
+                    playingVoiceId,
+                    setPlayingVoiceId
+                })}
+            />
 
             <BuyPhoneNumberModal 
                 isOpen={isPhoneModalOpen}
                 onClose={() => setIsPhoneModalOpen(false)}
                 userPhoneNumbers={userPhoneNumbers}
                 setUserPhoneNumbers={setUserPhoneNumbers}
-                user={user}
-                agentId={agentId}
+                user={user as User & { businessAddress: BusinessAddress | null }}
+                agentId={agent.id}
             />
 
-            <Dialog open={isCalendarModalOpen} onOpenChange={setIsCalendarModalOpen}>
-                <DialogContent className="max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>
-                            {calendarStep === 'select' ? 'Calendar Integration' : 
-                             calendarStep === 'google' ? 'Connect Google Calendar' : 
-                             'ServiceTitan Calendar'}
-                        </DialogTitle>
-                    </DialogHeader>
-
-                    {calendarStep === 'select' ? (
-                        <div className="space-y-4">
-                            <Button 
-                                onClick={() => setCalendarStep('google')}
-                                className="w-full justify-between group"
-                            >
-                                <div className="flex items-center gap-2">
-                                    <CalendarDays className="w-5 h-5" />
-                                    Google Calendar
-                                </div>
-                                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                            </Button>
-                            
-                            <Button 
-                                disabled
-                                className="w-full justify-between opacity-50"
-                            >
-                                <div className="flex items-center gap-2">
-                                    <CalendarDays className="w-5 h-5" />
-                                    ServiceTitan
-                                </div>
-                                <Badge variant="outline" className="ml-2">Coming Soon</Badge>
-                            </Button>
-                        </div>
-                    ) : calendarStep === 'google' ? (
-                        <div className="space-y-4">
-                            <p className="text-sm text-gray-500">
-                                Connect your Google Calendar to enable automatic appointment scheduling through your AI agent.
-                            </p>
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2 text-sm text-blue-600">
-                                    <Calendar className="w-4 h-4" />
-                                    Your agent will be able to:
-                                </div>
-                                <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                    <li>Check your availability</li>
-                                    <li>Schedule appointments</li>
-                                    <li>Send calendar invites</li>
-                                    <li>Manage appointment changes</li>
-                                </ul>
-                            </div>
-                            <Button 
-                                onClick={handleGoogleAuth}
-                                disabled={isConnectingCalendar}
-                                className="w-full"
-                            >
-                                {isConnectingCalendar ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                        Connecting...
-                                    </>
-                                ) : (
-                                    <>
-                                        <CalendarDays className="w-4 h-4 mr-2" />
-                                        Connect Google Calendar
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    ) : null}
-
-                    {calendarStep !== 'select' && (
-                        <Button
-                            variant="ghost"
-                            onClick={() => setCalendarStep('select')}
-                            className="mt-2"
-                        >
-                            ← Back to integrations
-                        </Button>
-                    )}
-                </DialogContent>
-            </Dialog>
+            <CalendarIntegrationModal 
+                isOpen={isCalendarModalOpen}
+                onClose={() => setIsCalendarModalOpen(false)}
+                calendarStep={calendarStep}
+                setCalendarStep={setCalendarStep}
+                isConnectingCalendar={isConnectingCalendar}
+                handleGoogleAuth={() => handleGoogleAuth(setIsConnectingCalendar, agent.id)}
+            />
         </div>
     );
 };

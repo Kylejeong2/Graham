@@ -1,18 +1,35 @@
 {
     "name": "@graham/server",
+    "packageManager": "yarn@4.1.1",
     "private": true,
-    "type": "module",
     "scripts": {
+        "build": "node build.js &&  [ -f .env ]  && cp .env dist/.env || exit 0",
+        "start": "node dist/index.js",
+        "dev": "tsx --watch index.ts",
+        "test": "vitest --no-isolate --maxConcurrency=20",
+        "type:check": "tsc --noEmit",
         "changeset": "changeset",
         "ci:publish": "changeset publish",
         "ci:version": "changeset version && python3 .github/update_versions.py"
     },
+    "main": "index.js",
     "devDependencies": {
-        "@changesets/cli": "^2.27.1",
-        "@livekit/changesets-changelog-github": "^0.0.4"
+        "@graham/db": "workspace:^",
+        "@graham/shared": "workspace:^",
+        "@types/dotenv": "^8.2.0",
+        "@types/node": "^20.12.12",
+        "esbuild": "^0.21.4",
+        "esbuild-plugin-tsc": "^0.4.0",
+        "nodemon": "^3.1.0",
+        "ts-node": "^10.9.2",
+        "tsx": "^4.10.5",
+        "typescript": "^5.4.5"
     },
-    "engines": {
-        "node": ">= 18"
-    },
-    "packageManager": "pnpm@9.2.0"
+    "dependencies": {
+        "@axiomhq/winston": "^1.3.0",
+        "@fastify/cors": "^10.0.1",
+        "dockerode": "^4.0.2",
+        "fastify": "^5.1.0",
+        "winston": "^3.17.0"
+    }
 }

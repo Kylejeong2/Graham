@@ -8,67 +8,166 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum DocumentStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 model Agent {
-  id                        String          @id @default(uuid())
-  name                      String
-  createdAt                 DateTime        @default(now())
-  userId                    String
-  phoneNumber               String?
-  systemPrompt              String?
-  callHistory               Json?
-  customResponses           Json            @default("{}")
-  minutesUsed               Int             @default(0)
-  lastModificationTimestamp String?
-  areaCode                  String?
-  isSetupComplete           Boolean         @default(false)
-  voiceId                   String?
-  voiceName                 String?
-  initialMessage            String?
-  initiateConversation      Boolean         @default(false)
-  user                      User            @relation(fields: [userId], references: [id])
-  documentChunks            DocumentChunk[]
-  usageRecords              UsageRecord[]
+  id                          String                      @id @default(uuid())
+  name                        String
+  createdAt                   DateTime                    @default(now())
+  userId                      String
+  phoneNumber                 String?
+  lastModificationTimestamp   String?
+  areaCode                    String?
+  minutesUsed                 Int                         @default(0)
+  // Deployment info 
+  deployed                    Boolean                     @default(false)
+  lastDeployedAt              DateTime?
+  containerId                 String?
+  sipTrunkId                  String?
+  // Agent Customization
+  voiceId                     String?
+  voiceName                   String?
+  systemPrompt                String?
+  initialMessage              String?
+  customResponses             Json                        @default("{}")
+  initiateConversation        Boolean                     @default(false)
+  ragDocumentId               String? // id of document used for phone rag
+  namespace                   String? // namespace for phone rag
+  // Relations
+  user                        User                        @relation(fields: [userId], references: [id])
+  usageRecords                UsageRecord[]
   googleCalendarIntegrations  GoogleCalendarIntegration[]
+  callLogs                    CallLog[]
+}
+
+model BusinessDocument {
+  id            String         @id @default(cuid())
+  agentId       String
+  userId        String         // Added userId to connect documents with users
+  user          User           @relation(fields: [userId], references: [id]) // Relation to User
+  fileName      String
+  fileType      String
+  fileSize      Int
+  uploadedAt    DateTime       @default(now())
+  namespace     String?
+  chunks        Json?
+  indexPath     String          // Path to LlamaIndex storage
+  metadata      Json?           // Store any additional metadata
+
+  @@index([agentId])
 }
 
 model UsageRecord {
-  id          String   @id @default(uuid())
-  userId      String
-  agentId     String
-  minutesUsed Decimal
-  secondsUsed Decimal
-  voiceType   String
-  timestamp   DateTime @default(now())
-  agent       Agent    @relation(fields: [agentId], references: [id])
-  user        User     @relation(fields: [userId], references: [id])
+  id              String         @id @default(cuid())
+  userId          String
+  agentId         String
+  minutes         Int
+  seconds         Int
+  recordedAt      DateTime       @default(now())
+  billed          Boolean        @default(false)
+  billingRecordId String?
+  agent           Agent          @relation(fields: [agentId], references: [id])
+  user            User           @relation(fields: [userId], references: [id])
+  billingRecord   BillingRecord? @relation(fields: [billingRecordId], references: [id])
+
+  @@index([userId])
+  @@index([billed])
 }
 
-model User {
-  id                          String        @id
-  email                       String        @unique
-  createdAt                   DateTime      @default(now())
-  updatedAt                   DateTime      @default(now())
-  emailVerified               DateTime?
-  image                       String?
-  stripeCustomerId            String?       @unique
+enum DisconnectionReason {
+  USER_DISCONNECTED
+  SERVER_DISCONNECTED
+  ERROR_NO_AUDIO
+  OTHER
+}
+
+enum CallSentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+enum CallTag {
+  SALES_OPPORTUNITY
+  SUPPORT_ISSUE
+  GENERAL_INQUIRY
+  COMPLAINT
+  FOLLOW_UP_REQUIRED
+  RESOLVED
+  HIGH_PRIORITY
+}
+
+model CallLog {
+  id                      String    @id @default(uuid())
+  userId                  String
+  agentId                 String
+  timestamp               DateTime
+  duration                Int
+  summary                 String? 
+  outcome                 String?
+  cost                    String?
+  disconnectionReason     DisconnectionReason?
+  transcription           String?
+  callerNumber            String
+  secondsUsed             Int
+  minutesUsed             Int
+  callData                Json
+  sentiment               CallSentiment?
+  tags                    CallTag[]
+  notes                   String?
+  followUpDate            DateTime?
+  isResolved              Boolean   @default(false)
+  agent                   Agent     @relation(fields: [agentId], references: [id])
+  user                    User      @relation(fields: [userId], references: [id])
+
+  @@index([timestamp])
+  @@index([agentId, timestamp])
+  @@index([userId, timestamp])
+}
+
+model Subscription { // If the user setup payment intent then they have a subscription
+  id                          String                      @id @default(cuid())
+  userId                      String                      @unique
+  status                      String
+  updatedAt                   DateTime                    @updatedAt
+  stripeCustomerId            String?                     @unique
   stripePlanId                String?
-  phoneNumbers                Json          @default("[]") // Array of phone numbers "+15103401579"
-  isYearly                    Boolean       @default(false)
   stripePriceId               String?
   subscriptionName            String?
   subscriptionStatus          String?
   stripeSubscriptionId        String?
   subscriptionCancelAt        DateTime?
   stripeCurrentPeriodEnd      DateTime?
-  phoneNumberSubscriptionData Json          @default("{}")
+  phoneNumberSubscriptionData Json                        @default("{}")
+  user                        User                        @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id                          String                      @id
+  email                       String                      @unique
+  admin                       Boolean                     @default(false)
+  createdAt                   DateTime                    @default(now())
+  updatedAt                   DateTime                    @default(now())
+  emailVerified               DateTime?
+  image                       String?
+  phoneNumbers                Json                        @default("[]") // Array of phone numbers "+15103401579"
   businessName                String?
+  businessAddress             BusinessAddress?
   fullName                    String?
   user_phoneNumber            String?
-  hasPaymentSetup             Boolean       @default(false)
+  hasPaymentSetup             Boolean                     @default(false)
   agents                      Agent[]
   usageRecords                UsageRecord[]
   userSettings                UserSettings?
   googleCalendarIntegrations  GoogleCalendarIntegration[]
+  subscriptions               Subscription[]
+  businessDocuments           BusinessDocument[]          // Added relation to BusinessDocument
+  callLogs                    CallLog[]
+  billingRecords              BillingRecord[]
 }
 
 model Waitlist {
@@ -91,20 +190,6 @@ model UserSettings {
   user           User     @relation(fields: [userId], references: [id])
 }
 
-model DocumentChunk {
-  id        String   @id @default(uuid())
-  agentId   String
-  content   String
-  embedding Float[]
-  metadata  Json
-  fileUrl   String
-  createdAt DateTime @default(now())
-  agent     Agent    @relation(fields: [agentId], references: [id])
-
-  @@index([agentId])
-  @@index([embedding])
-}
-
 model EnterpriseContact {
   id          String   @id @default(uuid())
   name        String
@@ -117,27 +202,60 @@ model EnterpriseContact {
 }
 
 model BlogPost {
-  id        String   @id @default(uuid())
-  title     String
-  content   String
-  slug      String   @unique
-  published Boolean  @default(false)
+  id         String   @id @default(uuid())
+  title      String
+  content    String
+  slug       String   @unique
+  published  Boolean  @default(false)
   coverImage String?  // url to be the cover image of the blog post
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
 }
 
 model GoogleCalendarIntegration {
-    id              String   @id @default(cuid())
-    userId          String
-    agentId         String
-    accessToken     String
-    refreshToken    String
-    expiresAt       DateTime
-    createdAt       DateTime @default(now())
-    updatedAt       DateTime @updatedAt
+  id           String   @id @default(cuid())
+  userId       String
+  agentId      String
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id])
+  agent        Agent    @relation(fields: [agentId], references: [id])
 
-    user            User     @relation(fields: [userId], references: [id])
-    agent           Agent    @relation(fields: [agentId], references: [id])
+  @@unique([userId, agentId])
+}
 
-    @@unique([userId, agentId])
+model BusinessAddress {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  street      String
+  city        String
+  state       String
+  postalCode  String
+  country     String   @default("US")
+  verified    Boolean  @default(false)
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model BillingRecord {
+  id                  String   @id @default(cuid())
+  userId              String
+  stripeCustomerId    String?
+  stripeInvoiceId     String?
+  amountCents         Int
+  status              BillingStatus
+  billingPeriodStart  DateTime
+  billingPeriodEnd    DateTime
+  createdAt           DateTime @default(now())
+  user                User     @relation(fields: [userId], references: [id])
+  usageRecords        UsageRecord[]
+
+  @@index([userId])
+}
+
+enum BillingStatus {
+  PENDING
+  PAID
+  FAILED
 }

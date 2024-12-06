@@ -11,30 +11,46 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user from DB
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
+    // Get or create subscription
+    const subscription = await prisma.subscription.findUnique({
+      where: { userId }
     })
 
     // Create or get Stripe customer
-    let stripeCustomerId = user?.stripeCustomerId
+    let stripeCustomerId = subscription?.stripeCustomerId
     if (!stripeCustomerId) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId }
+      })
+
       const customer = await createStripeCustomer(
-        user?.email || 'pending@example.com', 
+        user?.email || 'pending@example.com',
         user?.fullName || 'Pending User',
         userId
       )
       stripeCustomerId = customer.id
-      
-      // Save Stripe customer ID
-      await prisma.user.update({
-        where: { id: userId },
-        data: { stripeCustomerId }
-      })
-    }
 
-    if (!stripeCustomerId) {
-      return NextResponse.json({ error: 'Stripe customer ID not found' }, { status: 400 })
+      // Create or update subscription
+      await prisma.$transaction([
+        prisma.subscription.upsert({
+          where: { userId },
+          create: {
+            userId,
+            status: 'active',
+            stripeCustomerId,
+            phoneNumberSubscriptionData: {},
+            updatedAt: new Date()
+          },
+          update: { 
+            stripeCustomerId,
+            status: 'active'
+          }
+        }),
+        prisma.user.update({
+          where: { id: userId },
+          data: { hasPaymentSetup: true }
+        })
+      ])
     }
 
     const setupIntent = await stripe.setupIntents.create({
@@ -42,16 +58,9 @@ export async function POST() {
       usage: 'off_session',
     })
 
-    return NextResponse.json({ clientSecret: setupIntent.client_secret }, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'X-Frame-Options': 'DENY',
-        'X-Content-Type-Options': 'nosniff',
-        'Referrer-Policy': 'strict-origin-when-cross-origin',
-        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload'
-      }
+    return NextResponse.json({ 
+      clientSecret: setupIntent.client_secret,
+      redirectUrl: '/dashboard'  
     })
   } catch (error) {
     console.error('Error creating setup intent:', error)

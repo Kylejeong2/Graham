@@ -1,8 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
-import { clerk } from "@/configs/clerk-server";
 import { stripe } from "@/configs/stripe";
 import { NextResponse } from "next/server";
 import { plans } from "@/constants/plans";
+import { prisma } from "@graham/db";
 
 export async function GET() {
   const { userId } = auth();
@@ -11,21 +11,24 @@ export async function GET() {
     return NextResponse.json({ error: "User not found" }, { status: 401 });
   }
 
-  const user = await clerk.users.getUser(userId);
+  const subscription = await prisma.subscription.findFirst({
+    where: {
+      user: {
+        id: userId
+      }
+    }
+  });
 
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  if (!subscription) {
+    return NextResponse.json({
+      isSubscribed: false
+    });
   }
 
-  const stripeCustomerId = user.privateMetadata.stripeCustomerId as string | undefined;
-  const stripePriceId = user.privateMetadata.stripePriceId as string | undefined;
-  const stripeSubscriptionId = user.privateMetadata.stripeSubscriptionId as string | undefined;
-  const stripeCurrentPeriodEnd = user.privateMetadata.stripeCurrentPeriodEnd as string | undefined;
-  const subscriptionName = user.privateMetadata.subscriptionName as string | undefined;
+  const { stripeCustomerId, stripePriceId, stripeSubscriptionId, stripeCurrentPeriodEnd,
+    subscriptionName, subscriptionStatus, subscriptionCancelAt } = subscription;
+
   const isSubscribed = stripePriceId && stripeCurrentPeriodEnd && new Date(stripeCurrentPeriodEnd).getTime() + 86_400_000 > Date.now();
-  const isYearly = user.privateMetadata.isYearly as boolean | undefined;
-  const subscriptionCancelAt = user.privateMetadata.subscriptionCancelAt as string | undefined;
-  const subscriptionStatus = user.privateMetadata.subscriptionStatus as string | undefined;
 
   const plan = isSubscribed
     ? plans.find(
@@ -42,13 +45,12 @@ export async function GET() {
   return NextResponse.json({
     ...plan,
     subscriptionName,
-    stripeSubscriptionId,
+    stripeSubscriptionId, 
     stripeCurrentPeriodEnd,
     stripeCustomerId,
     isSubscribed,
     isCanceled,
     subscriptionCancelAt,
-    subscriptionStatus,
-    isYearly,
+    subscriptionStatus
   });
 }

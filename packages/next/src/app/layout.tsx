@@ -5,7 +5,7 @@ import { Inter } from 'next/font/google'
 
 import Provider from "@/components/Layout/QueryClientProvider";
 import MainLayout from "@/components/Layout/MainLayout";
-import { Navbar } from "@/components/Layout/Navbar";
+import { NavbarWrapper } from '@/components/Layout/NavbarWrapper'
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
@@ -27,21 +27,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <Analytics />
-      <ClerkProvider afterSignOutUrl="/">
-        <html lang="en" className="light">
-        <body className={`${inter.className}`}>
-          <Provider>
-            <Navbar />
-            <MainLayout>
-              {children}
-              <SpeedInsights />
-            </MainLayout>
-          </Provider>
-        </body>
-      </html>
-      </ClerkProvider>
-    </>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <Analytics />
+        <ClerkProvider afterSignOutUrl="/">
+          <body className={`${inter.className}`}>
+            <Provider>
+              <NavbarWrapper />
+              <MainLayout>
+                {children}
+                <SpeedInsights />
+              </MainLayout>
+            </Provider>
+          </body>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }

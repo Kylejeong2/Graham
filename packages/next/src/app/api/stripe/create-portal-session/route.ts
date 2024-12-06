@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { clerk } from '@/configs/clerk-server';
+import { prisma } from '@graham/db';
 import { createPortalSession } from '@/configs/stripe';
 
 export async function POST() {
@@ -10,8 +10,15 @@ export async function POST() {
   }
 
   try {
-    const user = await clerk.users.getUser(userId);
-    const stripeCustomerId = user.privateMetadata.stripeCustomerId as string;
+    const subscription = await prisma.subscription.findFirst({
+      where: {
+        user: {
+          id: userId
+        }
+      }
+    });
+
+    const stripeCustomerId = subscription?.stripeCustomerId as string;
 
     if (!stripeCustomerId) {
       return NextResponse.json({ error: "No Stripe customer found" }, { status: 404 });

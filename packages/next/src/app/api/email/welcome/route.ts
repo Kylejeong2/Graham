@@ -12,10 +12,14 @@ export async function POST(req: Request) {
     const html = await render(React.createElement(WelcomeEmail, { name }))
 
     const data = await resend.emails.send({
-      from: 'Graham <onboarding@trygraham.co>',
+      from: 'Kyle Jeong - CEO of Graham <kyle@usegraham.com>',
       to: [to],
       subject: 'Welcome to Graham',
-      html
+      html,
+      headers: {
+        'Reply-To': 'kyle@usegraham.com',
+        
+      }
     })
 
     return NextResponse.json(data)

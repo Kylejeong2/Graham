@@ -1,113 +1,80 @@
-// TODO: setup with vector db
-// import { NextResponse } from 'next/server';
-// import { auth } from '@clerk/nextjs/server';
-// import { put } from '@vercel/blob';
-// import { OpenAI } from 'openai';
-// import { PDFParser } from 'pdf2json';
-// import { prisma } from '@graham/db';
+import { NextResponse } from 'next/server'
+import { prisma } from '@graham/db'
+import { v4 as uuidv4 } from 'uuid'
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 
-// const openai = new OpenAI();
+const S3 = new S3Client({
+  region: 'auto',
+  endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY || '',
+  },
+})
 
-// async function parsePDF(buffer: Buffer): Promise<string> {
-//     return new Promise((resolve, reject) => {
-//         const pdfParser = new PDFParser();
-        
-//         pdfParser.on('pdfParser_dataReady', (pdfData: any) => {
-//             const text = pdfParser.getRawTextContent();
-//             resolve(text);
-//         });
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
-//         pdfParser.on('pdfParser_dataError', (error: any) => {
-//             reject(error);
-//         });
+export async function POST(req: Request) {
+  try {
+    const formData = await req.formData()
+    const file = formData.get('file') as File
+    const agentId = formData.get('agentId') as string
+    const userId = formData.get('userId') as string
 
-//         pdfParser.parseBuffer(buffer);
-//     });
-// }
+    if (!file || !agentId || !userId) {
+      console.error('Validation error: File, agentId, and userId are required')
+      return NextResponse.json(
+        { error: 'File, agentId, and userId are required' },
+        { status: 400 }
+      )
+    }
 
-// function chunkText(text: string, chunkSize: number = 1000, overlap: number = 200): string[] {
-//     const chunks: string[] = [];
-//     let startIndex = 0;
+    const fileExtension = file.name.split('.').pop()
+    const uniqueFilename = `${uuidv4()}.${fileExtension}`
     
-//     while (startIndex < text.length) {
-//         const chunk = text.slice(startIndex, startIndex + chunkSize);
-//         chunks.push(chunk);
-//         startIndex += chunkSize - overlap;
-//     }
-    
-//     return chunks;
-// }
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
 
-// export async function POST(req: Request) {
-//     try {
-//         const { userId } = auth();
-//         if (!userId) {
-//             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-//         }
+    try {
+      const command = new PutObjectCommand({
+        Bucket: 'graham-documents',
+        Key: uniqueFilename,
+        Body: buffer,
+        ContentType: file.type,
+      })
+      
+      const result = await S3.send(command)
+      console.log('S3 upload result:', result)
+    } catch (error: any) {
+      console.error('Detailed S3 upload error:', {
+        error,
+        message: error.message,
+        code: error.code,
+        requestId: error.$metadata?.requestId
+      })
+      throw error
+    }
 
-//         const formData = await req.formData();
-//         const file = formData.get('file') as File;
-//         const agentId = formData.get('agentId') as string;
+    const document = await prisma.businessDocument.create({
+      data: {
+        userId,
+        agentId,
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        indexPath: uniqueFilename,
+      },
+    })
 
-//         if (!file || !agentId) {
-//             return NextResponse.json(
-//                 { error: 'File and agent ID are required' },
-//                 { status: 400 }
-//             );
-//         }
+    return NextResponse.json({ success: true, document })
 
-//         // Upload to Cloudflare R2
-//         const filename = `${userId}/${agentId}/${Date.now()}-${file.name}`;
-//         const blob = await put(filename, file, {
-//             access: 'public',
-//         });
-
-//         // Parse PDF
-//         const buffer = Buffer.from(await file.arrayBuffer());
-//         const text = await parsePDF(buffer);
-//         const chunks = chunkText(text);
-
-//         // Create embeddings using OpenAI's new model
-//         const vectors = await Promise.all(
-//             chunks.map(async (chunk) => {
-//                 const response = await openai.embeddings.create({
-//                     model: "text-embedding-3-small",
-//                     input: chunk,
-//                     dimensions: 1536,
-//                 });
-
-//                 return {
-//                     content: chunk,
-//                     embedding: response.data[0].embedding,
-//                     metadata: {
-//                         fileName: file.name,
-//                         uploadedAt: new Date(),
-//                     },
-//                 };
-//             })
-//         );
-
-//         // Store in vector database
-//         await prisma.$transaction(
-//             vectors.map((vector) =>
-//                 prisma.documentChunk.create({
-//                     data: {
-//                         agentId,
-//                         content: vector.content,
-//                         embedding: vector.embedding,
-//                         metadata: vector.metadata,
-//                         fileUrl: blob.url,
-//                     },
-//                 })
-//             )
-//         );
-
-//         return NextResponse.json({ success: true, fileUrl: blob.url });
-//     } catch (error) {
-//         console.error('Error processing document:', error);
-//         return NextResponse.json(
-//             { error: 'Failed to process document' },
-//             { status: 500 }
-//         );
-//     }
-// }
+  } catch (error) {
+    console.error('Upload error:', error)
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to upload file' },
+      { status: 500 }
+    )
+  }
+}

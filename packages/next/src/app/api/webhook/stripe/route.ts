@@ -1,77 +1,93 @@
-// Might not need this if everything is invoice based.
+import { stripe } from '@/configs/stripe'
+import type { NextRequest} from "next/server";
+import { NextResponse } from "next/server";
+import type Stripe from 'stripe'
+import { prisma } from "@graham/db";
 
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
-// import { stripe } from '@/configs/stripe'
-// import { NextRequest, NextResponse } from "next/server";
-// import Stripe from 'stripe'
-// import { prisma } from "@graham/db";
+export async function POST(req: NextRequest) {
+  const body = await req.text();
+  const sig = req.headers.get('stripe-signature')!;
 
-// const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+  let event: Stripe.Event;
 
-// async function cancelExistingSubscriptions(customerId: string, newSubscriptionId: string) {
-//   const subscriptions = await stripe.subscriptions.list({
-//     customer: customerId,
-//     status: 'active',
-//   });
+  try {
+    event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
+  } catch (err: any) {
+    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
+  }
 
-//   for (const subscription of subscriptions.data) {
-//     if (subscription.id !== newSubscriptionId) {
-//       await stripe.subscriptions.update(subscription.id, { cancel_at_period_end: true });
-//     }
-//   }
-// }
+  const session = event.data.object as Stripe.Checkout.Session;
 
-// export async function POST(req: NextRequest) {
-//   const body = await req.text();
-//   const sig = req.headers.get('stripe-signature')!;
+  switch (event.type) {
+    case 'checkout.session.completed': {
+      const isPhoneNumberSubscription = session.metadata?.phoneNumber;
 
-//   let event: Stripe.Event;
+      await prisma.subscription.upsert({
+        where: {
+          userId: session.client_reference_id!
+        },
+        create: {
+          userId: session.client_reference_id!,
+          status: 'active',
+          stripeCustomerId: session.customer as string,
+          stripePriceId: session.subscription as string,
+          stripeSubscriptionId: session.subscription as string,
+          subscriptionStatus: 'active',
+          stripeCurrentPeriodEnd: new Date(session.expires_at! * 1000),
+          phoneNumberSubscriptionData: isPhoneNumberSubscription ? {
+            phoneNumber: session.metadata?.phoneNumber,
+            active: true,
+            createdAt: new Date()
+          } : {}
+        },
+        update: {
+          status: 'active',
+          stripeCustomerId: session.customer as string,
+          stripePriceId: session.subscription as string,
+          stripeSubscriptionId: session.subscription as string,
+          subscriptionStatus: 'active',
+          stripeCurrentPeriodEnd: new Date(session.expires_at! * 1000),
+          phoneNumberSubscriptionData: isPhoneNumberSubscription ? {
+            phoneNumber: session.metadata?.phoneNumber,
+            active: true,
+            createdAt: new Date()
+          } : {}
+        }
+      });
+      break;
+    }
 
-//   try {
-//     event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
-//   } catch (err: any) {
-//     return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
-//   }
+    case 'customer.subscription.updated': {
+      const subscription = event.data.object as Stripe.Subscription;
+      await prisma.subscription.update({
+        where: { stripeCustomerId: subscription.customer as string },
+        data: {
+          stripePriceId: subscription.items.data[0].price.id,
+          stripeCurrentPeriodEnd: new Date(subscription.current_period_end * 1000)
+        }
+      });
+      break;
+    }
 
-//   const session = event.data.object as Stripe.Checkout.Session;
+    case 'customer.subscription.deleted': {
+      const deletedSubscription = event.data.object as Stripe.Subscription;
+      await prisma.subscription.update({
+        where: { stripeCustomerId: deletedSubscription.customer as string },
+        data: {
+          status: 'inactive',
+          stripePriceId: null,
+          stripeSubscriptionId: null,
+          phoneNumberSubscriptionData: {
+            active: false,
+            canceledAt: new Date()
+          }
+        }
+      });
+      break;
+    }
+  }
 
-//   switch (event.type) {
-//     case 'checkout.session.completed':
-//       const user = await prisma.user.update({
-//         where: { id: session.client_reference_id! },
-//         data: {
-//           stripeCustomerId: session.customer as string,
-//           stripePriceId: session.subscription as string,
-//           stripeSubscriptionId: session.subscription as string,
-//           subscriptionStatus: 'active',
-//           stripeCurrentPeriodEnd: new Date(session.expires_at! * 1000)
-//         }
-//       });
-//       break;
-
-//     case 'customer.subscription.updated':
-//       const subscription = event.data.object as Stripe.Subscription;
-//       await prisma.user.update({
-//         where: { stripeCustomerId: subscription.customer as string },
-//         data: {
-//           stripePriceId: subscription.items.data[0].price.id,
-//           stripeCurrentPeriodEnd: new Date(subscription.current_period_end * 1000)
-//         }
-//       });
-//       break;
-
-//     case 'customer.subscription.deleted':
-//       const deletedSubscription = event.data.object as Stripe.Subscription;
-//       await prisma.user.update({
-//         where: { stripeCustomerId: deletedSubscription.customer as string },
-//         data: {
-//           subscriptionStatus: 'inactive',
-//           stripePriceId: null,
-//           stripeSubscriptionId: null
-//         }
-//       });
-//       break;
-//   }
-
-//   return NextResponse.json({ received: true });
-// }
+  return NextResponse.json({ received: true });
+}

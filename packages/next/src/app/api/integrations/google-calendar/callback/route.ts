@@ -23,7 +23,23 @@ export async function GET(req: Request) {
         // Get tokens from Google
         const { tokens } = await oauth2Client.getToken(code);
         
+        if (!tokens.refresh_token) {
+            throw new Error('No refresh token received');
+        }
+
         // Store tokens in database
+        const existingIntegration = await prisma.googleCalendarIntegration.findUnique({
+            where: {
+                userId_agentId: { userId, agentId }
+            }
+        });
+
+        const refreshToken = tokens.refresh_token || existingIntegration?.refreshToken;
+
+        if (!refreshToken) {
+            throw new Error('No refresh token available');
+        }
+
         await prisma.googleCalendarIntegration.upsert({
             where: {
                 userId_agentId: {
@@ -35,18 +51,18 @@ export async function GET(req: Request) {
                 userId,
                 agentId,
                 accessToken: tokens.access_token!,
-                refreshToken: tokens.refresh_token!,
+                refreshToken: refreshToken,
                 expiresAt: new Date(Date.now() + (tokens.expiry_date || 3600000)),
             },
             update: {
                 accessToken: tokens.access_token!,
-                refreshToken: tokens.refresh_token!,
+                refreshToken: refreshToken,
                 expiresAt: new Date(Date.now() + (tokens.expiry_date || 3600000)),
             }
         });
 
         return NextResponse.redirect(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/agent/setup?success=true&integration=google-calendar`
+            `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/agent/${agentId}?success=true&integration=google-calendar`
         );
     } catch (error) {
         console.error('Google Calendar callback error:', error);
