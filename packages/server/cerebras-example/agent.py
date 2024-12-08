@@ -14,7 +14,7 @@ from livekit.agents import (
 )
 from livekit.agents.pipeline import VoicePipelineAgent
 from livekit.plugins import deepgram, silero, turn_detector, cartesia
-from custom_plugins import cerebras
+from custom_plugins import cerebras_plugin as cerebras
 
 load_dotenv()
 logger = logging.getLogger("voice-assistant")
