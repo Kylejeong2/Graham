@@ -21,7 +21,7 @@ from livekit.agents import (
     llm,
     metrics,
 )
-from livekit.agents.pipeline import VoicePipelineAgent, AgentCallContext
+from livekit.agents.pipeline import VoicePipelineAgent
 from livekit.plugins import deepgram, silero, turn_detector, cartesia
 from custom_plugins import cerebras_plugin as cerebras
 
@@ -158,7 +158,7 @@ async def book_appointment(
             return availability
             
         # If available, create the event
-        event = await _create_calendar_event(date, time, duration, title, description)
+        await _create_calendar_event(date, time, duration, title, description)
         return f"Appointment booked: {title} on {date} at {time} for {duration} minutes."
         
     except Exception as e:
