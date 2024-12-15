@@ -41,8 +41,8 @@ from livekit.agents import (
 from livekit.agents.llm import ToolChoice
 from livekit.agents.types import DEFAULT_API_CONNECT_OPTIONS, APIConnectOptions
 
-from cerebras.cloud.sdk import AsyncCerebras
-from cerebras.cloud.sdk.core import APIError
+from cerebras_cloud_sdk import AsyncCerebras
+from cerebras_cloud_sdk.core.exceptions import APIError
 
 from .models import (
     ChatModels,
