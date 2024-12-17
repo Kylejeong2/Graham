@@ -22,8 +22,8 @@ from livekit.agents import (
     metrics,
 )
 from livekit.agents.pipeline import VoicePipelineAgent
-from livekit.plugins import deepgram, silero, turn_detector, cartesia
-from custom_plugins import cerebras_plugin as cerebras
+from livekit.plugins import deepgram, silero, turn_detector, cartesia, openai as LivekitOpenAI
+# from custom_plugins import cerebras_plugin as cerebras
 
 from typing import Annotated
 
@@ -203,7 +203,8 @@ async def entrypoint(ctx: JobContext):
     agent = VoicePipelineAgent(
         vad=ctx.proc.userdata["vad"],
         stt=deepgram.STT(model=dg_model),
-        llm=cerebras.LLM(),
+        # llm=cerebras.LLM(), # testing with openai until i get cerebras key
+        llm=LivekitOpenAI.LLM(),
         tts=cartesia.TTS(),
         turn_detector=turn_detector.EOUModel(),
         chat_ctx=initial_ctx,
