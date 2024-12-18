@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import os
-import json
+# import json
 from datetime import datetime, timedelta
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -22,8 +22,9 @@ from livekit.agents import (
     metrics,
 )
 from livekit.agents.pipeline import VoicePipelineAgent
-from livekit.plugins import deepgram, silero, turn_detector, cartesia, openai as LivekitOpenAI
-# from custom_plugins import cerebras_plugin as cerebras
+from livekit.plugins import deepgram, silero, turn_detector, cartesia
+# openai as LivekitOpenAI
+from custom_plugins import cerebras_plugin as cerebras
 
 from typing import Annotated
 
@@ -32,6 +33,69 @@ load_dotenv()
 logger = logging.getLogger("voice-assistant")
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
+
+class PineconeRagAgent:
+    def __init__(self, index_name: str):
+        self.pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
+        self.index = self.pc.Index(index_name)
+        self.embeddings_dimension = 1536
+        self.cache = {}  # Simple in-memory cache
+        
+    async def should_use_rag(self, query: str) -> bool:
+        # List of keywords that indicate domain-specific knowledge is needed
+        domain_keywords = [
+            "company", "product", "policy", "specific", "detail", 
+            "documentation", "process", "procedure", "guide"
+        ]
+        return any(keyword in query.lower() for keyword in domain_keywords)
+
+    async def query_knowledge(self, query: str) -> str:
+        if not await self.should_use_rag(query):
+            return ''
+            
+        # Check cache first
+        cache_key = query.lower()
+        if cache_key in self.cache:
+            return self.cache[cache_key]
+
+        try:
+            user_embedding = await openai.create_embeddings(
+                input=[query],
+                model="text-embedding-3-small",
+                dimensions=self.embeddings_dimension,
+            )
+
+            query_response = self.index.query(
+                vector=user_embedding[0].embedding,
+                top_k=3,
+                include_metadata=True,
+                filter={
+                    "timestamp": {"$gte": (datetime.now() - timedelta(days=30)).timestamp()}  # Only get recent docs
+                }
+            )
+
+            contexts = []
+            for match in query_response.matches:
+                if match.score > 0.8:  # Increased threshold for better relevance
+                    contexts.append(match.metadata.get('text', ''))
+            
+            result = "\n".join(contexts) if contexts else ''
+            
+            # Cache the result
+            self.cache[cache_key] = result
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in query_knowledge: {str(e)}")
+            return ''
+
+def prewarm(proc: JobProcess):
+    try:
+        proc.userdata["vad"] = silero.VAD.load()
+        logger.info("VAD model loaded successfully")
+    except Exception as e:
+        logger.error(f"Error loading VAD model: {str(e)}")
+        raise
 
 def get_google_calendar_creds():
     creds = None
@@ -48,9 +112,6 @@ def get_google_calendar_creds():
             token.write(creds.to_json())
     return creds
 
-def prewarm(proc: JobProcess):
-    proc.userdata["vad"] = silero.VAD.load()
-    
 async def _check_calendar_availability(date: str) -> list:
     """Internal function to check calendar availability."""
     creds = get_google_calendar_creds()
@@ -165,109 +226,150 @@ async def book_appointment(
         return f"Error booking appointment: {str(e)}"
 
 async def entrypoint(ctx: JobContext):
-    metadata = json.loads(ctx.room.metadata)
-    index_name = metadata.get('pineconeIndex')
-    
-    if not index_name:
-        raise ValueError("No Pinecone index specified")
-
-    rag_agent = PineconeRagAgent(index_name)
-    
-    initial_ctx = llm.ChatContext().append(
-        role="system",
-        text=(
-            "You are a voice assistant named Graham. Your interface with users will be voice. "
-            "You should use short and concise responses, and avoiding usage of unpronouncable punctuation."
-            "Use the query_knowledge function when you need specific information."
-        ),
-    )
-
-    fnc_ctx = llm.FunctionContext()
-
-    @fnc_ctx.ai_callable(description="Query knowledge base")
-    async def query_knowledge(query: str) -> str:
-        result = await rag_agent.query_knowledge(query)
-        logger.info(f"Knowledge query result: {result}")
-        return result
-
-    logger.info(f"connecting to room {ctx.room.name}")
-    await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
-
-    participant = await ctx.wait_for_participant()
-    logger.info(f"starting voice assistant for participant {participant.identity}")
-
-    dg_model = "nova-2-general"
-    if participant.kind == rtc.ParticipantKind.PARTICIPANT_KIND_SIP:
-        dg_model = "nova-2-phonecall"
-
-    agent = VoicePipelineAgent(
-        vad=ctx.proc.userdata["vad"],
-        stt=deepgram.STT(model=dg_model),
-        # llm=cerebras.LLM(), # testing with openai until i get cerebras key
-        llm=LivekitOpenAI.LLM(),
-        tts=cartesia.TTS(),
-        turn_detector=turn_detector.EOUModel(),
-        chat_ctx=initial_ctx,
-        fnc_ctx=fnc_ctx,
-    )
-
-    agent.start(ctx.room, participant)
-
-    usage_collector = metrics.UsageCollector()
-
-    @agent.on("metrics_collected")
-    def _on_metrics_collected(mtrcs: metrics.AgentMetrics):
-        metrics.log_metrics(mtrcs)
-        usage_collector.collect(mtrcs)
-
-    async def log_usage():
-        summary = usage_collector.get_summary()
-        logger.info(f"Usage: ${summary}")
-
-    ctx.add_shutdown_callback(log_usage)
-
-    chat = rtc.ChatManager(ctx.room)
-
-    async def answer_from_text(txt: str):
-        chat_ctx = agent.chat_ctx.copy()
-        chat_ctx.append(role="user", text=txt)
-        stream = agent.llm.chat(chat_ctx=chat_ctx)
-        await agent.say(stream)
-
-    @chat.on("message_received")
-    def on_chat_received(msg: rtc.ChatMessage):
-        if msg.message:
-            asyncio.create_task(answer_from_text(msg.message))
-
-    await agent.say("Hey, how can I help you today?", allow_interruptions=True)
-
-
-class PineconeRagAgent:
-    def __init__(self, index_name: str):
-        self.pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
-        self.index = self.pc.Index(index_name)
-        self.embeddings_dimension = 1536
-
-    async def query_knowledge(self, query: str) -> str:
-        user_embedding = await openai.create_embeddings(
-            input=[query],
-            model="text-embedding-3-small",
-            dimensions=self.embeddings_dimension,
-        )
-
-        query_response = self.index.query(
-            vector=user_embedding[0].embedding,
-            top_k=3,
-            include_metadata=True
-        )
-
-        contexts = []
-        for match in query_response.matches:
-            if match.score > 0.7:
-                contexts.append(match.metadata.get('text', ''))
+    try:
+        # metadata = json.loads(ctx.room.metadata or '{}')
+        # index_name = metadata.get('pineconeIndex')
+        index_name = "cerebras"
         
-        return "\n".join(contexts) if contexts else ''
+        if not index_name:
+            logger.warning("No Pinecone index specified, proceeding without RAG")
+        
+        initial_ctx = llm.ChatContext().append(
+            role="system",
+            text=(
+                "You are a voice assistant named Graham. Your interface with users will be voice. "
+                "Keep responses extremely concise and natural. Avoid unnecessary words. "
+                "Respond quickly with short, direct answers. "
+                "When users ask about calendar or scheduling, always check their calendar first before suggesting times."
+            ),
+        )
 
+        fnc_ctx = llm.FunctionContext()
+        
+        if index_name:
+            rag_agent = PineconeRagAgent(index_name)
+            @fnc_ctx.ai_callable(description="Query knowledge base")
+            async def query_knowledge(query: str) -> str:
+                result = await rag_agent.query_knowledge(query)
+                logger.info(f"Knowledge query result: {result}")
+                return result
+
+        # Add calendar functions to function context
+        @fnc_ctx.ai_callable(description="Check calendar availability for a date")
+        async def check_calendar_availability(
+            date: Annotated[str, llm.TypeInfo(description="Date in YYYY-MM-DD format")]
+        ) -> str:
+            try:
+                events = await _check_calendar_availability(date)
+                if not events:
+                    return f"Calendar is clear on {date}"
+                
+                busy_times = []
+                for event in events:
+                    start = event['start'].get('dateTime', event['start'].get('date'))
+                    end = event['end'].get('dateTime', event['end'].get('date'))
+                    start_time = datetime.fromisoformat(start.replace('Z', '+00:00')).strftime('%I:%M %p')
+                    end_time = datetime.fromisoformat(end.replace('Z', '+00:00')).strftime('%I:%M %p')
+                    busy_times.append(f"{start_time} - {end_time}: {event['summary']}")
+                
+                return f"Busy times on {date}:\n" + "\n".join(busy_times)
+            except Exception as e:
+                logger.error(f"Error checking calendar: {str(e)}")
+                return "Sorry, I had trouble checking your calendar."
+
+        @fnc_ctx.ai_callable(description="Schedule a new calendar event")
+        async def schedule_event(
+            date: Annotated[str, llm.TypeInfo(description="Date in YYYY-MM-DD format")],
+            time: Annotated[str, llm.TypeInfo(description="Time in HH:MM format")],
+            duration: Annotated[int, llm.TypeInfo(description="Duration in minutes")],
+            title: Annotated[str, llm.TypeInfo(description="Event title")],
+            description: Annotated[str, llm.TypeInfo(description="Event description")] = ""
+        ) -> str:
+            try:
+                # First check availability
+                events = await _check_calendar_availability(date)
+                requested_start = datetime.strptime(f"{date} {time}", '%Y-%m-%d %H:%M')
+                requested_end = requested_start + timedelta(minutes=duration)
+                
+                for event in events:
+                    event_start = datetime.fromisoformat(event['start'].get('dateTime', event['start'].get('date')).replace('Z', '+00:00'))
+                    event_end = datetime.fromisoformat(event['end'].get('dateTime', event['end'].get('date')).replace('Z', '+00:00'))
+                    
+                    if (requested_start < event_end and requested_end > event_start):
+                        return f"Cannot schedule. Conflicts with: {event['summary']} ({event_start.strftime('%I:%M %p')} - {event_end.strftime('%I:%M %p')})"
+                
+                # If no conflicts, create the event
+                await _create_calendar_event(date, time, duration, title, description)
+                return f"Scheduled: {title} on {date} at {time} for {duration} minutes"
+            except Exception as e:
+                logger.error(f"Error scheduling event: {str(e)}")
+                return "Sorry, I had trouble scheduling the event."
+
+        logger.info(f"Connecting to room {ctx.room.name}")
+        await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
+
+        participant = await ctx.wait_for_participant()
+        logger.info(f"Starting voice assistant for participant {participant.identity}")
+
+        dg_model = "nova-2-general"
+        if participant.kind == rtc.ParticipantKind.PARTICIPANT_KIND_SIP:
+            dg_model = "nova-2-phonecall"
+
+        agent = VoicePipelineAgent(
+            vad=ctx.proc.userdata["vad"],
+            stt=deepgram.STT(
+                model=dg_model,
+                interim_results=True,  # Enable streaming transcription
+                smart_format=True,     # Faster formatting
+            ),
+            # llm=LivekitOpenAI.LLM(
+            #     model="gpt-3.5-turbo",  # Faster than default model
+            #     temperature=0.7,
+            #     stream=True,  # Enable streaming responses
+            # ),
+            llm=cerebras.LLM(
+                temperature=0.5,  # Lower temperature for faster, more focused responses
+            ),
+            tts=cartesia.TTS(),
+            turn_detector=turn_detector.EOUModel(),
+            chat_ctx=initial_ctx,
+            fnc_ctx=fnc_ctx,
+        )
+
+        agent.start(ctx.room, participant)
+        logger.info("Agent started successfully")
+
+        usage_collector = metrics.UsageCollector()
+
+        @agent.on("metrics_collected")
+        def _on_metrics_collected(mtrcs: metrics.AgentMetrics):
+            metrics.log_metrics(mtrcs)
+            usage_collector.collect(mtrcs)
+
+        async def log_usage():
+            summary = usage_collector.get_summary()
+            logger.info(f"Usage: ${summary}")
+
+        ctx.add_shutdown_callback(log_usage)
+
+        chat = rtc.ChatManager(ctx.room)
+
+        async def answer_from_text(txt: str):
+            chat_ctx = agent.chat_ctx.copy()
+            chat_ctx.append(role="user", text=txt)
+            stream = agent.llm.chat(chat_ctx=chat_ctx)
+            await agent.say(stream)
+
+        @chat.on("message_received")
+        def on_chat_received(msg: rtc.ChatMessage):
+            if msg.message:
+                asyncio.create_task(answer_from_text(msg.message))
+
+        await agent.say("Hey, how can I help you today?", allow_interruptions=True)
+        
+    except Exception as e:
+        logger.error(f"Error in entrypoint: {str(e)}", exc_info=True)
+        raise
 
 if __name__ == "__main__":
     cli.run_app(

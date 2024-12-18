@@ -41,8 +41,7 @@ from livekit.agents import (
 from livekit.agents.llm import ToolChoice
 from livekit.agents.types import DEFAULT_API_CONNECT_OPTIONS, APIConnectOptions
 
-from cerebras_cloud_sdk import AsyncCerebras
-from cerebras_cloud_sdk.core.exceptions import APIError
+from cerebras.cloud.sdk import AsyncCerebras
 
 from .models import (
     ChatModels,
@@ -202,18 +201,12 @@ class LLMStream(llm.LLMStream):
                     ),
                 )
             )
-        except APIError as e:
-            if isinstance(e, APITimeoutError):
-                raise APITimeoutError()
-            elif isinstance(e, APIStatusError):
-                raise APIStatusError(
-                    str(e),
-                    status_code=e.status_code,
-                    request_id=getattr(e, 'request_id', None),
-                    body=getattr(e, 'body', None),
-                )
-            else:
-                raise APIConnectionError() from e
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Cerebras API error: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error: {str(e)}")
+            raise
 
     def _parse_chunk(self, chunk: Any) -> llm.ChatChunk | None:
         if not chunk.choices:
