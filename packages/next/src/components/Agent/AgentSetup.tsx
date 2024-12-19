@@ -67,7 +67,6 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                 setIsLoadingVoices(true);
 
                 await Promise.all([
-                    // Load agent data
                     fetchAgentData(
                         agent.id, 
                         setIsLoading, 
@@ -79,11 +78,8 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                         setSelectedPhoneNumber,
                         setSelectedDocument
                     ),
-                    // Load voices
-                    fetchVoices(setIsLoadingVoices, setVoices),
-                    // Load phone numbers
+                    fetchVoices(setIsLoadingVoices, setVoices), 
                     user?.id ? fetchUserPhoneNumbers(user.id, setUserPhoneNumbers, agent.phoneNumber || '') : Promise.resolve(),
-                    // Load business documents
                     user?.id ? fetchBusinessDocuments(user.id, setBusinessDocuments, controller.signal) : Promise.resolve()
                 ]);
             } catch (error) {

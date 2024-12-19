@@ -87,6 +87,24 @@ export async function POST(req: NextRequest) {
       });
       break;
     }
+
+    // case 'invoice.paid': {
+    //   const invoice = event.data.object as Stripe.Invoice;
+    //   await prisma.billingRecord.update({
+    //     where: { stripeInvoiceId: invoice.id },
+    //     data: { status: 'PAID' }
+    //   });
+    //   break;
+    // }
+
+    // case 'invoice.payment_failed': {
+    //   const invoice = event.data.object as Stripe.Invoice;
+    //   await prisma.billingRecord.update({
+    //     where: { stripeInvoiceId: invoice.id },
+    //     data: { status: 'FAILED' }
+    //   });
+    //   break;
+    // }
   }
 
   return NextResponse.json({ received: true });

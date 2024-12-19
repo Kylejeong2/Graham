@@ -15,12 +15,13 @@ const AgentPage = async ({params: { agentId }}: Props) => {
     
     if (!userId) return redirect('/dashboard')
 
-    const [user, agent] = await Promise.all([
+    const [user, agent, subscription] = await Promise.all([
         prisma.user.findFirst({ where: { id: userId } }),
-        prisma.agent.findFirst({ where: { id: agentId } })
+        prisma.agent.findFirst({ where: { id: agentId } }),
+        prisma.subscription.findFirst({ where: { userId: userId } })
     ])
 
-    if (!user || !agent) return redirect('/dashboard')
+    if (!user || !agent || !subscription) return redirect('/dashboard')
     
     // // Redirect to setup if agent is not deployed or missing required fields
     // if (!agent.deployed) {
