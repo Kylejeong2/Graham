@@ -95,10 +95,14 @@ export const AgentSetupModal: React.FC<AgentSetupModalProps> = ({ isOpen, onClos
     const [selectedDocument, setSelectedDocument] = useState<string>('');
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
+    const canClose = currentStep === STEPS.length - 1;
+
     useEffect(() => {
         const initializeSetup = async () => {
             setIsLoading(true);
             try {
+                if (!user?.id) return;
+                
                 // Fetch voices
                 setIsLoadingVoices(true);
                 await fetchVoices(setIsLoadingVoices, setVoices);
@@ -119,6 +123,7 @@ export const AgentSetupModal: React.FC<AgentSetupModalProps> = ({ isOpen, onClos
                     setConversationType,
                     setInitialMessage,
                     setSelectedPhoneNumber,
+                    setSelectedDocument
                 );
 
             } catch (error) {
@@ -129,7 +134,7 @@ export const AgentSetupModal: React.FC<AgentSetupModalProps> = ({ isOpen, onClos
             }
         };
 
-        if (isOpen && agentId) {
+        if (isOpen && agentId && user?.id) {
             initializeSetup();
         }
 
@@ -147,7 +152,7 @@ export const AgentSetupModal: React.FC<AgentSetupModalProps> = ({ isOpen, onClos
             setSelectedPhoneNumber('');
             setCurrentStep(0);
         };
-    }, [isOpen, agentId, user.id]);
+    }, [isOpen, agentId, user?.id]);
 
     const openVoiceModal = () => setIsVoiceModalOpen(true);
     const closeVoiceModal = () => setIsVoiceModalOpen(false);
@@ -265,8 +270,7 @@ export const AgentSetupModal: React.FC<AgentSetupModalProps> = ({ isOpen, onClos
             await handleCompleteSetup(agentId, selectedDocument, setIsCompleting);
             toast.success("Agent deployed successfully!");
             onClose();
-            // Redirect to agent page
-            window.location.href = `/agent/${agentId}`;
+            window.location.href = `/dashboard/agent/${agentId}`;
         } catch (error) {
             console.error('Error deploying agent:', error);
             toast.error("Failed to deploy agent");
@@ -770,77 +774,86 @@ export const AgentSetupModal: React.FC<AgentSetupModalProps> = ({ isOpen, onClos
     };
 
         return (
-            <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl">
-                <DialogHeader>
-                    <DialogTitle>Agent Setup</DialogTitle>
-                    <p className="text-sm text-gray-500">{STEPS[currentStep].description}</p>
-                </DialogHeader>
+            <Dialog 
+                open={isOpen} 
+                onOpenChange={(open) => {
+                    if (!open && !canClose) {
+                        toast.error("Please complete the agent setup first");
+                        return;
+                    }
+                    onClose();
+                }}
+            >
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Agent Setup</DialogTitle>
+                        <p className="text-sm text-gray-500">{STEPS[currentStep].description}</p>
+                    </DialogHeader>
 
-                <div className="space-y-6">
-                    {renderStepContent()}
-                </div>
-
-                <div className="flex justify-between mt-6 pt-4 border-t">
-                    <Button
-                        variant="outline"
-                        onClick={handleBack}
-                        disabled={currentStep === 0}
-                    >
-                        Back
-                    </Button>
-
-                    {currentStep < STEPS.length - 1 && (
-                        <Button
-                            onClick={handleNext}
-                            className="bg-blue-600 text-white hover:bg-blue-700"
-                        >
-                            Next
-                        </Button>
-                    )}
+                    <div className="space-y-6">
+                        {renderStepContent()}
                     </div>
 
-                <VoiceSelectionModal 
-                    isOpen={isVoiceModalOpen}
-                    onClose={closeVoiceModal}
-                    voices={voices}
-                    isLoadingVoices={isLoadingVoices}
-                    selectedVoice={selectedVoice}
-                    playingVoiceId={playingVoiceId}
-                    handleVoiceSelect={(voice: any) => handleVoiceSelect({
-                        voice,
-                        agentId,
-                        systemPrompt: customInstructions,
-                        setSelectedVoice,
-                        setSelectedVoiceName,
-                        onClose: closeVoiceModal
-                    })}
-                    handlePreviewVoice={(voice: any, e: React.MouseEvent) => handlePreviewVoice({
-                        voice,
-                        e,
-                        audioRef,
-                        playingVoiceId,
-                        setPlayingVoiceId
-                    })}
-                />
+                    <div className="flex justify-between mt-6 pt-4 border-t">
+                        <Button
+                            variant="outline"
+                            onClick={handleBack}
+                            disabled={currentStep === 0}
+                        >
+                            Back
+                        </Button>
 
-                <BuyPhoneNumberModal 
-                    isOpen={isPhoneModalOpen}
-                    onClose={() => setIsPhoneModalOpen(false)}
-                    userPhoneNumbers={userPhoneNumbers}
-                    setUserPhoneNumbers={setUserPhoneNumbers}
-                    user={user as User & { businessAddress: BusinessAddress }}
-                    agentId={agentId}
-                />
+                        {currentStep < STEPS.length - 1 && (
+                            <Button
+                                onClick={handleNext}
+                                className="bg-blue-600 text-white hover:bg-blue-700"
+                            >
+                                Next
+                            </Button>
+                        )}
+                    </div>
 
-                <CalendarIntegrationModal 
-                    isOpen={isCalendarModalOpen}
-                    onClose={() => setIsCalendarModalOpen(false)}
-                    calendarStep={calendarStep}
-                    setCalendarStep={setCalendarStep}
-                    isConnectingCalendar={isConnectingCalendar}
-                    handleGoogleAuth={() => handleGoogleAuth(setIsConnectingCalendar, agentId)}
-                />
+                    <VoiceSelectionModal 
+                        isOpen={isVoiceModalOpen}
+                        onClose={closeVoiceModal}
+                        voices={voices}
+                        isLoadingVoices={isLoadingVoices}
+                        selectedVoice={selectedVoice}
+                        playingVoiceId={playingVoiceId}
+                        handleVoiceSelect={(voice: any) => handleVoiceSelect({
+                            voice,
+                            agentId,
+                            systemPrompt: customInstructions,
+                            setSelectedVoice,
+                            setSelectedVoiceName,
+                            onClose: closeVoiceModal
+                        })}
+                        handlePreviewVoice={(voice: any, e: React.MouseEvent) => handlePreviewVoice({
+                            voice,
+                            e,
+                            audioRef,
+                            playingVoiceId,
+                            setPlayingVoiceId
+                        })}
+                    />
+
+                    <BuyPhoneNumberModal 
+                        isOpen={isPhoneModalOpen}
+                        onClose={() => setIsPhoneModalOpen(false)}
+                        userPhoneNumbers={userPhoneNumbers}
+                        setUserPhoneNumbers={setUserPhoneNumbers}
+                        user={user as User & { businessAddress: BusinessAddress }}
+                        agentId={agentId}
+                    />
+
+                    <CalendarIntegrationModal 
+                        isOpen={isCalendarModalOpen}
+                        onClose={() => setIsCalendarModalOpen(false)}
+                        calendarStep={calendarStep}
+                        setCalendarStep={setCalendarStep}
+                        isConnectingCalendar={isConnectingCalendar}
+                        handleGoogleAuth={() => handleGoogleAuth(setIsConnectingCalendar, agentId)}
+                    />
                 </DialogContent>
             </Dialog>
         );

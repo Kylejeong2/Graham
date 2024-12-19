@@ -76,7 +76,8 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                         setSelectedVoiceName, 
                         setConversationType, 
                         setInitialMessage,
-                        setSelectedPhoneNumber
+                        setSelectedPhoneNumber,
+                        setSelectedDocument
                     ),
                     // Load voices
                     fetchVoices(setIsLoadingVoices, setVoices),
@@ -133,18 +134,18 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
     }
 
     return (
-        <div className="flex flex-col w-full gap-6">
-            <div className="grid grid-cols-12 gap-6 w-full">
+        <div className="flex flex-col w-full gap-4">
+            <div className="grid grid-cols-12 gap-4 w-full">
                 {/* Left Half - Custom Instructions */}
-                <Card className="col-span-12 lg:col-span-6 bg-white shadow-lg">
-                    <CardHeader className="border-b border-blue-100">
+                <Card className="col-span-12 lg:col-span-6 bg-white shadow-sm">
+                    <CardHeader className="border-b border-blue-100 pb-4 space-y-1">
                         <CardTitle className="text-blue-900 flex items-center">
                             <MessageSquare className="w-5 h-5 mr-2 text-orange-500" />
                             Custom Instructions
                         </CardTitle>
                         <p className="text-sm text-gray-500">What do you want your AI agent to do? Just simply describe it below.</p>
                     </CardHeader>
-                    <CardContent className="pt-6">
+                    <CardContent className="pt-2 space-y-2">
                         <div className="space-y-4">
                             <div className="relative">
                                 <AnimatePresence>
@@ -155,7 +156,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                     onChange={handleInstructionsChange}
                                     placeholder="Add any specific instructions for your AI agent..."
                                     className={cn(
-                                        "min-h-[400px] border-blue-200 transition-all duration-200",
+                                        "min-h-[300px] border-blue-200 transition-all duration-200",
                                         isEnrichingInstructions && "bg-blue-50"
                                     )}
                                 />
@@ -199,7 +200,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                         </div>
                     </CardContent>
                         <Card className="col-span-12 bg-white shadow-lg">
-                        <CardHeader className="border-b border-blue-100">
+                        <CardHeader className="border-b border-blue-100 pb-4 space-y-1">
                             <CardTitle className="text-blue-900 flex items-center">
                                 <MessageSquare className="w-5 h-5 mr-2 text-orange-500" />
                                 Conversation Flow
@@ -279,8 +280,8 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                 {/* Right Half - Split into quarters */}
                 <div className="col-span-12 lg:col-span-6 grid grid-cols-2 gap-6">
                     {/* Top Row - Two 1/4 cards side by side */}
-                    <Card className="col-span-2 sm:col-span-1 bg-white shadow-lg">
-                        <CardHeader className="border-b border-blue-100">
+                    <Card className="col-span-2 sm:col-span-1 bg-white shadow-sm">
+                        <CardHeader className="border-b border-blue-100 pb-4 space-y-1">
                             <CardTitle className="text-blue-900 flex items-center">
                                 <Volume2 className="w-5 h-5 mr-2 text-orange-500" />
                                 Voice Configuration
@@ -304,15 +305,15 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                         </CardContent>
                     </Card>
 
-                    <Card className="col-span-2 sm:col-span-1 bg-white shadow-lg">
-                        <CardHeader className="border-b border-blue-100">
+                    <Card className="col-span-2 sm:col-span-1 bg-white shadow-sm">
+                        <CardHeader className="border-b border-blue-100 pb-4 space-y-1">
                             <CardTitle className="text-blue-900 flex items-center">
                                 <Phone className="w-5 h-5 mr-2 text-orange-500" />
                                 Phone Number
                             </CardTitle>
                             <p className="text-sm text-gray-500">Connect or purchase a number</p>
                         </CardHeader>
-                        <CardContent className="pt-4 space-y-4">
+                        <CardContent className="pt-2 pb-2">
                             <Select
                                 value={selectedPhoneNumber}
                                 onValueChange={(phoneNumber) => handlePhoneNumberSelect(
@@ -332,20 +333,24 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <div className="flex flex-col gap-2">
+                            <div className="grid grid-cols-2 gap-2 mt-2">
                                 <Button 
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white h-8 text-xs"
                                     onClick={() => setIsPhoneModalOpen(true)}
                                 >
-                                    <Phone className="w-4 h-4 mr-2" />
-                                    Buy New Number
+                                    <Phone className="w-3 h-3 mr-1" />
+                                    Buy Number
                                 </Button>
-                                <Button variant="outline" className="w-full" onClick={() => window.open(`${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/phone-number`, "_blank")}>
-                                    <ExternalLink className="w-4 h-4 mr-2" />
-                                    Connect Existing
+                                <Button 
+                                    variant="outline" 
+                                    className="h-8 text-xs" 
+                                    onClick={() => window.open(`${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/phone-number`, "_blank")}
+                                >
+                                    <ExternalLink className="w-3 h-3 mr-1" />
+                                    Connect
                                 </Button>
                             </div>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 mt-1">
                                 Numbers start at $3/month
                             </p>
                         </CardContent>
@@ -353,7 +358,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
 
                     {/* Bottom Row - Two 1/4 cards side by side */}
                     <Card className="col-span-2 sm:col-span-1 bg-white shadow-lg">
-                        <CardHeader className="border-b border-blue-100">
+                        <CardHeader className="border-b border-blue-100 pb-4 space-y-1">
                             <CardTitle className="text-blue-900 flex items-center">
                                 <UploadCloud className="w-5 h-5 mr-2 text-orange-500" />
                                 Business Information
@@ -378,7 +383,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                     htmlFor="file-upload"
                                     className="cursor-pointer flex flex-col items-center"
                                 >
-                                    <div className="bg-blue-50 p-2 rounded-full mb-2">
+                                    <div className="bg-blue-50 p-1 rounded-full mb-1">
                                         <Upload className="w-6 h-6 text-blue-500" />
                                     </div>
                                     <span className="text-sm text-blue-900 font-medium mb-1">
@@ -390,7 +395,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                                 </Label>
                             </div>
 
-                            <div className="space-y-2">
+                            <div className="space-y-1">
                                 <Label className="text-sm font-medium">Available Documents</Label>
                                 <Select
                                     value={selectedDocument}
@@ -435,8 +440,8 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                         </CardContent>
                     </Card>
 
-                    <Card className="col-span-2 sm:col-span-1 bg-white shadow-lg">
-                        <CardHeader className="border-b border-blue-100">
+                    <Card className="col-span-2 sm:col-span-1 bg-white shadow-sm">
+                        <CardHeader className="border-b border-blue-100 pb-4 space-y-1">
                             <div className="flex items-center justify-between">
                                 <CardTitle className="text-blue-900 flex items-center">
                                     <Settings className="w-5 h-5 mr-2 text-orange-500" />
@@ -446,8 +451,8 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
                             </div>
                             <p className="text-sm text-gray-500">Enable AI capabilities</p>
                         </CardHeader>
-                        <CardContent className="pt-4">
-                            <div className="space-y-4">
+                        <CardContent className="pt-2">
+                            <div className="space-y-1">
                                 {/* Core Features */}
                                 <div className="space-y-3">
                                     <h4 className="text-xs font-medium text-blue-900">Core Features</h4>
@@ -508,7 +513,7 @@ export const AgentSetup: React.FC<{ agent: Agent; user: User }> = ({ agent, user
             </div>
 
             {/* Complete Setup Button */}
-            <div className="mt-auto pt-6">
+            <div className="mt-auto pt-4">
                 <Button 
                     onClick={() => handleCompleteSetup(agent.id, selectedDocument, setIsCompleting)}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white"

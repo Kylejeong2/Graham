@@ -22,12 +22,11 @@ const AgentPage = async ({params: { agentId }}: Props) => {
 
     if (!user || !agent) return redirect('/dashboard')
     
-    // Redirect to setup if agent is not deployed or missing required fields
-    if (!agent.deployed) {
-        return redirect(`/dashboard?setup=${agentId}`)
-    }
+    // // Redirect to setup if agent is not deployed or missing required fields
+    // if (!agent.deployed) {
+    //     return redirect(`/dashboard?setup=${agentId}`)
+    // }
 
-    // Ensure user owns this agent
     if (agent.userId !== userId) {
         return redirect('/dashboard')
     }
