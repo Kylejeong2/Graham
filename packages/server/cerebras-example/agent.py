@@ -27,6 +27,8 @@ from livekit.plugins import deepgram, silero, turn_detector, cartesia
 from custom_plugins import cerebras_plugin as cerebras
 
 from typing import Annotated
+import dateparser  # Add this import at the top
+import time
 
 
 load_dotenv()
@@ -98,61 +100,168 @@ def prewarm(proc: JobProcess):
         raise
 
 def get_google_calendar_creds():
+    """Get Google Calendar credentials, creating them if they don't exist."""
     creds = None
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    token_path = 'token.json'
+    credentials_path = 'credentials.json'
+
+    # Check if token.json exists
+    if os.path.exists(token_path):
+        try:
+            creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+        except Exception as e:
+            logger.error(f"Error loading credentials: {e}")
+            os.remove(token_path)  # Remove invalid token
+            creds = None
+
+    # If no valid credentials, create new ones
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+            except Exception as e:
+                logger.error(f"Error refreshing token: {e}")
+                os.remove(token_path)
+                creds = None
+
+        if not creds:
+            if not os.path.exists(credentials_path):
+                raise FileNotFoundError(
+                    "No credentials.json found. Please download it from Google Cloud Console "
+                    "and place it in the root directory."
+                )
+            
+            # Find an available port
+            import socket
+            def find_free_port():
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.bind(('', 0))
+                    s.listen(1)
+                    port = s.getsockname()[1]
+                return port
+
+            port = find_free_port()
+            redirect_uri = f'http://localhost:{port}'
+            
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open('token.json', 'w') as token:
+                credentials_path, 
+                SCOPES,
+                redirect_uri=redirect_uri
+            )
+            creds = flow.run_local_server(
+                port=port,
+                prompt='consent',
+                authorization_prompt_message="Please visit this URL to authorize Graham: "
+            )
+
+        # Save the credentials for future use
+        with open(token_path, 'w') as token:
             token.write(creds.to_json())
+            logger.info("Saved new credentials to token.json")
+
     return creds
+
+def parse_natural_date(date_str: str) -> str:
+    """Convert natural language date to YYYY-MM-DD format."""
+    if not date_str:
+        return datetime.now().strftime('%Y-%m-%d')
+        
+    try:
+        # Handle special cases
+        date_str = date_str.lower().strip()
+        now = datetime.now()
+        
+        if 'tonight' in date_str or 'this evening' in date_str:
+            return now.strftime('%Y-%m-%d')
+            
+        if 'next week' in date_str:
+            return (now + timedelta(days=7)).strftime('%Y-%m-%d')
+            
+        if 'next' in date_str:
+            # Handle "next Monday", "next Tuesday", etc.
+            day_name = date_str.replace('next', '').strip()
+            current_day = now.weekday()
+            target_day = time.strptime(day_name, '%A').tm_wday
+            days_ahead = target_day - current_day
+            if days_ahead <= 0:  # Target day already happened this week
+                days_ahead += 7
+            return (now + timedelta(days=days_ahead)).strftime('%Y-%m-%d')
+            
+        # Use dateparser for all other cases
+        parsed_date = dateparser.parse(date_str, settings={
+            'RELATIVE_BASE': now,
+            'PREFER_DATES_FROM': 'future',
+            'PREFER_DAY_OF_MONTH': 'current'
+        })
+        
+        if parsed_date:
+            # If the date is in the past and it's a day name (e.g. "Monday"),
+            # assume they mean next occurrence
+            if parsed_date < now and any(day in date_str.lower() for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']):
+                parsed_date += timedelta(days=7)
+            return parsed_date.strftime('%Y-%m-%d')
+            
+        raise ValueError(f"Could not parse date: {date_str}")
+    except Exception as e:
+        logger.error(f"Error parsing date {date_str}: {str(e)}")
+        return date_str
 
 async def _check_calendar_availability(date: str) -> list:
     """Internal function to check calendar availability."""
-    creds = get_google_calendar_creds()
-    service = build('calendar', 'v3', credentials=creds)
-    
-    date_obj = datetime.strptime(date, '%Y-%m-%d')
-    time_min = date_obj.isoformat() + 'Z'
-    time_max = (date_obj + timedelta(days=1)).isoformat() + 'Z'
-    
-    events_result = service.events().list(
-        calendarId='primary',
-        timeMin=time_min,
-        timeMax=time_max,
-        singleEvents=True,
-        orderBy='startTime'
-    ).execute()
-    
-    return events_result.get('items', [])
+    try:
+        # Convert natural language date to YYYY-MM-DD
+        formatted_date = parse_natural_date(date)
+        
+        creds = get_google_calendar_creds()
+        service = build('calendar', 'v3', credentials=creds)
+        
+        date_obj = datetime.strptime(formatted_date, '%Y-%m-%d')
+        time_min = date_obj.isoformat() + 'Z'
+        time_max = (date_obj + timedelta(days=1)).isoformat() + 'Z'
+        
+        events_result = service.events().list(
+            calendarId='primary',
+            timeMin=time_min,
+            timeMax=time_max,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
+        
+        return events_result.get('items', [])
+    except Exception as e:
+        logger.error(f"Error in _check_calendar_availability: {str(e)}")
+        raise
 
 async def _create_calendar_event(date: str, time: str, duration: int, title: str, description: str = "") -> dict:
     """Internal function to create a calendar event."""
-    creds = get_google_calendar_creds()
-    service = build('calendar', 'v3', credentials=creds)
-    
-    start_datetime = datetime.strptime(f"{date} {time}", '%Y-%m-%d %H:%M')
-    end_datetime = start_datetime + timedelta(minutes=duration)
-    
-    event = {
-        'summary': title,
-        'description': description,
-        'start': {
-            'dateTime': start_datetime.isoformat(),
-            'timeZone': 'UTC',
-        },
-        'end': {
-            'dateTime': end_datetime.isoformat(),
-            'timeZone': 'UTC',
-        },
-    }
-    
-    return service.events().insert(calendarId='primary', body=event).execute()
+    try:
+        creds = get_google_calendar_creds()
+        service = build('calendar', 'v3', credentials=creds)
+        
+        # Get local timezone
+        local_tz = datetime.now().astimezone().tzinfo
+        
+        # Parse date and time
+        start_datetime = datetime.strptime(f"{date} {time}", '%Y-%m-%d %H:%M').replace(tzinfo=local_tz)
+        end_datetime = start_datetime + timedelta(minutes=duration)
+        
+        event = {
+            'summary': title,
+            'description': description,
+            'start': {
+                'dateTime': start_datetime.isoformat(),
+                'timeZone': str(local_tz),
+            },
+            'end': {
+                'dateTime': end_datetime.isoformat(),
+                'timeZone': str(local_tz),
+            },
+        }
+        
+        return service.events().insert(calendarId='primary', body=event).execute()
+    except Exception as e:
+        logger.error(f"Error creating calendar event: {str(e)}")
+        raise
 
 @llm.ai_callable()
 async def check_calendar(
@@ -225,85 +334,169 @@ async def book_appointment(
     except Exception as e:
         return f"Error booking appointment: {str(e)}"
 
+
+def format_date_for_display(date_str: str) -> str:
+    """Convert YYYY-MM-DD to natural language date."""
+    try:
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+        today = datetime.now()
+        tomorrow = today + timedelta(days=1)
+        
+        if date_obj.date() == today.date():
+            return "today"
+        elif date_obj.date() == tomorrow.date():
+            return "tomorrow"
+        else:
+            return date_obj.strftime("%A, %B %d")  # e.g. "Thursday, January 18"
+    except Exception as e:
+        logger.error(f"Error formatting date {date_str}: {str(e)}")
+        return date_str
+
+def format_time_for_display(time_str: str) -> str:
+    """Convert HH:MM to natural 12-hour format."""
+    try:
+        time_obj = datetime.strptime(time_str, '%H:%M')
+        return time_obj.strftime("%I:%M %p").lstrip("0").lower()  # e.g. "2:00 pm"
+    except Exception as e:
+        logger.error(f"Error formatting time {time_str}: {str(e)}")
+        return time_str
+
 async def entrypoint(ctx: JobContext):
     try:
-        # metadata = json.loads(ctx.room.metadata or '{}')
-        # index_name = metadata.get('pineconeIndex')
-        index_name = "cerebras"
-        
-        if not index_name:
-            logger.warning("No Pinecone index specified, proceeding without RAG")
+        # Get current date/time for context
+        current_time = datetime.now()
+        current_date = current_time.strftime('%Y-%m-%d')
+        current_time_str = current_time.strftime('%I:%M %p').lstrip("0").lower()
         
         initial_ctx = llm.ChatContext().append(
             role="system",
             text=(
-                "You are a voice assistant named Graham. Your interface with users will be voice. "
-                "Keep responses extremely concise and natural. Avoid unnecessary words. "
-                "Respond quickly with short, direct answers. "
-                "When users ask about calendar or scheduling, always check their calendar first before suggesting times."
+                f"You are a voice assistant named Graham. Current time is {current_time_str} on {format_date_for_display(current_date)}. "
+                "Your interface with users will be voice. Keep responses extremely concise and natural. "
+                "Avoid unnecessary words. Respond quickly with short, direct answers. "
+                
+                "When users ask about calendar operations: "
+                "1. IMMEDIATELY acknowledge their request with a brief response "
+                "2. Then use the appropriate async calendar function: "
+                "   - For checking: await handle_calendar_request('check', date=date, time=time) "
+                "   - For scheduling: await handle_calendar_request('schedule', title=title, date=date, time=time) "
+                "3. The function will handle the acknowledgment and response automatically "
+                
+                "Example responses: "
+                "- 'Let me check your calendar.' "
+                "- 'I'll add that to your calendar.' "
+                "- 'One moment while I check that.' "
+                
+                "Calendar formatting: "
+                "- Use natural language for dates (today, tomorrow, next Monday) "
+                "- Use 12-hour time format (2:30 pm, 4 pm) "
+                "- Default to current date for relative times "
+                "- For next week, assume they mean the same day next week"
             ),
         )
 
-        fnc_ctx = llm.FunctionContext()
-        
-        if index_name:
-            rag_agent = PineconeRagAgent(index_name)
-            @fnc_ctx.ai_callable(description="Query knowledge base")
-            async def query_knowledge(query: str) -> str:
-                result = await rag_agent.query_knowledge(query)
-                logger.info(f"Knowledge query result: {result}")
-                return result
-
         # Add calendar functions to function context
-        @fnc_ctx.ai_callable(description="Check calendar availability for a date")
+        fnc_ctx = llm.FunctionContext()
+
+        @fnc_ctx.ai_callable(description="Check calendar availability for a specific date and time")
         async def check_calendar_availability(
-            date: Annotated[str, llm.TypeInfo(description="Date in YYYY-MM-DD format")]
+            time: Annotated[str, llm.TypeInfo(description="Time in natural format (2:30 pm, 4 pm)")] = None,
+            date: Annotated[str, llm.TypeInfo(description="Date in natural language (today, tomorrow, next Monday)")] = None
         ) -> str:
             try:
+                if date is None:
+                    date = current_date
+                
+                if time:
+                    # Convert time like "4 PM" to "16:00"
+                    try:
+                        parsed_time = dateparser.parse(time)
+                        if parsed_time:
+                            time = parsed_time.strftime('%H:%M')
+                        else:
+                            return f"Invalid time format: {time}. Please use format like '4 pm' or '2:30 pm'"
+                    except ValueError as e:
+                        return f"Invalid time format: {time}. Please use format like '4 pm' or '2:30 pm {e}'"
+                
                 events = await _check_calendar_availability(date)
+                formatted_date = format_date_for_display(parse_natural_date(date))
+                
                 if not events:
-                    return f"Calendar is clear on {date}"
+                    return f"Your calendar is clear {formatted_date}" + (f" at {format_time_for_display(time)}" if time else "")
                 
                 busy_times = []
                 for event in events:
                     start = event['start'].get('dateTime', event['start'].get('date'))
                     end = event['end'].get('dateTime', event['end'].get('date'))
-                    start_time = datetime.fromisoformat(start.replace('Z', '+00:00')).strftime('%I:%M %p')
-                    end_time = datetime.fromisoformat(end.replace('Z', '+00:00')).strftime('%I:%M %p')
-                    busy_times.append(f"{start_time} - {end_time}: {event['summary']}")
+                    start_time = datetime.fromisoformat(start.replace('Z', '+00:00')).strftime('%I:%M %p').lstrip("0").lower()
+                    end_time = datetime.fromisoformat(end.replace('Z', '+00:00')).strftime('%I:%M %p').lstrip("0").lower()
+                    
+                    # If specific time was requested, only show conflicting events
+                    if time:
+                        event_start = datetime.fromisoformat(start.replace('Z', '+00:00'))
+                        event_end = datetime.fromisoformat(end.replace('Z', '+00:00'))
+                        check_time = datetime.strptime(f"{parse_natural_date(date)} {time}", '%Y-%m-%d %H:%M')
+                        
+                        if event_start <= check_time <= event_end:
+                            busy_times.append(f"{start_time} - {end_time}: {event['summary']}")
+                    else:
+                        busy_times.append(f"{start_time} - {end_time}: {event['summary']}")
                 
-                return f"Busy times on {date}:\n" + "\n".join(busy_times)
+                if time and not busy_times:
+                    return f"You're free {formatted_date} at {format_time_for_display(time)}"
+                    
+                return f"Busy times {formatted_date}:\n" + "\n".join(busy_times)
             except Exception as e:
                 logger.error(f"Error checking calendar: {str(e)}")
                 return "Sorry, I had trouble checking your calendar."
 
         @fnc_ctx.ai_callable(description="Schedule a new calendar event")
         async def schedule_event(
-            date: Annotated[str, llm.TypeInfo(description="Date in YYYY-MM-DD format")],
-            time: Annotated[str, llm.TypeInfo(description="Time in HH:MM format")],
-            duration: Annotated[int, llm.TypeInfo(description="Duration in minutes")],
-            title: Annotated[str, llm.TypeInfo(description="Event title")],
+            title: Annotated[str, llm.TypeInfo(description="Title of the event")],
+            time: Annotated[str, llm.TypeInfo(description="Time in natural format (2:30 pm, 4 pm)")] = None,
+            date: Annotated[str, llm.TypeInfo(description="Date in natural language (today, tomorrow, next Monday)")] = None,
+            duration: Annotated[int, llm.TypeInfo(description="Duration in minutes")] = 60,
             description: Annotated[str, llm.TypeInfo(description="Event description")] = ""
         ) -> str:
             try:
-                # First check availability
-                events = await _check_calendar_availability(date)
-                requested_start = datetime.strptime(f"{date} {time}", '%Y-%m-%d %H:%M')
+                if date is None:
+                    date = current_date
+                
+                formatted_date = parse_natural_date(date)
+                
+                if not time:
+                    return "Please specify a time for the event"
+                    
+                # Get local timezone
+                local_tz = datetime.now().astimezone().tzinfo
+                
+                # Parse time and make it timezone aware
+                parsed_time = dateparser.parse(time)
+                if not parsed_time:
+                    return f"Invalid time format: {time}. Please use format like '4 pm' or '2:30 pm'"
+                time = parsed_time.strftime('%H:%M')
+                
+                # Create timezone-aware datetime objects
+                requested_start = datetime.strptime(f"{formatted_date} {time}", '%Y-%m-%d %H:%M').replace(tzinfo=local_tz)
                 requested_end = requested_start + timedelta(minutes=duration)
                 
+                # Check availability
+                events = await _check_calendar_availability(formatted_date)
+                
                 for event in events:
-                    event_start = datetime.fromisoformat(event['start'].get('dateTime', event['start'].get('date')).replace('Z', '+00:00'))
-                    event_end = datetime.fromisoformat(event['end'].get('dateTime', event['end'].get('date')).replace('Z', '+00:00'))
+                    event_start = datetime.fromisoformat(event['start'].get('dateTime', event['start'].get('date'))).replace(tzinfo=local_tz)
+                    event_end = datetime.fromisoformat(event['end'].get('dateTime', event['end'].get('date'))).replace(tzinfo=local_tz)
                     
                     if (requested_start < event_end and requested_end > event_start):
-                        return f"Cannot schedule. Conflicts with: {event['summary']} ({event_start.strftime('%I:%M %p')} - {event_end.strftime('%I:%M %p')})"
+                        return f"Cannot schedule. Conflicts with: {event['summary']} ({event_start.strftime('%I:%M %p').lstrip('0').lower()} - {event_end.strftime('%I:%M %p').lstrip('0').lower()})"
                 
-                # If no conflicts, create the event
-                await _create_calendar_event(date, time, duration, title, description)
-                return f"Scheduled: {title} on {date} at {time} for {duration} minutes"
+                await _create_calendar_event(formatted_date, time, duration, title, description)
+                display_date = format_date_for_display(formatted_date)
+                display_time = format_time_for_display(time)
+                return f"Scheduled: {title} for {display_time} {display_date}"
             except Exception as e:
                 logger.error(f"Error scheduling event: {str(e)}")
-                return "Sorry, I had trouble scheduling the event."
+                return f"Sorry, I had trouble scheduling the event: {str(e)}"
 
         logger.info(f"Connecting to room {ctx.room.name}")
         await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
