@@ -248,7 +248,11 @@ server.post('/deploy-agent', async (request: any, reply: any) => {
     initiateConversation,
     initialMessage,
     phoneNumber,
-    documentNamespace
+    documentNamespace, // namespace for phone rag
+    voiceId,
+    voiceName,
+    systemPrompt,
+    googleCalendarIntegration,
   } = request.body;
 
   try {
@@ -265,7 +269,11 @@ server.post('/deploy-agent', async (request: any, reply: any) => {
           documentNamespace,
           customInstructions,
           initiateConversation,
-          initialMessage
+          initialMessage,
+          voiceId,
+          voiceName,
+          systemPrompt,
+          googleCalendarIntegration,
         }),
       }
     );
