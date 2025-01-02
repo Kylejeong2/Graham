@@ -2,13 +2,13 @@ import logging
 import os
 from datetime import datetime, timedelta
 from google.oauth2.credentials import Credentials
-from google.auth.transport.requests import Request
+# from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 import dateparser
 import time
 
-import fetch
-import json
+# import fetch
+# import json
 
 logger = logging.getLogger("voice-assistant")
 SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -40,50 +40,50 @@ async def get_google_calendar_creds(agent_id: str, user_id: str):
         )
         
         # Check if credentials need refresh
-        if creds.expired:
-            try:
-                creds.refresh(Request())
-                # Update stored tokens in database via API
-                await update_calendar_tokens(
-                    agent_id,
-                    user_id,
-                    creds.token,
-                    creds.refresh_token,
-                    creds.expiry
-                )
-            except Exception as e:
-                logger.error(f"Error refreshing token: {e}")
-                return None
+        # if creds.expired:
+        #     try:
+        #         creds.refresh(Request())
+        #         # Update stored tokens in database via API
+        #         await update_calendar_tokens(
+        #             agent_id,
+        #             user_id,
+        #             creds.token,
+        #             creds.refresh_token,
+        #             creds.expiry
+        #         )
+        #     except Exception as e:
+        #         logger.error(f"Error refreshing token: {e}")
+        #         return None
                 
         return creds
     except Exception as e:
         logger.error(f"Error getting calendar credentials: {e}")
         return None
 
-async def update_calendar_tokens(agent_id: str, user_id: str, access_token: str, refresh_token: str, expires_at: datetime):
-    """Update calendar tokens in the database via API."""
-    try:
-        response = await fetch(f"{os.getenv('GRAHAM_API_URL')}/api/calendar/update-tokens", {
-            "method": "POST",
-            "headers": {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {os.getenv('GRAHAM_API_KEY')}"
-            },
-            "body": json.dumps({
-                "agentId": agent_id,
-                "userId": user_id,
-                "accessToken": access_token,
-                "refreshToken": refresh_token,
-                "expiresAt": expires_at.isoformat()
-            })
-        })
+# async def update_calendar_tokens(agent_id: str, user_id: str, access_token: str, refresh_token: str, expires_at: datetime):
+#     """Update calendar tokens in the database via API."""
+#     try:
+#         response = await fetch(f"{os.getenv('GRAHAM_API_URL')}/api/calendar/update-tokens", {
+#             "method": "POST",
+#             "headers": {
+#                 "Content-Type": "application/json",
+#                 "Authorization": f"Bearer {os.getenv('GRAHAM_API_KEY')}"
+#             },
+#             "body": json.dumps({
+#                 "agentId": agent_id,
+#                 "userId": user_id,
+#                 "accessToken": access_token,
+#                 "refreshToken": refresh_token,
+#                 "expiresAt": expires_at.isoformat()
+#             })
+#         })
         
-        if not response.ok:
-            raise Exception("Failed to update calendar tokens")
+#         if not response.ok:
+#             raise Exception("Failed to update calendar tokens")
             
-    except Exception as e:
-        logger.error(f"Error updating calendar tokens: {e}")
-        raise
+#     except Exception as e:
+#         logger.error(f"Error updating calendar tokens: {e}")
+#         raise
 
 async def _check_calendar_availability(date: str, agent_id: str = None, user_id: str = None) -> list:
     """Internal function to check calendar availability."""

@@ -167,8 +167,16 @@ async def book_appointment(
 
 async def entrypoint(ctx: JobContext):
     try:
-        # Extract agent parameters from metadata and environment
-        metadata = json.loads(ctx.participant.metadata) if ctx.participant and ctx.participant.metadata else {}
+        # First connect to the room
+        logger.info(f"Connecting to room {ctx.room.name}")
+        await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
+
+        # Wait for participant before accessing metadata
+        participant = await ctx.wait_for_participant()
+        logger.info(f"Starting voice assistant for participant {participant.identity}")
+
+        # Now safely access participant metadata
+        metadata = json.loads(participant.metadata) if participant and participant.metadata else {}
         agent_id = metadata.get('agentId', '')
         user_id = metadata.get('userId', '')
         business_name = metadata.get('businessName', '')
@@ -322,12 +330,6 @@ async def entrypoint(ctx: JobContext):
                 except Exception as e:
                     logger.error(f"Error scheduling event: {str(e)}")
                     return f"Sorry, I had trouble scheduling the event: {str(e)}"
-
-        logger.info(f"Connecting to room {ctx.room.name}")
-        await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
-
-        participant = await ctx.wait_for_participant()
-        logger.info(f"Starting voice assistant for participant {participant.identity}")
 
         dg_model = "nova-2-general"
         if participant.kind == rtc.ParticipantKind.PARTICIPANT_KIND_SIP:

@@ -1,0 +1,9 @@
+{
+    "name": "Graham Demo Call Dispatch Rule (Cerebras)",
+    "trunk_ids": ["ST_JFgkChVKLfeJ"],
+    "rule": {
+      "dispatchRuleIndividual": {
+        "roomPrefix": "call"
+      }
+    }
+  }
