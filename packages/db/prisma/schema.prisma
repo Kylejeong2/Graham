@@ -37,6 +37,7 @@ model Agent {
   initiateConversation        Boolean                     @default(false)
   ragDocumentId               String? // id of document used for phone rag
   namespace                   String? // namespace for phone rag
+  googleCalendarIntegration   Boolean                     @default(false)
   // Relations
   user                        User                        @relation(fields: [userId], references: [id])
   usageRecords                UsageRecord[]
@@ -62,20 +63,17 @@ model BusinessDocument {
 }
 
 model UsageRecord {
-  id              String         @id @default(cuid())
+  id              String    @id @default(cuid())
   userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   agentId         String
-  minutes         Int
-  seconds         Int
-  recordedAt      DateTime       @default(now())
-  billed          Boolean        @default(false)
+  agent           Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  durationInMinutes Int
+  timestamp       DateTime
+  billed          Boolean   @default(false)
   billingRecordId String?
-  agent           Agent          @relation(fields: [agentId], references: [id])
-  user            User           @relation(fields: [userId], references: [id])
-  billingRecord   BillingRecord? @relation(fields: [billingRecordId], references: [id])
-
-  @@index([userId])
-  @@index([billed])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 enum DisconnectionReason {
@@ -239,19 +237,16 @@ model BusinessAddress {
 }
 
 model BillingRecord {
-  id                  String   @id @default(cuid())
-  userId              String
-  stripeCustomerId    String?
-  stripeInvoiceId     String?
-  amountCents         Int
-  status              BillingStatus
-  billingPeriodStart  DateTime
-  billingPeriodEnd    DateTime
-  createdAt           DateTime @default(now())
-  user                User     @relation(fields: [userId], references: [id])
-  usageRecords        UsageRecord[]
-
-  @@index([userId])
+  id                String        @id @default(cuid())
+  userId            String
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amountCents       Int
+  stripeInvoiceId   String
+  status            BillingStatus
+  billingPeriodStart DateTime
+  billingPeriodEnd   DateTime
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 }
 
 enum BillingStatus {

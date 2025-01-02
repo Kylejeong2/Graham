@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import type { Subscription } from "@graham/db";
 import { BillingStatus, prisma } from "@graham/db";
 import Stripe from 'stripe';
 
@@ -6,54 +7,68 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2023-08-16'
 });
 
-const RATE_PER_MINUTE = 0.25; // 25 cents per minute
+const RATE_PER_MINUTE = 0.25; // $0.25 per minute
+
+interface UsageData {
+    totalMinutes: number;
+    records: string[];
+    subscription: Subscription | null;
+}
+
+interface UsageByUser {
+    [key: string]: UsageData;
+}
 
 export async function GET() {
   try {
-    // Get all usage records for the previous month
+    // Get first and last day of previous month
     const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastDayOfPrevMonth = new Date(firstDayOfMonth.getTime() - 1);
-    const firstDayOfPrevMonth = new Date(lastDayOfPrevMonth.getFullYear(), lastDayOfPrevMonth.getMonth(), 1);
+    const firstDayOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDayOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
+    // Get all unbilled usage records from previous month
     const usageRecords = await prisma.usageRecord.findMany({
       where: {
-        recordedAt: {
-          gte: firstDayOfPrevMonth,
-          lt: firstDayOfMonth,
-        },
         billed: false,
+        timestamp: {
+          gte: firstDayOfPrevMonth,
+          lte: lastDayOfPrevMonth
+        }
       },
       include: {
-        user: true,
-      },
+        user: {
+          include: {
+            subscriptions: true
+          }
+        }
+      }
     });
 
     // Group usage by user
-    const usageByUser = usageRecords.reduce((acc, record) => {
+    const usageByUser = usageRecords.reduce<UsageByUser>((acc, record) => {
       const userId = record.userId;
       if (!acc[userId]) {
         acc[userId] = {
           totalMinutes: 0,
-          user: record.user,
           records: [],
+          subscription: record.user.subscriptions[0] || null
         };
       }
-      acc[userId].totalMinutes += record.minutes;
+      acc[userId].totalMinutes += record.durationInMinutes;
       acc[userId].records.push(record.id);
       return acc;
-    }, {} as Record<string, { totalMinutes: number; user: any; records: string[] }>);
+    }, {});
 
     // Process billing for each user
     for (const [userId, usage] of Object.entries(usageByUser)) {
       const amountInCents = Math.round(usage.totalMinutes * RATE_PER_MINUTE * 100);
       
-      if (amountInCents === 0) continue;
+      if (amountInCents === 0 || !usage.subscription?.stripeCustomerId) continue;
 
       try {
         // Create invoice item
         await stripe.invoiceItems.create({
-          customer: usage.user.stripeCustomerId,
+          customer: usage.subscription.stripeCustomerId,
           amount: amountInCents,
           currency: 'usd',
           description: `Graham usage for ${firstDayOfPrevMonth.toLocaleString('default', { month: 'long' })} ${firstDayOfPrevMonth.getFullYear()}`,
@@ -61,7 +76,7 @@ export async function GET() {
 
         // Create and finalize invoice
         const invoice = await stripe.invoices.create({
-          customer: usage.user.stripeCustomerId,
+          customer: usage.subscription.stripeCustomerId,
           auto_advance: true,
         });
 

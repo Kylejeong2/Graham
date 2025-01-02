@@ -19,6 +19,7 @@ from __future__ import annotations
 import inspect
 import json
 import os
+import logging
 from dataclasses import dataclass
 from typing import (
     Any,
@@ -33,20 +34,21 @@ from typing import (
 
 import httpx
 from livekit.agents import (
-    APIConnectionError,
-    APIStatusError,
-    APITimeoutError,
+    # APIConnectionError,
+    # APIStatusError,
+    # APITimeoutError,
     llm,
 )
 from livekit.agents.llm import ToolChoice
 from livekit.agents.types import DEFAULT_API_CONNECT_OPTIONS, APIConnectOptions
 
 from cerebras.cloud.sdk import AsyncCerebras
-from cerebras.cloud.sdk.core import APIError
 
 from .models import (
     ChatModels,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -202,18 +204,12 @@ class LLMStream(llm.LLMStream):
                     ),
                 )
             )
-        except APIError as e:
-            if isinstance(e, APITimeoutError):
-                raise APITimeoutError()
-            elif isinstance(e, APIStatusError):
-                raise APIStatusError(
-                    str(e),
-                    status_code=e.status_code,
-                    request_id=getattr(e, 'request_id', None),
-                    body=getattr(e, 'body', None),
-                )
-            else:
-                raise APIConnectionError() from e
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Cerebras API error: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error: {str(e)}")
+            raise
 
     def _parse_chunk(self, chunk: Any) -> llm.ChatChunk | None:
         if not chunk.choices:
@@ -232,75 +228,115 @@ class LLMStream(llm.LLMStream):
         elif hasattr(choice.delta, 'tool_calls') and choice.delta.tool_calls:
             tool_call = choice.delta.tool_calls[0]
             if hasattr(tool_call, 'function'):
-                self._tool_call_id = tool_call.id
-                self._fnc_name = tool_call.function.name
-                self._fnc_raw_arguments = tool_call.function.arguments
+                try:
+                    self._tool_call_id = tool_call.id
+                    self._fnc_name = tool_call.function.name
+                    
+                    # Handle arguments that might be dict or string
+                    if isinstance(tool_call.function.arguments, dict):
+                        self._fnc_raw_arguments = json.dumps(tool_call.function.arguments)
+                    else:
+                        self._fnc_raw_arguments = tool_call.function.arguments
 
-                if self._fnc_ctx:
-                    fnc_info = _create_ai_function_info(
-                        self._fnc_ctx,
-                        self._tool_call_id,
-                        self._fnc_name,
-                        self._fnc_raw_arguments,
-                    )
-                    self._function_calls_info.append(fnc_info)
+                    if self._fnc_ctx:
+                        fnc_info = _create_ai_function_info(
+                            self._fnc_ctx,
+                            self._tool_call_id,
+                            self._fnc_name,
+                            self._fnc_raw_arguments,
+                        )
+                        self._function_calls_info.append(fnc_info)
 
-                    return llm.ChatChunk(
-                        request_id=self._request_id,
-                        choices=[
-                            llm.Choice(
-                                delta=llm.ChoiceDelta(
-                                    role="assistant",
-                                    tool_calls=[fnc_info],
-                                ),
-                            )
-                        ],
-                    )
+                        return llm.ChatChunk(
+                            request_id=self._request_id,
+                            choices=[
+                                llm.Choice(
+                                    delta=llm.ChoiceDelta(
+                                        role="assistant",
+                                        tool_calls=[fnc_info],
+                                    ),
+                                )
+                            ],
+                        )
+                except Exception as e:
+                    logger.error(f"Error parsing tool call: {str(e)}")
+                    raise
 
         return None
 
 
 def _build_cerebras_messages(messages: List[llm.ChatMessage]) -> List[dict]:
+    """Build messages in Cerebras API format."""
     result = []
+    
+    # Always ensure first message is system
+    if not messages or messages[0].role != "system":
+        result.append({
+            "role": "system",
+            "content": "You are a helpful assistant."
+        })
+
     for msg in messages:
-        if msg.role in ["user", "assistant", "system"]:
-            content = msg.content
-            if isinstance(content, list):
-                # For now, only handle text content in lists
-                content = " ".join([c for c in content if isinstance(c, str)])
-            
+        content = msg.content
+        if isinstance(content, list):
+            content = " ".join([c for c in content if isinstance(c, str)])
+        elif content is None:
+            content = ""
+
+        if msg.role == "system":
             result.append({
-                "role": msg.role,
+                "role": "system",
                 "content": content
             })
-            
+        elif msg.role == "user":
+            result.append({
+                "role": "user",
+                "content": content
+            })
+        elif msg.role == "assistant":
             if msg.tool_calls:
-                for tool_call in msg.tool_calls:
-                    result.append({
-                        "role": "assistant",
-                        "content": None,
+                # For tool calls, split into two messages
+                result.append({
+                    "role": "assistant",
+                    "content": content or ""
+                })
+                result.append({
+                    "role": "system",  # Convert tool call to system message
+                    "content": json.dumps({
                         "tool_calls": [{
-                            "id": tool_call.tool_call_id,
+                            "id": tc.tool_call_id,
                             "type": "function",
                             "function": {
-                                "name": tool_call.function_info.name,
-                                "arguments": tool_call.arguments
+                                "name": tc.function_info.name,
+                                "arguments": tc.arguments
                             }
-                        }]
+                        } for tc in msg.tool_calls]
                     })
+                })
+            else:
+                result.append({
+                    "role": "assistant",
+                    "content": content
+                })
         elif msg.role == "tool":
+            # Convert tool responses to system messages
             result.append({
-                "role": "tool",
-                "content": msg.content,
-                "tool_call_id": msg.tool_call_id
+                "role": "system",
+                "content": json.dumps({
+                    "tool_response": {
+                        "content": msg.content or "",
+                        "tool_call_id": msg.tool_call_id
+                    }
+                })
             })
-            
+    
     return result
 
 
 def _build_function_description(
     fnc_info: llm.function_context.FunctionInfo,
 ) -> dict:
+    """Build a function description compatible with Cerebras API format"""
     def build_schema_field(arg_info: llm.function_context.FunctionArgInfo):
         def type2str(t: type) -> str:
             if t is str:
@@ -309,14 +345,11 @@ def _build_function_description(
                 return "number"
             elif t is bool:
                 return "boolean"
-
             raise ValueError(f"unsupported type {t} for ai_property")
 
         p: dict[str, Any] = {}
         if arg_info.default is inspect.Parameter.empty:
             p["required"] = True
-        else:
-            p["required"] = False
 
         if arg_info.description:
             p["description"] = arg_info.description
@@ -324,27 +357,31 @@ def _build_function_description(
         if get_origin(arg_info.type) is list:
             inner_type = get_args(arg_info.type)[0]
             p["type"] = "array"
-            p["items"] = {}
-            p["items"]["type"] = type2str(inner_type)
-
-            if arg_info.choices:
-                p["items"]["enum"] = arg_info.choices
+            p["items"] = {"type": type2str(inner_type)}
         else:
             p["type"] = type2str(arg_info.type)
-            if arg_info.choices:
-                p["enum"] = arg_info.choices
 
         return p
 
-    input_schema: dict[str, object] = {"type": "object"}
+    parameters: dict[str, object] = {}
+    required = []
 
     for arg_info in fnc_info.arguments.values():
-        input_schema[arg_info.name] = build_schema_field(arg_info)
+        parameters[arg_info.name] = build_schema_field(arg_info)
+        if arg_info.default is inspect.Parameter.empty:
+            required.append(arg_info.name)
 
     return {
-        "name": fnc_info.name,
-        "description": fnc_info.description,
-        "input_schema": input_schema,
+        "type": "function",
+        "function": {
+            "name": fnc_info.name,
+            "description": fnc_info.description,
+            "parameters": {
+                "type": "object",
+                "properties": parameters,
+                "required": required
+            }
+        }
     }
 
 
@@ -407,29 +444,33 @@ def _create_ai_function_info(
     )
 
 
-def _sanitize_primitive(
-    *, value: Any, expected_type: type, choices: Tuple[Any] | None
-) -> Any:
-    if expected_type is str:
-        if not isinstance(value, str):
-            raise ValueError(f"expected str, got {type(value)}")
-    elif expected_type in (int, float):
-        if not isinstance(value, (int, float)):
-            raise ValueError(f"expected number, got {type(value)}")
+def _sanitize_primitive(*, value: Any, expected_type: type, choices: Tuple[Any] | None) -> Any:
+    """Sanitize a primitive value to the expected type."""
+    try:
+        if expected_type is str:
+            if isinstance(value, dict):
+                return json.dumps(value)
+            return str(value)
+        elif expected_type in (int, float):
+            if not isinstance(value, (int, float, str)):
+                raise ValueError(f"expected number, got {type(value)}")
 
-        if expected_type is int:
-            if value % 1 != 0:
-                raise ValueError("expected int, got float")
+            if expected_type is int:
+                if isinstance(value, str):
+                    value = float(value)
+                if value % 1 != 0:
+                    raise ValueError("expected int, got float")
+                return int(value)
+            return float(value)
+        elif expected_type is bool:
+            if isinstance(value, str):
+                return value.lower() in ('true', '1', 'yes')
+            return bool(value)
 
-            value = int(value)
-        elif expected_type is float:
-            value = float(value)
+        if choices and value not in choices:
+            raise ValueError(f"invalid value {value}, not in {choices}")
 
-    elif expected_type is bool:
-        if not isinstance(value, bool):
-            raise ValueError(f"expected bool, got {type(value)}")
-
-    if choices and value not in choices:
-        raise ValueError(f"invalid value {value}, not in {choices}")
-
-    return value
+        return value
+    except Exception as e:
+        logger.error(f"Error sanitizing value {value} to type {expected_type}: {str(e)}")
+        raise ValueError(f"Failed to convert {value} to {expected_type}")

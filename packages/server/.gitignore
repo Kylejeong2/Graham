@@ -168,3 +168,5 @@ pyrightconfig.json
 
 google.json
 .env
+
+cerebras-example/token.json

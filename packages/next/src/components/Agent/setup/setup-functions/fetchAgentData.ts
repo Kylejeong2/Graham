@@ -9,7 +9,8 @@ export const fetchAgentData = async (
   setSelectedVoiceName: (value: string) => void,
   setConversationType: (value: 'user' | 'ai-default' | 'ai-custom') => void,
   setInitialMessage: (value: string) => void,
-  setSelectedPhoneNumber: (value: string) => void
+  setSelectedPhoneNumber: (value: string) => void,
+  setSelectedDocument: (value: string) => void
 ) => {
   if (!agentId) {
     setIsLoading(false);
@@ -24,6 +25,9 @@ export const fetchAgentData = async (
       throw new Error('Failed to fetch agent data');
     }
     const agent: Agent = await response.json();
+    
+    console.log('Fetched agent data:', agent);
+    console.log('ragDocumentId:', agent.ragDocumentId);
     
     if (agent.systemPrompt) {
       setCustomInstructions(agent.systemPrompt);
@@ -50,6 +54,9 @@ export const fetchAgentData = async (
     }
     if (agent.phoneNumber) {
       setSelectedPhoneNumber(agent.phoneNumber);
+    }
+    if (agent.ragDocumentId) {
+      setSelectedDocument(agent.ragDocumentId);
     }
   } catch (error) {
     console.error('Error fetching agent data:', error);

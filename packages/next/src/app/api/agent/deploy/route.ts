@@ -35,7 +35,11 @@ export async function POST(req: Request) {
         initiateConversation: agent.initiateConversation,
         initialMessage: agent.initialMessage,
         phoneNumber: agent.phoneNumber,
-        documentNamespace: businessDocument?.namespace
+        documentNamespace: businessDocument?.namespace,
+        voiceId: agent.voiceId,
+        voiceName: agent.voiceName,
+        systemPrompt: agent.systemPrompt,
+        googleCalendarIntegration: agent.googleCalendarIntegration,
       })
     });
 

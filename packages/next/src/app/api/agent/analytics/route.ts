@@ -67,15 +67,14 @@ export async function GET(req: Request) {
         where: {
           agentId,
           userId,
-          recordedAt: {
+          timestamp: {
             gte: start,
             lte: end,
           },
         },
         select: {
-          minutes: true,
-          seconds: true,
-          recordedAt: true,
+          durationInMinutes: true,
+          timestamp: true,
         },
       }),
 
@@ -172,14 +171,13 @@ export async function GET(req: Request) {
               where: {
                 agentId,
                 userId,
-                recordedAt: {
+                timestamp: {
                   gte: dayStart,
                   lte: dayEnd,
                 },
               },
               _sum: {
-                minutes: true,
-                seconds: true,
+                durationInMinutes: true,
               },
             }),
           ]);
@@ -190,8 +188,8 @@ export async function GET(req: Request) {
             avgDuration: calls._avg.duration || 0,
             avgSecondsUsed: calls._avg.secondsUsed || 0,
             totalMinutes: Number(calls._sum.minutesUsed || 0),
-            totalUsageMinutes: Number(usage._sum.minutes || 0),
-            totalUsageSeconds: Number(usage._sum.seconds || 0),
+            totalUsageMinutes: Number(usage._sum.durationInMinutes || 0),
+            totalUsageSeconds: Number(usage._sum.durationInMinutes || 0) * 60,
           };
         })
       ),
@@ -228,16 +226,14 @@ export async function GET(req: Request) {
       });
     });
 
-    // Calculate total minutes and seconds used
+    // Calculate total minutes used
     const totalMinutesUsed = usageRecords.reduce(
-      (acc, record) => acc + Number(record.minutes),
+      (acc, record) => acc + Number(record.durationInMinutes),
       0
     );
 
-    const totalSecondsUsed = usageRecords.reduce(
-      (acc, record) => acc + Number(record.seconds),
-      0
-    );
+    // Remove seconds-related code since we only have minutes in the schema
+    const totalSecondsUsed = totalMinutesUsed * 60;
 
     // Format sentiment distribution
     const formattedSentimentDistribution = sentimentDistribution.reduce(
