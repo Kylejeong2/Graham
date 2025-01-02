@@ -37,8 +37,8 @@ export async function POST(req: NextRequest) {
       data: {
         userId,
         agentId,
-        seconds,
-        minutes: roundedMinutes,
+        durationInMinutes: roundedMinutes,
+        timestamp: new Date(),
       }
     });
 
